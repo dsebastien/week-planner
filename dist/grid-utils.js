@@ -37,7 +37,7 @@ export class GridUtils {
         return (durationMinutes / 30) * config.timeSlotHeight;
     }
     static getDaySpan(width, config) {
-        return Math.max(1, Math.min(5, Math.round(width / config.dayWidth)));
+        return Math.max(1, Math.min(7, Math.round(width / config.dayWidth)));
     }
     static getWidthFromDaySpan(daySpan, config) {
         return daySpan * config.dayWidth;

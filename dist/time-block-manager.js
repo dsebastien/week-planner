@@ -75,7 +75,7 @@ export class TimeBlockManager {
             dayWidth: 140,
             headerHeight: 40,
             timeColumnWidth: 80,
-            days: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday']
+            days: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
         };
     }
 }

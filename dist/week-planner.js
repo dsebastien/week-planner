@@ -14,7 +14,7 @@ export class WeekPlanner {
             dayWidth: 140,
             headerHeight: 40,
             timeColumnWidth: 80,
-            days: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday']
+            days: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
         };
         this.canvas = document.getElementById('weekCanvas');
         this.textInput = document.getElementById('textInput');

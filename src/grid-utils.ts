@@ -49,7 +49,7 @@ export class GridUtils {
     }
 
     static getDaySpan(width: number, config: GridConfig): number {
-        return Math.max(1, Math.min(5, Math.round(width / config.dayWidth)));
+        return Math.max(1, Math.min(7, Math.round(width / config.dayWidth)));
     }
 
     static getWidthFromDaySpan(daySpan: number, config: GridConfig): number {

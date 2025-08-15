@@ -1,7 +1,9 @@
-import { TimeBlock } from './types.js';
+import { TimeBlock, GridConfig } from './types.js';
 export declare class TimeBlockManager {
     private blocks;
     private selectedBlock;
+    private config;
+    constructor(config?: GridConfig);
     addBlock(block: TimeBlock): boolean;
     removeBlock(blockId: string): void;
     getBlocks(): TimeBlock[];
@@ -12,5 +14,6 @@ export declare class TimeBlockManager {
     clearAll(): void;
     private hasOverlap;
     private getDefaultConfig;
+    updateConfig(config: GridConfig): void;
 }
 //# sourceMappingURL=time-block-manager.d.ts.map

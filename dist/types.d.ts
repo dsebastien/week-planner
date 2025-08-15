@@ -19,6 +19,8 @@ export interface GridConfig {
     headerHeight: number;
     timeColumnWidth: number;
     days: string[];
+    canvasWidth?: number;
+    canvasHeight?: number;
 }
 export interface Point {
     x: number;

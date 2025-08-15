@@ -10,7 +10,9 @@ export declare class WeekPlanner {
     private currentDragBlock;
     private editingBlock;
     constructor();
+    private setupCanvas;
     private setupEventListeners;
+    private updateCursor;
     private onMouseDown;
     private onMouseMove;
     private onMouseUp;
@@ -21,6 +23,8 @@ export declare class WeekPlanner {
     private onTextInputBlur;
     private onTextInputKeyDown;
     private drawPreviewBlock;
+    private darkenColor;
+    private getContrastColor;
     private generateBlockId;
     private render;
     private exportSVG;

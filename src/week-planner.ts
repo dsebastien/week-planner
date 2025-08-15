@@ -5,8 +5,8 @@ import { CanvasRenderer } from './canvas-renderer.js';
 
 export class WeekPlanner {
     private canvas: HTMLCanvasElement;
-    private renderer: CanvasRenderer;
-    private blockManager: TimeBlockManager;
+    private renderer!: CanvasRenderer;
+    private blockManager!: TimeBlockManager;
     private config: GridConfig;
     private textInput: HTMLInputElement;
     private colorPicker: HTMLInputElement;
@@ -20,9 +20,9 @@ export class WeekPlanner {
         this.config = {
             startHour: 6,
             endHour: 24,
-            timeSlotHeight: 20,
+            timeSlotHeight: 24,
             dayWidth: 140,
-            headerHeight: 40,
+            headerHeight: 50,
             timeColumnWidth: 80,
             days: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
         };
@@ -31,11 +31,50 @@ export class WeekPlanner {
         this.textInput = document.getElementById('textInput') as HTMLInputElement;
         this.colorPicker = document.getElementById('blockColor') as HTMLInputElement;
         
-        this.renderer = new CanvasRenderer(this.canvas, this.config);
-        this.blockManager = new TimeBlockManager();
+        // Initialize block manager first
+        this.blockManager = new TimeBlockManager(this.config);
+        
+        // Wait for next frame to ensure layout is complete
+        requestAnimationFrame(() => {
+            this.setupCanvas();
+            this.renderer = new CanvasRenderer(this.canvas, this.config);
 
-        this.setupEventListeners();
-        this.render();
+            this.setupEventListeners();
+            this.render();
+        });
+    }
+
+    private setupCanvas(): void {
+        // Force container to full viewport
+        const container = this.canvas.parentElement!;
+        container.style.width = '100vw';
+        container.style.height = '100vh';
+        
+        // Get ACTUAL container dimensions after forcing size
+        const containerWidth = window.innerWidth;
+        const containerHeight = window.innerHeight - 80; // Account for toolbar
+        
+        // FORCE canvas to these exact dimensions
+        this.canvas.width = containerWidth;
+        this.canvas.height = containerHeight;
+        this.canvas.style.width = containerWidth + 'px';
+        this.canvas.style.height = containerHeight + 'px';
+        
+        // Calculate grid to fill ENTIRE canvas
+        const totalHours = this.config.endHour - this.config.startHour;
+        
+        this.config.timeColumnWidth = 120;
+        this.config.headerHeight = 60;
+        this.config.dayWidth = (containerWidth - this.config.timeColumnWidth) / 7;
+        this.config.timeSlotHeight = (containerHeight - this.config.headerHeight) / (totalHours * 2);
+        
+        this.config.canvasWidth = containerWidth;
+        this.config.canvasHeight = containerHeight;
+        
+        // Update block manager with new configuration
+        if (this.blockManager) {
+            this.blockManager.updateConfig(this.config);
+        }
     }
 
     private setupEventListeners(): void {
@@ -56,6 +95,35 @@ export class WeekPlanner {
         document.getElementById('exportSVG')?.addEventListener('click', this.exportSVG.bind(this));
         document.getElementById('exportPNG')?.addEventListener('click', this.exportPNG.bind(this));
         document.getElementById('clearAll')?.addEventListener('click', this.clearAll.bind(this));
+
+        // Window resize
+        window.addEventListener('resize', () => {
+            this.setupCanvas();
+            if (this.renderer) {
+                this.renderer = new CanvasRenderer(this.canvas, this.config);
+            }
+            this.render();
+        });
+    }
+
+    private updateCursor(x: number, y: number): void {
+        const gridStartX = 0;
+        const gridStartY = 0;
+        
+        // Check if mouse is over a block
+        const block = this.blockManager.getBlockAt(x, y);
+        
+        if (block) {
+            this.canvas.classList.remove('creating');
+            this.canvas.classList.add('pointer');
+        } else if (x >= gridStartX + this.config.timeColumnWidth && y >= gridStartY + this.config.headerHeight) {
+            // In grid area
+            this.canvas.classList.remove('pointer');
+            this.canvas.classList.add('creating');
+        } else {
+            // Outside grid area
+            this.canvas.classList.remove('creating', 'pointer');
+        }
     }
 
     private onMouseDown(event: MouseEvent): void {
@@ -63,8 +131,11 @@ export class WeekPlanner {
         const x = event.clientX - rect.left;
         const y = event.clientY - rect.top;
 
+        const gridStartX = 0;
+        const gridStartY = 0;
+
         // Check if click is in the grid area
-        if (x < this.config.timeColumnWidth || y < this.config.headerHeight) {
+        if (x < gridStartX + this.config.timeColumnWidth || y < gridStartY + this.config.headerHeight) {
             return;
         }
 
@@ -84,13 +155,18 @@ export class WeekPlanner {
     }
 
     private onMouseMove(event: MouseEvent): void {
-        if (!this.isDragging || !this.dragStartPoint) {
-            return;
-        }
-
         const rect = this.canvas.getBoundingClientRect();
         const x = event.clientX - rect.left;
         const y = event.clientY - rect.top;
+
+        // Update cursor if not dragging
+        if (!this.isDragging) {
+            this.updateCursor(x, y);
+        }
+
+        if (!this.isDragging || !this.dragStartPoint) {
+            return;
+        }
 
         const snappedPoint = GridUtils.snapToGrid(x, y, this.config);
         
@@ -218,15 +294,56 @@ export class WeekPlanner {
 
     private drawPreviewBlock(block: TimeBlock): void {
         const ctx = this.canvas.getContext('2d')!;
-        ctx.globalAlpha = 0.6;
+        
+        // Draw preview block with transparency
+        ctx.globalAlpha = 0.7;
         ctx.fillStyle = block.color;
         ctx.fillRect(block.x, block.y, block.width, block.height);
-        ctx.strokeStyle = '#000';
+        
+        // Draw dashed border
+        ctx.strokeStyle = this.darkenColor(block.color, 0.3);
         ctx.lineWidth = 2;
-        ctx.setLineDash([5, 5]);
+        ctx.setLineDash([8, 4]);
         ctx.strokeRect(block.x, block.y, block.width, block.height);
         ctx.setLineDash([]);
+        
+        // Draw time information
         ctx.globalAlpha = 1.0;
+        const startTime = GridUtils.formatTime(block.startTime);
+        const endTime = GridUtils.formatTime(block.startTime + block.duration);
+        const timeText = `${startTime} - ${endTime}`;
+        
+        ctx.fillStyle = this.getContrastColor(block.color);
+        ctx.font = '500 11px Inter, "Segoe UI", system-ui, sans-serif';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(timeText, block.x + block.width / 2, block.y + block.height / 2);
+        
+        ctx.globalAlpha = 1.0;
+    }
+
+    private darkenColor(color: string, factor: number): string {
+        const hex = color.replace('#', '');
+        const r = parseInt(hex.substr(0, 2), 16);
+        const g = parseInt(hex.substr(2, 2), 16);
+        const b = parseInt(hex.substr(4, 2), 16);
+
+        const newR = Math.round(r * (1 - factor));
+        const newG = Math.round(g * (1 - factor));
+        const newB = Math.round(b * (1 - factor));
+
+        return `#${newR.toString(16).padStart(2, '0')}${newG.toString(16).padStart(2, '0')}${newB.toString(16).padStart(2, '0')}`;
+    }
+
+    private getContrastColor(hexColor: string): string {
+        const hex = hexColor.replace('#', '');
+        const r = parseInt(hex.substr(0, 2), 16);
+        const g = parseInt(hex.substr(2, 2), 16);
+        const b = parseInt(hex.substr(4, 2), 16);
+
+        // Calculate brightness
+        const brightness = (r * 299 + g * 587 + b * 114) / 1000;
+        return brightness > 128 ? '#000000' : '#ffffff';
     }
 
     private generateBlockId(): string {

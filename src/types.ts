@@ -20,6 +20,8 @@ export interface GridConfig {
     headerHeight: number; // height for day labels
     timeColumnWidth: number; // width for time labels
     days: string[];
+    canvasWidth?: number; // actual canvas width
+    canvasHeight?: number; // actual canvas height
 }
 
 export interface Point {

@@ -20,77 +20,92 @@ export class CanvasRenderer {
 
     private clear(): void {
         this.ctx.fillStyle = '#2a2a2a';
-        this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+        const width = this.config.canvasWidth || this.canvas.width;
+        const height = this.config.canvasHeight || this.canvas.height;
+        this.ctx.fillRect(0, 0, width, height);
     }
 
     private drawGrid(): void {
+        // Configure high-quality rendering
+        this.ctx.imageSmoothingEnabled = true;
+        this.ctx.imageSmoothingQuality = 'high';
+        this.ctx.textBaseline = 'alphabetic';
+        
         this.ctx.strokeStyle = '#444';
         this.ctx.lineWidth = 1;
-        this.ctx.fillStyle = '#fff';
-        this.ctx.font = '12px "Segoe UI", sans-serif';
+
+        const canvasWidth = this.config.canvasWidth || this.canvas.width;
+        const canvasHeight = this.config.canvasHeight || this.canvas.height;
+
+        // Use the FULL canvas - no offsets, no margins
+        const gridStartX = 0;
+        const gridStartY = 0;
+        const gridWidth = canvasWidth;
+        const totalHours = this.config.endHour - this.config.startHour;
+        const gridHeight = canvasHeight;
 
         // Draw header background
         this.ctx.fillStyle = '#333';
-        this.ctx.fillRect(0, 0, this.canvas.width, this.config.headerHeight);
+        this.ctx.fillRect(gridStartX, gridStartY, gridWidth, this.config.headerHeight);
 
         // Draw time column background
-        this.ctx.fillRect(0, 0, this.config.timeColumnWidth, this.canvas.height);
+        this.ctx.fillRect(gridStartX, gridStartY, this.config.timeColumnWidth, gridHeight);
 
-        // Draw day headers
-        this.ctx.fillStyle = '#fff';
+        // Draw day headers with improved styling
+        this.ctx.fillStyle = '#ffffff';
         this.ctx.textAlign = 'center';
         this.ctx.textBaseline = 'middle';
+        this.ctx.font = '600 16px Inter, "Segoe UI", system-ui, sans-serif';
         
         for (let i = 0; i < this.config.days.length; i++) {
-            const x = this.config.timeColumnWidth + i * this.config.dayWidth + this.config.dayWidth / 2;
-            const y = this.config.headerHeight / 2;
+            const x = gridStartX + this.config.timeColumnWidth + i * this.config.dayWidth + this.config.dayWidth / 2;
+            const y = gridStartY + this.config.headerHeight / 2;
             this.ctx.fillText(this.config.days[i], x, y);
         }
 
-        // Draw time labels
+        // Draw time labels with improved styling
         this.ctx.textAlign = 'right';
         this.ctx.textBaseline = 'middle';
         
-        const totalHours = this.config.endHour - this.config.startHour;
         for (let i = 0; i <= totalHours * 2; i++) {
             const minutes = this.config.startHour * 60 + i * 30;
             const timeStr = GridUtils.formatTime(minutes);
-            const y = this.config.headerHeight + i * this.config.timeSlotHeight;
+            const y = gridStartY + this.config.headerHeight + i * this.config.timeSlotHeight;
             
             if (i % 2 === 0) { // Full hour
-                this.ctx.fillStyle = '#fff';
-                this.ctx.font = 'bold 12px "Segoe UI", sans-serif';
+                this.ctx.fillStyle = '#ffffff';
+                this.ctx.font = '600 14px Inter, "Segoe UI", system-ui, sans-serif';
             } else { // Half hour
-                this.ctx.fillStyle = '#aaa';
-                this.ctx.font = '10px "Segoe UI", sans-serif';
+                this.ctx.fillStyle = '#cccccc';
+                this.ctx.font = '500 12px Inter, "Segoe UI", system-ui, sans-serif';
             }
             
-            this.ctx.fillText(timeStr, this.config.timeColumnWidth - 10, y + this.config.timeSlotHeight / 2);
+            this.ctx.fillText(timeStr, gridStartX + this.config.timeColumnWidth - 8, y);
         }
 
-        // Draw grid lines
-        this.ctx.strokeStyle = '#444';
+        // Draw grid lines with improved styling
         this.ctx.lineWidth = 1;
 
         // Vertical lines (days)
         for (let i = 0; i <= this.config.days.length; i++) {
-            const x = this.config.timeColumnWidth + i * this.config.dayWidth;
+            const x = gridStartX + this.config.timeColumnWidth + i * this.config.dayWidth;
+            this.ctx.strokeStyle = '#555';
             this.ctx.beginPath();
-            this.ctx.moveTo(x, this.config.headerHeight);
-            this.ctx.lineTo(x, this.canvas.height);
+            this.ctx.moveTo(x, gridStartY + this.config.headerHeight);
+            this.ctx.lineTo(x, gridStartY + gridHeight);
             this.ctx.stroke();
         }
 
         // Horizontal lines (time slots)
         for (let i = 0; i <= totalHours * 2; i++) {
-            const y = this.config.headerHeight + i * this.config.timeSlotHeight;
+            const y = gridStartY + this.config.headerHeight + i * this.config.timeSlotHeight;
             this.ctx.beginPath();
-            this.ctx.moveTo(this.config.timeColumnWidth, y);
-            this.ctx.lineTo(this.canvas.width, y);
+            this.ctx.moveTo(gridStartX + this.config.timeColumnWidth, y);
+            this.ctx.lineTo(gridStartX + gridWidth, y);
             
             if (i % 2 === 0) { // Full hour lines
-                this.ctx.strokeStyle = '#555';
-                this.ctx.lineWidth = 2;
+                this.ctx.strokeStyle = '#666';
+                this.ctx.lineWidth = 1.5;
             } else { // Half hour lines
                 this.ctx.strokeStyle = '#444';
                 this.ctx.lineWidth = 1;
@@ -102,14 +117,14 @@ export class CanvasRenderer {
         this.ctx.strokeStyle = '#666';
         this.ctx.lineWidth = 2;
         this.ctx.beginPath();
-        this.ctx.moveTo(0, this.config.headerHeight);
-        this.ctx.lineTo(this.canvas.width, this.config.headerHeight);
+        this.ctx.moveTo(gridStartX, gridStartY + this.config.headerHeight);
+        this.ctx.lineTo(gridStartX + gridWidth, gridStartY + this.config.headerHeight);
         this.ctx.stroke();
 
         // Draw time column separator
         this.ctx.beginPath();
-        this.ctx.moveTo(this.config.timeColumnWidth, 0);
-        this.ctx.lineTo(this.config.timeColumnWidth, this.canvas.height);
+        this.ctx.moveTo(gridStartX + this.config.timeColumnWidth, gridStartY);
+        this.ctx.lineTo(gridStartX + this.config.timeColumnWidth, gridStartY + gridHeight);
         this.ctx.stroke();
     }
 
@@ -144,18 +159,19 @@ export class CanvasRenderer {
         // Draw text
         if (block.text) {
             this.ctx.fillStyle = this.getContrastColor(block.color);
-            this.ctx.font = '12px "Segoe UI", sans-serif';
+            this.ctx.font = '500 13px Inter, "Segoe UI", system-ui, sans-serif';
             this.ctx.textAlign = 'center';
-            this.ctx.textBaseline = 'middle';
+            this.ctx.textBaseline = 'top';
 
             const textX = block.x + block.width / 2;
-            const textY = block.y + block.height / 2;
+            const textStartY = block.y + 26; // Start below time info
 
             // Simple text wrapping
-            const maxWidth = block.width - 10;
+            const maxWidth = block.width - 16;
             const words = block.text.split(' ');
             let line = '';
-            let y = textY - 6;
+            let y = textStartY;
+            const lineHeight = 16;
 
             for (let n = 0; n < words.length; n++) {
                 const testLine = line + words[n] + ' ';
@@ -163,14 +179,24 @@ export class CanvasRenderer {
                 const testWidth = metrics.width;
 
                 if (testWidth > maxWidth && n > 0) {
-                    this.ctx.fillText(line, textX, y);
+                    this.ctx.fillText(line.trim(), textX, y);
                     line = words[n] + ' ';
-                    y += 16;
+                    y += lineHeight;
+                    
+                    // Stop if we're running out of space
+                    if (y + lineHeight > block.y + block.height - 4) {
+                        line = line.trim() + '...';
+                        break;
+                    }
                 } else {
                     line = testLine;
                 }
             }
-            this.ctx.fillText(line, textX, y);
+            
+            // Draw the last line if we have space
+            if (y + lineHeight <= block.y + block.height - 4) {
+                this.ctx.fillText(line.trim(), textX, y);
+            }
         }
 
         // Draw time info
@@ -179,10 +205,10 @@ export class CanvasRenderer {
         const timeText = `${startTime} - ${endTime}`;
 
         this.ctx.fillStyle = this.getContrastColor(block.color);
-        this.ctx.font = '10px "Segoe UI", sans-serif';
+        this.ctx.font = '500 10px Inter, "Segoe UI", system-ui, sans-serif';
         this.ctx.textAlign = 'left';
         this.ctx.textBaseline = 'top';
-        this.ctx.fillText(timeText, block.x + 4, block.y + 4);
+        this.ctx.fillText(timeText, block.x + 6, block.y + 6);
     }
 
     private darkenColor(color: string, factor: number): string {

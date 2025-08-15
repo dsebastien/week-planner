@@ -8,3 +8,4 @@
 - The SVG export is broken
 - When a block is selected, an edit toolbar should be displayed, similar to the one of Miro, with the following options: Background color, Text color, Font Size, Font Style (bold, italic, underlined, striked), Alignment (left, center, right), Border style, opacity, corners, color. 
 - When right clicking on a time block, a menu should be shown with the following options: copy style, paste style (if one was copied previously), copy, duplicate
+- The canvas should actually take the whole viewport! The buttons (export svg, png, clear all etc should be within)

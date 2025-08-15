@@ -1,0 +1,10 @@
+{
+  "name": "week-planner",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+  },
+  "author": "Sébastien Dubois",
+  "license": "MIT",
+  "description": ""
+}

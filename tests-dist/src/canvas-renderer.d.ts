@@ -70,7 +70,7 @@ export declare class CanvasRenderer {
      */
     private drawBlock;
     /**
-     * Draws block background
+     * Draws block background with modern gradient effect
      */
     private drawBlockBackground;
     /**

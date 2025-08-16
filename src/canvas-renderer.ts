@@ -9,19 +9,19 @@ export class CanvasRenderer {
     private readonly ctx: CanvasRenderingContext2D;
     private config: GridConfig;
 
-    // Theme colors
+    // Modern theme colors
     private static readonly THEME = {
-        background: '#1a1a1a',
-        gridBackground: '#2a2a2a',
-        headerBackground: '#333333',
-        timeColumnBackground: '#2a2a2a',
+        background: '#0f172a',          // dark-900
+        gridBackground: '#1e293b',      // dark-800  
+        headerBackground: '#334155',    // dark-700
+        timeColumnBackground: '#1e293b', // dark-800
         primaryText: '#ffffff',
-        secondaryText: '#cccccc',
-        gridLines: '#444444',
-        hourLines: '#666666',
-        separatorLines: '#666666',
-        selectionHighlight: '#0066cc',
-        lunchTimeBackground: '#333333' // Lighter background for lunch time (12:00-14:00)
+        secondaryText: '#cbd5e1',       // dark-300
+        gridLines: '#475569',           // dark-600
+        hourLines: '#64748b',           // dark-500
+        separatorLines: '#64748b',      // dark-500
+        selectionHighlight: '#3b82f6',  // primary-500
+        lunchTimeBackground: '#334155'  // dark-700 - slightly lighter for lunch time
     } as const;
 
     // Typography
@@ -332,11 +332,36 @@ export class CanvasRenderer {
     }
 
     /**
-     * Draws block background
+     * Draws block background with modern gradient effect
      */
     private drawBlockBackground(block: TimeBlock): void {
-        this.ctx.fillStyle = block.color;
+        // Create subtle gradient for depth
+        const gradient = this.ctx.createLinearGradient(
+            block.x, block.y, 
+            block.x, block.y + block.height
+        );
+        
+        // Parse hex color and create lighter/darker variants
+        const baseColor = block.color;
+        const lighterColor = this.adjustColorBrightness(baseColor, 10);
+        const darkerColor = this.adjustColorBrightness(baseColor, -10);
+        
+        gradient.addColorStop(0, lighterColor);
+        gradient.addColorStop(1, darkerColor);
+        
+        this.ctx.fillStyle = gradient;
         this.ctx.fillRect(block.x, block.y, block.width, block.height);
+        
+        // Add subtle inner glow for modern look
+        if (block.selected) {
+            this.ctx.shadowColor = this.adjustColorBrightness(baseColor, 30);
+            this.ctx.shadowBlur = 8;
+            this.ctx.shadowOffsetX = 0;
+            this.ctx.shadowOffsetY = 0;
+            this.ctx.fillStyle = this.adjustColorBrightness(baseColor, 5);
+            this.ctx.fillRect(block.x + 1, block.y + 1, block.width - 2, block.height - 2);
+            this.ctx.shadowBlur = 0;
+        }
     }
 
     /**

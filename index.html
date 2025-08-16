@@ -1,224 +1,316 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="dark">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Visual Week Planner - Plan Your Week</title>
+    <title>Week Planner - Plan Your Perfect Week</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="dist/output.css" rel="stylesheet">
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        html, body {
-            font-family: 'Inter', 'Segoe UI', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
-            background-color: #1a1a1a;
-            color: #ffffff;
-            line-height: 1.5;
-            width: 100vw;
-            overflow-x: hidden;
-        }
-
-        .container {
-            width: 100vw;
-            display: flex;
-            flex-direction: column;
-            position: relative;
-        }
-
-        .toolbar {
-            position: absolute;
-            top: 20px;
-            right: 20px;
-            z-index: 1000;
-            transition: opacity 0.3s ease;
-        }
-
-        .toolbar:not(:hover):not(:focus-within) {
-            opacity: 0.3;
-        }
-
-        .toolbar-toggle {
-            background-color: rgba(42, 42, 42, 0.95);
-            border: 1px solid #444;
-            border-radius: 8px;
-            padding: 8px;
-            cursor: pointer;
-            color: #fff;
-            font-size: 18px;
-            backdrop-filter: blur(10px);
-        }
-
-        .toolbar-menu {
-            display: none;
-            position: absolute;
-            top: 100%;
-            right: 0;
-            margin-top: 4px;
-            background-color: rgba(42, 42, 42, 0.95);
-            padding: 12px 16px;
-            border-radius: 8px;
-            backdrop-filter: blur(10px);
-            border: 1px solid #444;
-            min-width: 200px;
-        }
-
-        .toolbar-menu.visible {
-            display: block;
-        }
-
-        .toolbar-menu > * {
-            margin: 8px 0;
-        }
-
-        .menu-section {
-            border-bottom: 1px solid #555;
-            padding-bottom: 12px;
-            margin-bottom: 12px;
-        }
-
-        .menu-section:last-child {
-            border-bottom: none;
-            margin-bottom: 0;
-        }
-
-        .menu-section h4 {
-            margin: 0 0 8px 0;
-            font-size: 12px;
-            color: #ccc;
-            text-transform: uppercase;
-            font-weight: 600;
-        }
-
-        .color-picker {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            margin-bottom: 16px;
-        }
-
-        .color-picker label {
-            font-size: 14px;
-            font-weight: 500;
-        }
-
-        .color-picker input[type="color"] {
-            width: 40px;
-            height: 30px;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-        }
-
-        button {
-            width: 100%;
-            padding: 8px 16px;
-            background-color: #0066cc;
-            color: white;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 14px;
-            font-weight: 500;
-            margin-bottom: 4px;
-            transition: background-color 0.2s ease;
-        }
-
-        button:hover {
-            background-color: #0052a3;
-        }
-
-        button:disabled {
-            background-color: #666;
-            cursor: not-allowed;
-        }
-
-        button.danger {
-            background-color: #dc3545;
-        }
-
-        button.danger:hover {
-            background-color: #c82333;
-        }
-
-        .canvas-container {
-            position: relative;
-            width: 100vw;
-            background-color: #2a2a2a;
-        }
-
         canvas {
-            top: 0;
-            left: 0;
-            width: 100vw !important;
-            display: block;
-            cursor: default;
             font-family: 'Inter', 'Segoe UI', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
             font-feature-settings: 'kern' 1, 'liga' 1;
             text-rendering: optimizeLegibility;
             -webkit-font-smoothing: antialiased;
             -moz-osx-font-smoothing: grayscale;
         }
-
+        
         canvas.creating {
             cursor: crosshair;
         }
-
+        
         canvas.pointer {
             cursor: pointer;
         }
+        
+        .gradient-bg {
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #334155 100%);
+        }
+        
+        .glass-effect {
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+        }
 
-        #textInput {
-            position: absolute;
-            z-index: 1000;
-            padding: 4px;
-            border: 2px solid #0066cc;
-            border-radius: 4px;
-            font-size: 12px;
-            background-color: #fff;
-            color: #000;
-            display: none;
+        /* Modal animations */
+        .modal-enter {
+            opacity: 1;
+            transform: scale(1);
+        }
+        
+        .modal-exit {
+            opacity: 0;
+            transform: scale(0.95);
         }
     </style>
 </head>
-<body>
-    <div class="container">
-        <div class="toolbar">
-            <div class="toolbar-toggle" id="toolbarToggle">⋯</div>
-            <div class="toolbar-menu" id="toolbarMenu">
-                <div class="color-picker">
-                    <label for="blockColor">Block Color:</label>
-                    <input type="color" id="blockColor" value="#4CAF50">
+<body class="bg-dark-900 text-white overflow-hidden">
+    <!-- Minimal Header -->
+    <header class="absolute top-0 left-0 right-0 z-50 glass">
+        <div class="flex items-center justify-between px-6 py-3">
+            <!-- Logo & Title -->
+            <div class="flex items-center gap-3">
+                <div class="w-6 h-6 bg-gradient-to-br from-primary-500 to-primary-700 rounded-md flex items-center justify-center shadow-lg">
+                    <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                    </svg>
+                </div>
+                <h1 class="text-lg font-semibold text-white">Week Planner</h1>
+            </div>
+            
+            <!-- Quick Actions -->
+            <div class="flex items-center gap-3">
+                <!-- Color Picker -->
+                <div class="flex items-center gap-2">
+                    <input type="color" id="blockColor" value="#3b82f6" 
+                           class="w-6 h-6 rounded border-2 border-dark-600 cursor-pointer bg-transparent hover:border-primary-400 transition-colors">
                 </div>
                 
-                <div class="menu-section">
-                    <h4>Export</h4>
-                    <button id="exportPNG">Export to PNG</button>
-                    <button id="exportSVG">Export to SVG</button>
-                    <button id="exportJSON">Export to JSON</button>
+                <!-- Menu Toggle -->
+                <button id="toolbarToggle" class="btn-ghost p-2 relative group">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z"></path>
+                    </svg>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Spectacular Center Modal -->
+    <div id="toolbarMenu" class="fixed inset-0 z-50 hidden">
+        <!-- Backdrop with blur -->
+        <div class="absolute inset-0 bg-black/60 backdrop-blur-sm transition-opacity duration-300" id="modalBackdrop"></div>
+        
+        <!-- Modal Container -->
+        <div class="absolute inset-0 flex items-center justify-center p-4">
+            <div class="bg-gray-900 rounded-3xl shadow-2xl border border-gray-700 w-full max-w-2xl transform scale-95 opacity-0 transition-all duration-300 ease-out modal-exit" id="modalContent">
+                <!-- Modal Header -->
+                <div class="relative p-8 pb-6">
+                    <!-- Close Button -->
+                    <button id="closeSidebar" class="absolute top-6 right-6 w-10 h-10 rounded-full bg-dark-600/50 hover:bg-dark-500/50 transition-colors duration-200 flex items-center justify-center group">
+                        <svg class="w-5 h-5 text-dark-300 group-hover:text-white transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                        </svg>
+                    </button>
+                    
+                    <!-- Header Content -->
+                    <div class="text-center mb-2">
+                        <div class="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-primary-500 to-primary-700 rounded-2xl shadow-lg mb-4">
+                            <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 100 4m0-4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 100 4m0-4v2m0-6V4"></path>
+                            </svg>
+                        </div>
+                        <h2 class="text-2xl font-bold text-white mb-2">Week Planner Actions</h2>
+                        <p class="text-dark-300">Export, import, and manage your planning data</p>
+                    </div>
                 </div>
                 
-                <div class="menu-section">
-                    <h4>Import</h4>
-                    <button id="importJSON">Import from JSON</button>
-                </div>
-                
-                <div class="menu-section">
-                    <button id="clearAll" class="danger">Clear All</button>
+                <!-- Modal Body -->
+                <div class="px-8 pb-8">
+                    <!-- Action Grid -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+                        <!-- Export Section -->
+                        <div class="space-y-4">
+                            <h3 class="text-lg font-semibold text-white mb-4 flex items-center">
+                                <svg class="w-5 h-5 mr-2 text-primary-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                                </svg>
+                                Export
+                            </h3>
+                            <div class="space-y-3">
+                                <button id="exportPNG" class="w-full group relative overflow-hidden bg-gradient-to-r from-primary-600 to-primary-700 hover:from-primary-700 hover:to-primary-800 text-white rounded-xl p-4 transition-all duration-200 shadow-lg hover:shadow-xl border border-primary-500">
+                                    <div class="flex items-center">
+                                        <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                                        </svg>
+                                        <div class="text-left">
+                                            <div class="font-semibold">Export PNG</div>
+                                            <div class="text-sm opacity-90">High-quality image</div>
+                                        </div>
+                                    </div>
+                                </button>
+                                
+                                <button id="exportSVG" class="w-full group relative overflow-hidden bg-dark-600 hover:bg-dark-500 text-white rounded-xl p-4 transition-all duration-200 shadow-lg hover:shadow-xl border border-dark-500">
+                                    <div class="flex items-center">
+                                        <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"></path>
+                                        </svg>
+                                        <div class="text-left">
+                                            <div class="font-semibold">Export SVG</div>
+                                            <div class="text-sm opacity-75">Vector format</div>
+                                        </div>
+                                    </div>
+                                </button>
+                                
+                                <button id="exportJSON" class="w-full group relative overflow-hidden bg-dark-600 hover:bg-dark-500 text-white rounded-xl p-4 transition-all duration-200 shadow-lg hover:shadow-xl border border-dark-500">
+                                    <div class="flex items-center">
+                                        <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                                        </svg>
+                                        <div class="text-left">
+                                            <div class="font-semibold">Export JSON</div>
+                                            <div class="text-sm opacity-75">Data backup</div>
+                                        </div>
+                                    </div>
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Import & Actions Section -->
+                        <div class="space-y-4">
+                            <h3 class="text-lg font-semibold text-white mb-4 flex items-center">
+                                <svg class="w-5 h-5 mr-2 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M9 19l3 3m0 0l3-3m-3 3V10"></path>
+                                </svg>
+                                Import & Actions
+                            </h3>
+                            <div class="space-y-3">
+                                <button id="importJSON" class="w-full group relative overflow-hidden bg-green-600 hover:bg-green-700 text-white rounded-xl p-4 transition-all duration-200 shadow-lg hover:shadow-xl">
+                                    <div class="flex items-center">
+                                        <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M9 19l3 3m0 0l3-3m-3 3V10"></path>
+                                        </svg>
+                                        <div class="text-left">
+                                            <div class="font-semibold">Import JSON</div>
+                                            <div class="text-sm opacity-90">Load saved data</div>
+                                        </div>
+                                    </div>
+                                </button>
+                                
+                                <button id="clearAll" class="w-full group relative overflow-hidden bg-red-600 hover:bg-red-700 text-white rounded-xl p-4 transition-all duration-200 shadow-lg hover:shadow-xl">
+                                    <div class="flex items-center">
+                                        <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                                        </svg>
+                                        <div class="text-left">
+                                            <div class="font-semibold">Clear All</div>
+                                            <div class="text-sm opacity-90">Remove all blocks</div>
+                                        </div>
+                                    </div>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Keyboard Shortcuts -->
+                    <div class="bg-dark-800/50 rounded-2xl p-6 border border-dark-600/30">
+                        <h3 class="text-lg font-semibold text-white mb-4 flex items-center">
+                            <svg class="w-5 h-5 mr-2 text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+                            </svg>
+                            Keyboard Shortcuts
+                        </h3>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                            <div class="flex justify-between items-center">
+                                <span class="text-dark-300">Double-click empty</span>
+                                <kbd class="px-2 py-1 bg-dark-700 rounded text-dark-200 font-mono text-xs">Add block</kbd>
+                            </div>
+                            <div class="flex justify-between items-center">
+                                <span class="text-dark-300">Click & drag</span>
+                                <kbd class="px-2 py-1 bg-dark-700 rounded text-dark-200 font-mono text-xs">Create span</kbd>
+                            </div>
+                            <div class="flex justify-between items-center">
+                                <span class="text-dark-300">Double-click block</span>
+                                <kbd class="px-2 py-1 bg-dark-700 rounded text-dark-200 font-mono text-xs">Edit text</kbd>
+                            </div>
+                            <div class="flex justify-between items-center">
+                                <span class="text-dark-300">Delete/Backspace</span>
+                                <kbd class="px-2 py-1 bg-dark-700 rounded text-dark-200 font-mono text-xs">Remove</kbd>
+                            </div>
+                            <div class="flex justify-between items-center">
+                                <span class="text-dark-300">Escape</span>
+                                <kbd class="px-2 py-1 bg-dark-700 rounded text-dark-200 font-mono text-xs">Cancel edit</kbd>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
+    </div>
 
-        <div class="canvas-container">
-            <canvas id="weekCanvas"></canvas>
-            <input type="text" id="textInput" maxlength="50">
+    <!-- Main Content -->
+    <main class="pt-12 h-screen">
+        <!-- Canvas Container -->
+        <div class="relative w-full h-full bg-gradient-to-br from-dark-900 via-dark-800 to-dark-900">
+            <canvas id="weekCanvas" class="w-full h-full block"></canvas>
+            
+            <!-- Floating Text Input -->
+            <input 
+                type="text" 
+                id="textInput" 
+                maxlength="100"
+                placeholder="Enter block text..."
+                class="absolute z-50 hidden px-3 py-2 bg-white text-dark-900 border-2 border-primary-500 rounded-lg shadow-lg focus:outline-none focus:ring-2 focus:ring-primary-400 text-sm font-medium"
+            >
+        </div>
+    </main>
+
+    <!-- Loading Screen -->
+    <div id="loadingScreen" class="fixed inset-0 bg-dark-900 flex items-center justify-center z-50">
+        <div class="text-center">
+            <div class="w-16 h-16 bg-gradient-to-br from-primary-500 to-primary-700 rounded-xl flex items-center justify-center shadow-lg mb-4 animate-pulse-soft">
+                <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                </svg>
+            </div>
+            <h2 class="text-xl font-semibold text-white mb-2">Week Planner</h2>
+            <p class="text-dark-400">Loading your planning canvas...</p>
         </div>
     </div>
 
     <script type="module" src="dist/main.js"></script>
+    <script>
+        // Hide loading screen when page is loaded
+        window.addEventListener('load', () => {
+            const loadingScreen = document.getElementById('loadingScreen');
+            if (loadingScreen) {
+                loadingScreen.style.opacity = '0';
+                setTimeout(() => {
+                    loadingScreen.style.display = 'none';
+                }, 300);
+            }
+        });
+
+        // Modal functionality
+        const toolbarToggle = document.getElementById('toolbarToggle');
+        const toolbarMenu = document.getElementById('toolbarMenu');
+        const closeSidebar = document.getElementById('closeSidebar');
+        const modalBackdrop = document.getElementById('modalBackdrop');
+        const modalContent = document.getElementById('modalContent');
+
+        function openModal() {
+            toolbarMenu.classList.remove('hidden');
+            document.body.classList.add('overflow-hidden');
+            
+            // Trigger animation
+            setTimeout(() => {
+                modalContent.classList.remove('modal-exit');
+                modalContent.classList.add('modal-enter');
+            }, 10);
+        }
+
+        function closeModal() {
+            modalContent.classList.remove('modal-enter');
+            modalContent.classList.add('modal-exit');
+            
+            setTimeout(() => {
+                toolbarMenu.classList.add('hidden');
+                document.body.classList.remove('overflow-hidden');
+            }, 300);
+        }
+
+        toolbarToggle?.addEventListener('click', openModal);
+        closeSidebar?.addEventListener('click', closeModal);
+        modalBackdrop?.addEventListener('click', closeModal);
+
+        // Close modal on escape key
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape' && !toolbarMenu.classList.contains('hidden')) {
+                closeModal();
+            }
+        });
+    </script>
 </body>
 </html>

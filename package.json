@@ -3,9 +3,11 @@
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
-    "build": "tsc",
+    "build": "npm run build:css && tsc",
+    "build:css": "tailwindcss -i ./src/input.css -o ./dist/output.css --watch=false",
     "build:test": "tsc -p tsconfig.test.json",
-    "watch": "tsc --watch",
+    "watch": "npm run build:css && tsc --watch",
+    "watch:css": "tailwindcss -i ./src/input.css -o ./dist/output.css --watch",
     "serve": "http-server -p 8088 .",
     "dev": "npm run build && npm run serve",
     "test": "npm run build:test && node --test tests-dist/tests/**/*.test.js",
@@ -15,8 +17,10 @@
   "license": "MIT",
   "description": "A week planner application with Canvas and TypeScript",
   "devDependencies": {
-    "typescript": "^5.0.0",
+    "@tailwindcss/cli": "^4.1.12",
+    "@types/node": "^20.0.0",
     "http-server": "^14.1.1",
-    "@types/node": "^20.0.0"
+    "tailwindcss": "^4.1.12",
+    "typescript": "^5.0.0"
   }
 }

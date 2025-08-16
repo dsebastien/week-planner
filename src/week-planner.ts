@@ -160,21 +160,8 @@ export class WeekPlanner {
      * Setup menu toggle functionality
      */
     private setupMenuEvents(): void {
-        const toolbarToggle = document.getElementById('toolbarToggle');
-        const toolbarMenu = document.getElementById('toolbarMenu');
-        
-        toolbarToggle?.addEventListener('click', (e) => {
-            e.stopPropagation();
-            toolbarMenu?.classList.toggle('visible');
-        });
-
-        // Close menu when clicking outside
-        document.addEventListener('click', (e) => {
-            const target = e.target as Node;
-            if (!toolbarToggle?.contains(target) && !toolbarMenu?.contains(target)) {
-                toolbarMenu?.classList.remove('visible');
-            }
-        });
+        // The sidebar functionality is now handled in the HTML script section
+        // No additional JavaScript needed here as it's handled directly
     }
 
     /**

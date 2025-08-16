@@ -37,10 +37,19 @@ export class CanvasRenderer {
         this.ctx.strokeRect(block.x, block.y, block.width, block.height);
         this.ctx.setLineDash([]);
         this.ctx.globalAlpha = 1.0;
-        // Draw time information (only for larger blocks)
-        if (block.height >= 40) {
+        // Draw time information
+        this.ctx.fillStyle = this.getContrastColor(block.color);
+        if (block.height < 40) {
+            // Compact time display for small preview blocks
+            const startTime = GridUtils.formatTime(block.startTime);
+            this.ctx.font = '500 9px Inter, "Segoe UI", system-ui, sans-serif';
+            this.ctx.textAlign = 'center';
+            this.ctx.textBaseline = 'middle';
+            this.ctx.fillText(startTime, block.x + block.width / 2, block.y + block.height / 2);
+        }
+        else {
+            // Full time info for larger preview blocks
             const timeInfo = this.getBlockTimeInfo(block);
-            this.ctx.fillStyle = this.getContrastColor(block.color);
             this.ctx.font = CanvasRenderer.FONTS.blockTime;
             this.ctx.textAlign = 'center';
             this.ctx.textBaseline = 'middle';
@@ -258,16 +267,22 @@ export class CanvasRenderer {
      * Draws time information in the top-left corner of the block
      */
     drawBlockTimeInfo(block) {
-        // Only show time info if block is tall enough (at least 40px)
-        if (block.height < 40) {
-            return;
-        }
-        const timeInfo = this.getBlockTimeInfo(block);
         this.ctx.fillStyle = this.getContrastColor(block.color);
-        this.ctx.font = CanvasRenderer.FONTS.blockTime;
         this.ctx.textAlign = 'left';
         this.ctx.textBaseline = 'top';
-        this.ctx.fillText(timeInfo, block.x + 6, block.y + 6);
+        const isSmallBlock = block.height < 40;
+        if (isSmallBlock) {
+            // Compact format for small blocks: just start time
+            const startTime = GridUtils.formatTime(block.startTime);
+            this.ctx.font = '500 9px Inter, "Segoe UI", system-ui, sans-serif';
+            this.ctx.fillText(startTime, block.x + 3, block.y + 2);
+        }
+        else {
+            // Full format for larger blocks
+            const timeInfo = this.getBlockTimeInfo(block);
+            this.ctx.font = CanvasRenderer.FONTS.blockTime;
+            this.ctx.fillText(timeInfo, block.x + 6, block.y + 6);
+        }
     }
     /**
      * Draws block text with automatic wrapping
@@ -354,8 +369,8 @@ export class CanvasRenderer {
     getTextArea(block) {
         // Adaptive layout based on block height
         const isSmallBlock = block.height < 40;
-        const padding = isSmallBlock ? 4 : 8;
-        const timeInfoHeight = isSmallBlock ? 0 : 20; // No time info for small blocks
+        const padding = isSmallBlock ? 3 : 8;
+        const timeInfoHeight = isSmallBlock ? 12 : 20; // Compact time info for small blocks
         return {
             x: block.x + block.width / 2,
             y: block.y + timeInfoHeight + padding,

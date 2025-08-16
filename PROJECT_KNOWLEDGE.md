@@ -275,12 +275,14 @@ this.blocks.set(blockId, updatedBlock);
   - **Root Cause**: Text layout reserved 36px (20px time info + 16px padding) but minimum block height was only 20px
   - **Solution**: Implemented adaptive rendering for small blocks (< 40px height)
   - **Changes Made**:
-    - Hide time information in small blocks (saves 20px space)
-    - Reduce padding from 8px to 4px for small blocks
-    - Use smaller font size (11px vs 13px) for better fit
+    - Compact time display: Show only start time (e.g., "09:30") instead of full range
+    - Smaller time font (9px) positioned in top-left corner with minimal padding
+    - Reduce text padding from 8px to 3px for small blocks
+    - Reserve only 12px for compact time info (vs 20px for full format)
+    - Use smaller text font (11px vs 13px) for better fit
     - Center text vertically in small blocks instead of using wrapped text
-    - Apply same logic to preview blocks during drag operations
-  - **Result**: Text is now clearly visible and properly centered in all block sizes
+    - Apply same adaptive logic to preview blocks during drag operations
+  - **Result**: Both time information and text are clearly visible in all block sizes
 
 ### Visual Enhancements (Added)
 - **Added**: Lunch time background highlighting (12:00-14:00)

@@ -81,11 +81,12 @@ export class TimeBlockManager {
     }
     // Method to update the grid configuration for scaling
     updateConfig(config) {
+        const oldConfig = this.config;
         this.config = config;
         // Update any blocks that depend on the configuration
         this.blocks.forEach(block => {
-            // Recalculate block positions if needed
-            const day = GridUtils.getDayFromX(block.x, this.getDefaultConfig());
+            // Recalculate block positions based on the old configuration
+            const day = GridUtils.getDayFromX(block.x, oldConfig);
             const newX = GridUtils.getXFromDay(day, config);
             const newWidth = GridUtils.getWidthFromDaySpan(block.daySpan, config);
             const newY = GridUtils.getYFromTime(block.startTime, config);

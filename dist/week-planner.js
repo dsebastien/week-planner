@@ -30,44 +30,21 @@ export class WeekPlanner {
         });
     }
     setupCanvas() {
-        // Get container dimensions
-        const container = this.canvas.parentElement;
-        // Set canvas to fill container
-        const containerWidth = container.clientWidth;
-        const containerHeight = container.clientHeight;
-        // Simple, direct scaling to fill viewport
+        const containerWidth = window.innerWidth;
+        const containerHeight = window.innerHeight;
+        this.canvas.width = containerWidth;
+        this.canvas.height = containerHeight;
+        this.canvas.style.width = containerWidth + 'px';
+        this.canvas.style.height = containerHeight + 'px';
         const totalHours = this.config.endHour - this.config.startHour;
-        // Use 95% of available space
-        const usableWidth = containerWidth * 0.95;
-        const usableHeight = containerHeight * 0.95;
-        // Time column takes 12% of width, header takes 8% of height
-        this.config.timeColumnWidth = Math.floor(usableWidth * 0.12);
-        this.config.headerHeight = Math.floor(usableHeight * 0.08);
-        // Remaining space divided evenly
-        this.config.dayWidth = Math.floor((usableWidth - this.config.timeColumnWidth) / 7);
-        this.config.timeSlotHeight = Math.floor((usableHeight - this.config.headerHeight) / (totalHours * 2));
-        // Use full container size for canvas
-        const canvasWidth = containerWidth;
-        const canvasHeight = containerHeight;
-        // Set device pixel ratio for crisp rendering
-        const dpr = window.devicePixelRatio || 1;
-        // Set canvas internal size (with device pixel ratio)
-        this.canvas.width = canvasWidth * dpr;
-        this.canvas.height = canvasHeight * dpr;
-        // Set canvas CSS size (what the user sees)
-        this.canvas.style.width = canvasWidth + 'px';
-        this.canvas.style.height = canvasHeight + 'px';
-        // Scale the context to match device pixel ratio
-        const ctx = this.canvas.getContext('2d');
-        ctx.scale(dpr, dpr);
-        // Enable high-quality rendering
-        ctx.imageSmoothingEnabled = true;
-        ctx.imageSmoothingQuality = 'high';
-        ctx.textBaseline = 'middle';
-        // Store logical dimensions for calculations
-        this.config.canvasWidth = canvasWidth;
-        this.config.canvasHeight = canvasHeight;
-        // Update block manager with new configuration
+        this.config.timeColumnWidth = 120;
+        this.config.headerHeight = 60;
+        // Calculate exact day width so 7 days fit perfectly
+        const availableWidth = containerWidth - this.config.timeColumnWidth;
+        this.config.dayWidth = availableWidth / 7; // Use exact division to utilize all available space
+        this.config.timeSlotHeight = (containerHeight - this.config.headerHeight) / (totalHours * 2);
+        this.config.canvasWidth = containerWidth;
+        this.config.canvasHeight = containerHeight;
         if (this.blockManager) {
             this.blockManager.updateConfig(this.config);
         }
@@ -87,31 +64,57 @@ export class WeekPlanner {
         document.getElementById('exportSVG')?.addEventListener('click', this.exportSVG.bind(this));
         document.getElementById('exportPNG')?.addEventListener('click', this.exportPNG.bind(this));
         document.getElementById('clearAll')?.addEventListener('click', this.clearAll.bind(this));
-        // Window resize
-        window.addEventListener('resize', () => {
-            this.setupCanvas();
-            if (this.renderer) {
-                this.renderer = new CanvasRenderer(this.canvas, this.config);
+        // Toolbar toggle functionality
+        const toolbarToggle = document.getElementById('toolbarToggle');
+        const toolbarMenu = document.getElementById('toolbarMenu');
+        toolbarToggle?.addEventListener('click', (e) => {
+            e.stopPropagation();
+            toolbarMenu?.classList.toggle('visible');
+        });
+        // Close menu when clicking outside
+        document.addEventListener('click', (e) => {
+            if (!toolbarToggle?.contains(e.target) && !toolbarMenu?.contains(e.target)) {
+                toolbarMenu?.classList.remove('visible');
             }
-            this.render();
+        });
+        // Window resize and zoom handling
+        let resizeTimeout;
+        window.addEventListener('resize', () => {
+            clearTimeout(resizeTimeout);
+            resizeTimeout = setTimeout(() => {
+                this.setupCanvas();
+                if (this.renderer) {
+                    this.renderer = new CanvasRenderer(this.canvas, this.config);
+                }
+                this.render();
+            }, 100);
+        });
+        // Handle zoom changes
+        window.addEventListener('wheel', (e) => {
+            if (e.ctrlKey) {
+                // Zoom detected, recalculate after a short delay
+                clearTimeout(resizeTimeout);
+                resizeTimeout = setTimeout(() => {
+                    this.setupCanvas();
+                    if (this.renderer) {
+                        this.renderer = new CanvasRenderer(this.canvas, this.config);
+                    }
+                    this.render();
+                }, 200);
+            }
         });
     }
     updateCursor(x, y) {
-        const gridStartX = 10;
-        const gridStartY = 10;
-        // Check if mouse is over a block
         const block = this.blockManager.getBlockAt(x, y);
         if (block) {
             this.canvas.classList.remove('creating');
             this.canvas.classList.add('pointer');
         }
-        else if (x >= gridStartX + this.config.timeColumnWidth && y >= gridStartY + this.config.headerHeight) {
-            // In grid area
+        else if (x >= this.config.timeColumnWidth && y >= this.config.headerHeight) {
             this.canvas.classList.remove('pointer');
             this.canvas.classList.add('creating');
         }
         else {
-            // Outside grid area
             this.canvas.classList.remove('creating', 'pointer');
         }
     }
@@ -119,10 +122,13 @@ export class WeekPlanner {
         const rect = this.canvas.getBoundingClientRect();
         const x = event.clientX - rect.left;
         const y = event.clientY - rect.top;
-        const gridStartX = 10;
-        const gridStartY = 10;
-        // Check if click is in the grid area
-        if (x < gridStartX + this.config.timeColumnWidth || y < gridStartY + this.config.headerHeight) {
+        // Check if click is in the valid grid area (not in time column or header)
+        if (x < this.config.timeColumnWidth || y < this.config.headerHeight) {
+            return;
+        }
+        // Also check if we're beyond the right edge of the grid
+        const gridEndX = this.config.timeColumnWidth + (this.config.days.length * this.config.dayWidth);
+        if (x >= gridEndX) {
             return;
         }
         const clickedBlock = this.blockManager.getBlockAt(x, y);
@@ -150,19 +156,26 @@ export class WeekPlanner {
             return;
         }
         const snappedPoint = GridUtils.snapToGrid(x, y, this.config);
-        // Calculate dimensions
-        const width = Math.abs(snappedPoint.x - this.dragStartPoint.x);
+        // Calculate which days the block spans
+        const startDay = GridUtils.getDayFromX(this.dragStartPoint.x, this.config);
+        const endDay = GridUtils.getDayFromX(snappedPoint.x, this.config);
+        const minDay = Math.min(startDay, endDay);
+        const maxDay = Math.max(startDay, endDay);
+        const daySpan = maxDay - minDay + 1;
+        // Calculate dimensions based on day boundaries
+        const finalX = GridUtils.getXFromDay(minDay, this.config);
+        const finalWidth = daySpan * this.config.dayWidth;
+        // Calculate height normally
         const height = Math.abs(snappedPoint.y - this.dragStartPoint.y);
-        // Ensure minimum size
-        const finalWidth = Math.max(this.config.dayWidth, width);
         const finalHeight = Math.max(this.config.timeSlotHeight, height);
-        // Calculate position (top-left corner)
-        const finalX = Math.min(this.dragStartPoint.x, snappedPoint.x);
         const finalY = Math.min(this.dragStartPoint.y, snappedPoint.y);
-        // Constrain to grid boundaries
-        const maxX = this.config.timeColumnWidth + (this.config.days.length - 1) * this.config.dayWidth;
-        const constrainedX = Math.min(finalX, maxX);
-        const constrainedWidth = Math.min(finalWidth, maxX + this.config.dayWidth - constrainedX);
+        // Strict grid boundaries - prevent any overflow
+        const gridStartX = this.config.timeColumnWidth;
+        const gridEndX = this.config.timeColumnWidth + (this.config.days.length * this.config.dayWidth);
+        // Ensure block doesn't extend beyond grid
+        const constrainedX = Math.max(gridStartX, Math.min(finalX, gridEndX - finalWidth));
+        const maxWidth = gridEndX - constrainedX;
+        const constrainedWidth = Math.min(finalWidth, maxWidth);
         // Create preview block
         this.currentDragBlock = {
             id: 'preview',
@@ -172,7 +185,7 @@ export class WeekPlanner {
             height: finalHeight,
             startTime: GridUtils.getTimeFromY(finalY, this.config),
             duration: GridUtils.getDurationInMinutes(finalHeight, this.config),
-            daySpan: GridUtils.getDaySpan(constrainedWidth, this.config),
+            daySpan: daySpan, // Use calculated daySpan directly
             text: '',
             color: this.colorPicker.value,
             selected: false
@@ -282,9 +295,9 @@ export class WeekPlanner {
     }
     darkenColor(color, factor) {
         const hex = color.replace('#', '');
-        const r = parseInt(hex.substr(0, 2), 16);
-        const g = parseInt(hex.substr(2, 2), 16);
-        const b = parseInt(hex.substr(4, 2), 16);
+        const r = parseInt(hex.substring(0, 2), 16);
+        const g = parseInt(hex.substring(2, 4), 16);
+        const b = parseInt(hex.substring(4, 6), 16);
         const newR = Math.round(r * (1 - factor));
         const newG = Math.round(g * (1 - factor));
         const newB = Math.round(b * (1 - factor));
@@ -292,15 +305,15 @@ export class WeekPlanner {
     }
     getContrastColor(hexColor) {
         const hex = hexColor.replace('#', '');
-        const r = parseInt(hex.substr(0, 2), 16);
-        const g = parseInt(hex.substr(2, 2), 16);
-        const b = parseInt(hex.substr(4, 2), 16);
+        const r = parseInt(hex.substring(0, 2), 16);
+        const g = parseInt(hex.substring(2, 4), 16);
+        const b = parseInt(hex.substring(4, 6), 16);
         // Calculate brightness
         const brightness = (r * 299 + g * 587 + b * 114) / 1000;
         return brightness > 128 ? '#000000' : '#ffffff';
     }
     generateBlockId() {
-        return Date.now().toString() + Math.random().toString(36).substr(2, 9);
+        return Date.now().toString() + Math.random().toString(36).substring(2, 11);
     }
     render() {
         this.renderer.render(this.blockManager.getBlocks());

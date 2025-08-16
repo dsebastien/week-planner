@@ -6,7 +6,7 @@ export interface TimeBlock {
     height: number;
     startTime: number; // minutes from 06:00
     duration: number; // minutes
-    daySpan: number; // number of days (1-5)
+    daySpan: number; // number of days (1-7)
     text: string;
     color: string;
     selected: boolean;

@@ -4,7 +4,7 @@ export class GridUtils {
     static snapToGrid(x: number, y: number, config: GridConfig): Point {
         // Ensure we stay within grid bounds
         const minX = config.timeColumnWidth;
-        const maxX = config.timeColumnWidth + ((config.days.length - 1) * config.dayWidth);
+        const maxX = config.timeColumnWidth + (config.days.length * config.dayWidth);
         const boundedX = Math.max(minX, Math.min(x, maxX));
         
         const snappedX = Math.round((boundedX - config.timeColumnWidth) / config.dayWidth) * config.dayWidth + config.timeColumnWidth;

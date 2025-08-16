@@ -60,7 +60,7 @@ export class WeekPlanner {
         
         // Calculate exact day width so 7 days fit perfectly
         const availableWidth = containerWidth - this.config.timeColumnWidth;
-        this.config.dayWidth = Math.floor(availableWidth / 7);
+        this.config.dayWidth = availableWidth / 7;  // Use exact division to utilize all available space
         
         this.config.timeSlotHeight = (containerHeight - this.config.headerHeight) / (totalHours * 2);
         
@@ -108,10 +108,10 @@ export class WeekPlanner {
         });
 
         // Window resize and zoom handling
-        let resizeTimeout: number;
+        let resizeTimeout: ReturnType<typeof setTimeout>;
         window.addEventListener('resize', () => {
             clearTimeout(resizeTimeout);
-            resizeTimeout = window.setTimeout(() => {
+            resizeTimeout = setTimeout(() => {
                 this.setupCanvas();
                 if (this.renderer) {
                     this.renderer = new CanvasRenderer(this.canvas, this.config);
@@ -125,7 +125,7 @@ export class WeekPlanner {
             if (e.ctrlKey) {
                 // Zoom detected, recalculate after a short delay
                 clearTimeout(resizeTimeout);
-                resizeTimeout = window.setTimeout(() => {
+                resizeTimeout = setTimeout(() => {
                     this.setupCanvas();
                     if (this.renderer) {
                         this.renderer = new CanvasRenderer(this.canvas, this.config);
@@ -197,24 +197,29 @@ export class WeekPlanner {
 
         const snappedPoint = GridUtils.snapToGrid(x, y, this.config);
         
-        // Calculate dimensions
-        const width = Math.abs(snappedPoint.x - this.dragStartPoint.x);
+        // Calculate which days the block spans
+        const startDay = GridUtils.getDayFromX(this.dragStartPoint.x, this.config);
+        const endDay = GridUtils.getDayFromX(snappedPoint.x, this.config);
+        
+        const minDay = Math.min(startDay, endDay);
+        const maxDay = Math.max(startDay, endDay);
+        const daySpan = maxDay - minDay + 1;
+        
+        // Calculate dimensions based on day boundaries
+        const finalX = GridUtils.getXFromDay(minDay, this.config);
+        const finalWidth = daySpan * this.config.dayWidth;
+        
+        // Calculate height normally
         const height = Math.abs(snappedPoint.y - this.dragStartPoint.y);
-        
-        // Ensure minimum size
-        const finalWidth = Math.max(this.config.dayWidth, width);
         const finalHeight = Math.max(this.config.timeSlotHeight, height);
-        
-        // Calculate position (top-left corner)
-        const finalX = Math.min(this.dragStartPoint.x, snappedPoint.x);
         const finalY = Math.min(this.dragStartPoint.y, snappedPoint.y);
 
         // Strict grid boundaries - prevent any overflow
         const gridStartX = this.config.timeColumnWidth;
         const gridEndX = this.config.timeColumnWidth + (this.config.days.length * this.config.dayWidth);
         
-        // Constrain X position and width
-        const constrainedX = Math.max(gridStartX, Math.min(finalX, gridEndX - this.config.dayWidth));
+        // Ensure block doesn't extend beyond grid
+        const constrainedX = Math.max(gridStartX, Math.min(finalX, gridEndX - finalWidth));
         const maxWidth = gridEndX - constrainedX;
         const constrainedWidth = Math.min(finalWidth, maxWidth);
 
@@ -227,7 +232,7 @@ export class WeekPlanner {
             height: finalHeight,
             startTime: GridUtils.getTimeFromY(finalY, this.config),
             duration: GridUtils.getDurationInMinutes(finalHeight, this.config),
-            daySpan: GridUtils.getDaySpan(constrainedWidth, this.config),
+            daySpan: daySpan,  // Use calculated daySpan directly
             text: '',
             color: this.colorPicker.value,
             selected: false
@@ -355,9 +360,9 @@ export class WeekPlanner {
 
     private darkenColor(color: string, factor: number): string {
         const hex = color.replace('#', '');
-        const r = parseInt(hex.substr(0, 2), 16);
-        const g = parseInt(hex.substr(2, 2), 16);
-        const b = parseInt(hex.substr(4, 2), 16);
+        const r = parseInt(hex.substring(0, 2), 16);
+        const g = parseInt(hex.substring(2, 4), 16);
+        const b = parseInt(hex.substring(4, 6), 16);
 
         const newR = Math.round(r * (1 - factor));
         const newG = Math.round(g * (1 - factor));
@@ -368,9 +373,9 @@ export class WeekPlanner {
 
     private getContrastColor(hexColor: string): string {
         const hex = hexColor.replace('#', '');
-        const r = parseInt(hex.substr(0, 2), 16);
-        const g = parseInt(hex.substr(2, 2), 16);
-        const b = parseInt(hex.substr(4, 2), 16);
+        const r = parseInt(hex.substring(0, 2), 16);
+        const g = parseInt(hex.substring(2, 4), 16);
+        const b = parseInt(hex.substring(4, 6), 16);
 
         // Calculate brightness
         const brightness = (r * 299 + g * 587 + b * 114) / 1000;
@@ -378,7 +383,7 @@ export class WeekPlanner {
     }
 
     private generateBlockId(): string {
-        return Date.now().toString() + Math.random().toString(36).substr(2, 9);
+        return Date.now().toString() + Math.random().toString(36).substring(2, 11);
     }
 
     private render(): void {

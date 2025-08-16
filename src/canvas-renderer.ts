@@ -87,25 +87,24 @@ export class CanvasRenderer {
         // Draw grid lines with improved styling
         this.ctx.lineWidth = 1;
 
-        // Vertical lines (days) - only draw within the actual grid area
-        const actualGridWidth = this.config.timeColumnWidth + (this.config.days.length * this.config.dayWidth);
+        // Vertical lines (days) - draw all lines including the final right border
         for (let i = 0; i <= this.config.days.length; i++) {
             const x = gridStartX + this.config.timeColumnWidth + i * this.config.dayWidth;
-            if (x <= actualGridWidth) {
-                this.ctx.strokeStyle = '#555';
-                this.ctx.beginPath();
-                this.ctx.moveTo(x, gridStartY + this.config.headerHeight);
-                this.ctx.lineTo(x, gridStartY + gridHeight);
-                this.ctx.stroke();
-            }
+            
+            this.ctx.strokeStyle = '#555';
+            this.ctx.beginPath();
+            this.ctx.moveTo(x, gridStartY + this.config.headerHeight);
+            this.ctx.lineTo(x, gridStartY + gridHeight);
+            this.ctx.stroke();
         }
 
-        // Horizontal lines (time slots) - constrain to actual grid width
+        // Horizontal lines (time slots) - extend to full grid width
+        const totalGridWidth = this.config.timeColumnWidth + (this.config.days.length * this.config.dayWidth);
         for (let i = 0; i <= totalHours * 2; i++) {
             const y = gridStartY + this.config.headerHeight + i * this.config.timeSlotHeight;
             this.ctx.beginPath();
             this.ctx.moveTo(gridStartX + this.config.timeColumnWidth, y);
-            this.ctx.lineTo(gridStartX + actualGridWidth, y);
+            this.ctx.lineTo(gridStartX + totalGridWidth, y);
             
             if (i % 2 === 0) { // Full hour lines
                 this.ctx.strokeStyle = '#666';
@@ -122,7 +121,7 @@ export class CanvasRenderer {
         this.ctx.lineWidth = 2;
         this.ctx.beginPath();
         this.ctx.moveTo(gridStartX, gridStartY + this.config.headerHeight);
-        this.ctx.lineTo(gridStartX + actualGridWidth, gridStartY + this.config.headerHeight);
+        this.ctx.lineTo(gridStartX + totalGridWidth, gridStartY + this.config.headerHeight);
         this.ctx.stroke();
 
         // Draw time column separator
@@ -217,9 +216,9 @@ export class CanvasRenderer {
 
     private darkenColor(color: string, factor: number): string {
         const hex = color.replace('#', '');
-        const r = parseInt(hex.substr(0, 2), 16);
-        const g = parseInt(hex.substr(2, 2), 16);
-        const b = parseInt(hex.substr(4, 2), 16);
+        const r = parseInt(hex.substring(0, 2), 16);
+        const g = parseInt(hex.substring(2, 4), 16);
+        const b = parseInt(hex.substring(4, 6), 16);
 
         const newR = Math.round(r * (1 - factor));
         const newG = Math.round(g * (1 - factor));
@@ -230,9 +229,9 @@ export class CanvasRenderer {
 
     private getContrastColor(hexColor: string): string {
         const hex = hexColor.replace('#', '');
-        const r = parseInt(hex.substr(0, 2), 16);
-        const g = parseInt(hex.substr(2, 2), 16);
-        const b = parseInt(hex.substr(4, 2), 16);
+        const r = parseInt(hex.substring(0, 2), 16);
+        const g = parseInt(hex.substring(2, 4), 16);
+        const b = parseInt(hex.substring(4, 6), 16);
 
         // Calculate brightness
         const brightness = (r * 299 + g * 587 + b * 114) / 1000;

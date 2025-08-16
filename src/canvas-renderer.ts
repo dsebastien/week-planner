@@ -20,7 +20,8 @@ export class CanvasRenderer {
         gridLines: '#444444',
         hourLines: '#666666',
         separatorLines: '#666666',
-        selectionHighlight: '#0066cc'
+        selectionHighlight: '#0066cc',
+        lunchTimeBackground: '#333333' // Lighter background for lunch time (12:00-14:00)
     } as const;
 
     // Typography
@@ -127,6 +128,7 @@ export class CanvasRenderer {
      */
     private drawGrid(): void {
         this.drawBackground();
+        this.drawLunchTimeBackground();
         this.drawDayHeaders();
         this.drawTimeLabels();
         this.drawGridLines();
@@ -149,6 +151,35 @@ export class CanvasRenderer {
             this.config.canvasWidth - this.config.timeColumnWidth, 
             this.config.headerHeight
         );
+    }
+
+    /**
+     * Draws lighter background for lunch time (12:00-14:00)
+     */
+    private drawLunchTimeBackground(): void {
+        const lunchStartHour = 12;
+        const lunchEndHour = 14;
+        
+        // Only draw if lunch time falls within our configured hours
+        if (lunchStartHour >= this.config.startHour && lunchStartHour < this.config.endHour) {
+            const startTime = lunchStartHour * 60; // 12:00 in minutes
+            const endTime = Math.min(lunchEndHour * 60, this.config.endHour * 60); // 14:00 or config end, whichever is earlier
+            
+            const startY = this.config.headerHeight + 
+                ((startTime - this.config.startHour * 60) / 30) * this.config.timeSlotHeight;
+            const endY = this.config.headerHeight + 
+                ((endTime - this.config.startHour * 60) / 30) * this.config.timeSlotHeight;
+            
+            const gridWidth = this.config.days.length * this.config.dayWidth;
+            
+            this.ctx.fillStyle = CanvasRenderer.THEME.lunchTimeBackground;
+            this.ctx.fillRect(
+                this.config.timeColumnWidth,
+                startY,
+                gridWidth,
+                endY - startY
+            );
+        }
     }
 
     /**
@@ -482,6 +513,18 @@ export class CanvasRenderer {
         
         // Header background
         svg += `<rect x="${this.config.timeColumnWidth}" y="0" width="${this.config.canvasWidth - this.config.timeColumnWidth}" height="${this.config.headerHeight}" fill="${CanvasRenderer.THEME.headerBackground}"/>`;
+        
+        // Lunch time background (12:00-14:00)
+        const lunchStartHour = 12;
+        const lunchEndHour = 14;
+        if (lunchStartHour >= this.config.startHour && lunchStartHour < this.config.endHour) {
+            const startTime = lunchStartHour * 60;
+            const endTime = Math.min(lunchEndHour * 60, this.config.endHour * 60);
+            const startY = this.config.headerHeight + ((startTime - this.config.startHour * 60) / 30) * this.config.timeSlotHeight;
+            const endY = this.config.headerHeight + ((endTime - this.config.startHour * 60) / 30) * this.config.timeSlotHeight;
+            const gridWidth = this.config.days.length * this.config.dayWidth;
+            svg += `<rect x="${this.config.timeColumnWidth}" y="${startY}" width="${gridWidth}" height="${endY - startY}" fill="${CanvasRenderer.THEME.lunchTimeBackground}"/>`;
+        }
         
         // Day headers
         for (let i = 0; i < this.config.days.length; i++) {

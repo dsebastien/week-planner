@@ -94,27 +94,32 @@ export class WeekPlanner {
      */
     private setupCanvas(): void {
         const containerWidth = window.innerWidth;
-        const containerHeight = window.innerHeight;
+        
+        // Calculate exact height needed for the grid
+        const totalHours = this.config.endHour - this.config.startHour; // 18 hours (6:00 to 24:00)
+        const totalSlots = totalHours * 2; // 36 slots (30-minute intervals)
+        
+        // Calculate optimal time slot height based on available screen space
+        const availableScreenHeight = window.innerHeight - this.config.headerHeight - 40; // 40px buffer for browser UI
+        const optimalSlotHeight = Math.max(20, Math.floor(availableScreenHeight / totalSlots));
+        
+        // Calculate exact canvas height needed (no extra space below 00:00)
+        const exactCanvasHeight = this.config.headerHeight + totalSlots * optimalSlotHeight;
         
         // Set canvas size
         this.canvas.width = containerWidth;
-        this.canvas.height = containerHeight;
+        this.canvas.height = exactCanvasHeight;
         this.canvas.style.width = `${containerWidth}px`;
-        this.canvas.style.height = `${containerHeight}px`;
+        this.canvas.style.height = `${exactCanvasHeight}px`;
         
         // Calculate grid dimensions
-        const totalHours = this.config.endHour - this.config.startHour;
         const availableWidth = containerWidth - this.config.timeColumnWidth;
-        
-        // Reserve small buffer at bottom to ensure last time slot is visible
-        const bottomBuffer = 20;
-        const availableHeight = containerHeight - this.config.headerHeight - bottomBuffer;
         
         // Update configuration with calculated values
         this.config.dayWidth = availableWidth / this.config.days.length;
-        this.config.timeSlotHeight = availableHeight / (totalHours * 2);
+        this.config.timeSlotHeight = optimalSlotHeight;
         this.config.canvasWidth = containerWidth;
-        this.config.canvasHeight = containerHeight;
+        this.config.canvasHeight = exactCanvasHeight;
         
         // Update components with new configuration
         this.blockManager.updateConfig(this.config);
@@ -354,6 +359,11 @@ export class WeekPlanner {
         const snappedStart = GridUtils.snapToGrid(this.mouseState.startPoint!.x, this.mouseState.startPoint!.y, this.config);
         const snappedEnd = GridUtils.snapToGrid(currentPoint.x, currentPoint.y, this.config);
 
+        // Get valid grid bounds to clamp Y coordinates
+        const gridBounds = GridUtils.getGridBounds(this.config);
+        const clampedStartY = Math.max(gridBounds.minY, Math.min(snappedStart.y, gridBounds.maxY));
+        const clampedEndY = Math.max(gridBounds.minY, Math.min(snappedEnd.y, gridBounds.maxY));
+
         // Calculate block dimensions
         const startDay = GridUtils.getDayFromX(snappedStart.x, this.config);
         const endDay = GridUtils.getDayFromX(snappedEnd.x, this.config);
@@ -363,8 +373,19 @@ export class WeekPlanner {
 
         const x = GridUtils.getXFromDay(minDay, this.config);
         const width = GridUtils.getWidthFromDaySpan(daySpan, this.config);
-        const y = Math.min(snappedStart.y, snappedEnd.y);
-        const height = Math.max(this.config.timeSlotHeight, Math.abs(snappedEnd.y - snappedStart.y));
+        const y = Math.min(clampedStartY, clampedEndY);
+        const height = Math.max(this.config.timeSlotHeight, Math.abs(clampedEndY - clampedStartY));
+
+        // Calculate time values and validate
+        const startTime = GridUtils.getTimeFromY(y, this.config);
+        const duration = GridUtils.getDurationInMinutes(height, this.config);
+        const endTime = startTime + duration;
+        const maxValidTime = this.config.endHour * 60; // 24:00 in minutes
+
+        // Clamp duration if it would exceed valid time range
+        const clampedDuration = endTime > maxValidTime ? 
+            Math.max(30, maxValidTime - startTime) : // Minimum 30 minutes, but don't exceed valid range
+            duration;
 
         // Create preview block
         this.previewBlock = {
@@ -373,8 +394,8 @@ export class WeekPlanner {
             y,
             width,
             height,
-            startTime: GridUtils.getTimeFromY(y, this.config),
-            duration: GridUtils.getDurationInMinutes(height, this.config),
+            startTime,
+            duration: clampedDuration,
             daySpan,
             text: '',
             color: this.colorPicker.value as HexColor,

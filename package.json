@@ -6,7 +6,7 @@
     "build": "tsc",
     "build:test": "tsc -p tsconfig.test.json",
     "watch": "tsc --watch",
-    "serve": "http-server -p 8080 .",
+    "serve": "http-server -p 8088 .",
     "dev": "npm run build && npm run serve",
     "test": "npm run build:test && node --test tests-dist/tests/**/*.test.js",
     "test:watch": "npm run build:test && node --test --watch tests/**/*.test.js"

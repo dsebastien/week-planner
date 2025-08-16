@@ -42,6 +42,10 @@ export declare class CanvasRenderer {
      */
     private drawBackground;
     /**
+     * Draws lighter background for lunch time (12:00-14:00)
+     */
+    private drawLunchTimeBackground;
+    /**
      * Draws day headers
      */
     private drawDayHeaders;

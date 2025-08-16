@@ -23,11 +23,14 @@ export class GridUtils {
         // Clamp x to grid bounds
         const boundedX = Math.max(gridBounds.minX, Math.min(x, gridBounds.maxX));
         
+        // Clamp y to valid grid bounds (preventing interaction beyond 23:30)
+        const boundedY = Math.max(gridBounds.minY, Math.min(y, gridBounds.maxY));
+        
         // Snap to nearest grid intersection
         const relativeX = boundedX - config.timeColumnWidth;
         const snappedX = Math.round(relativeX / config.dayWidth) * config.dayWidth + config.timeColumnWidth;
         
-        const relativeY = y - config.headerHeight;
+        const relativeY = boundedY - config.headerHeight;
         const snappedY = Math.round(relativeY / config.timeSlotHeight) * config.timeSlotHeight + config.headerHeight;
         
         return { x: snappedX, y: snappedY };

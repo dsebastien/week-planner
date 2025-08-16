@@ -242,7 +242,16 @@ this.blocks.set(blockId, updatedBlock);
 6. **Clean Architecture**: Modular design makes code maintainable and testable
 7. **Canvas Rendering Order**: Drawing order matters - lines can hide text if drawn later
 
-## Recent Fixes & Improvements
+## Recent Fixes & Improvements (Session August 16, 2025)
+
+### **Latest Session Accomplishments**
+- **Fixed SVG Export**: Added missing time labels and grid lines to SVG exports
+- **Fixed Text Input Visibility**: Black text on white background with inline styles  
+- **Implemented Complete Block Resizing**: 8 resize handles with smooth drag behavior
+- **Fixed Resize Logic**: Proper state tracking prevents buggy/jumping resize behavior
+- **Enhanced User Experience**: Smart cursors, visual feedback, overlap prevention
+
+## Previous Fixes & Improvements
 
 ### Grid Boundary & Time Slot Issues (Fixed)
 - **Fixed**: Time labels overlapping with grid lines
@@ -440,22 +449,30 @@ This represents a complete evolution from a functional tool to a professional, b
 The week planner is now in a **production-ready state** with all major issues resolved:
 
 ### ✅ **Core Functionality**
-- **Perfect Grid Boundaries**: Precise 06:00-23:30 time slots with 00:00 end marker
+- **Perfect Grid Boundaries**: Precise 05:00-23:30 time slots with 00:00 end marker
 - **Bulletproof Validation**: Complete prevention of invalid time block creation
 - **Responsive Design**: Optimal time slot sizing for any screen resolution
 - **Visual Enhancement**: Lunch time background highlighting (12:00-14:00)
+- **Block Resizing**: Complete resize functionality with 8 resize handles (corners + edges)
+- **Smooth Resize Experience**: Natural dragging behavior with proper grid snapping
 
 ### ✅ **User Experience**
 - **Intuitive Interaction**: Click/drag to create blocks, double-click to edit text
+- **Block Resizing**: Drag blue resize handles to resize blocks smoothly
+- **Smart Cursors**: Dynamic cursor changes (↔, ↕, ↖, ↗) for resize operations
 - **Clean Interface**: No unwanted cells below 00:00, precise grid boundaries  
 - **Error Prevention**: No more "end time cannot be after 24:00" messages
 - **Visual Feedback**: Clear time labels, selection highlighting, preview blocks
+- **Text Input Fix**: Black text on white background for editing (no more invisible text)
+- **Keyboard Shortcuts**: Ctrl+M opens menu, Delete removes blocks, Escape cancels editing
 
 ### ✅ **Technical Excellence**
 - **Strict TypeScript**: Zero `any` types, comprehensive type safety
 - **Clean Architecture**: Separated concerns with dedicated classes
 - **Comprehensive Testing**: 35 passing unit tests covering all functionality
-- **Export Compatibility**: PNG, SVG, JSON with proper formatting
+- **Export Compatibility**: PNG, SVG, JSON with proper formatting (SVG export fixed with grid lines)
+- **Modern UI Framework**: Tailwind CSS v4 with custom theme and glass morphism effects
+- **Resize Architecture**: Complete resize system with proper state tracking and validation
 
 ### ✅ **Quality Assurance**
 - **No Known Bugs**: All reported issues have been resolved

@@ -2,6 +2,12 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+## MAIN RULES
+- I'm an expert, consult me for everything you're not certain about
+- In doubt, ask me questions about the desired behavior
+- Always run `npm run serve` in the background
+- Use Puppeteer via the Dockmaster MCP server to check the results, see if everything works correctly, understand issues, bugs, etc
+
 ## Development Commands
 
 - **Build**: `npm run build` - Compiles TypeScript to JavaScript in `dist/`
@@ -9,8 +15,46 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - **Serve**: `npm run serve` - Starts HTTP server on port 8080
 - **Development**: `npm run dev` - Builds and serves the application
 
-## Architecture Overview
+## Overview
+This is a visual week planning creator.
 
+## Main concepts
+- Week: Monday to Sunday
+- Hours: 06:00 to 24:00
+- Time slot: Hours split in 30 minute time slots
+- Time block: time to spend on some activity
+
+## Business rules
+- Time blocks can span from 30 minutes to the whole week
+- Time blocks MUST NOT overlap each other
+- Time blocks MUST remain within the grid
+
+## User interface
+The UI is a grid on a Canvas with:
+- Rows: Time slots (one line = 30 minutes)
+- Same height for all rows
+- Columns: Days
+- Same width for all columns
+- Hours/Time displayed using HH:mm
+
+Behavior:
+- Clicking on an empty cell in the grid creates a time block
+- Clicking and dragging in the grid creates a time block that can span over multiple time slots/days
+- Time blocks snap to grid
+
+## Domain model
+Time blocks:
+- id
+- X position
+- Y position
+- Start time
+- Duration
+- Day span (number of days: 1-7)
+- Text
+- Color (string)
+- Selected (boolean)
+
+## Architecture Overview
 This is a TypeScript-based Canvas week planner application with a modular architecture:
 
 ### Core Classes
@@ -20,12 +64,6 @@ This is a TypeScript-based Canvas week planner application with a modular archit
 - **CanvasRenderer** (`src/canvas-renderer.ts`) - Handles all Canvas drawing operations and SVG export
 - **GridUtils** (`src/grid-utils.ts`) - Utility functions for grid calculations, time formatting, and coordinate conversions
 
-### Key Interfaces
-
-- **TimeBlock** - Represents a scheduled time block with position, duration, text, and color
-- **GridConfig** - Configuration for grid layout (time slots, day width, etc.)
-- **Point** - Simple x,y coordinate representation
-
 ### Application Flow
 
 1. **Initialization**: `main.ts` bootstraps the WeekPlanner on DOM ready
@@ -33,14 +71,6 @@ This is a TypeScript-based Canvas week planner application with a modular archit
 3. **Block Management**: TimeBlockManager validates blocks and prevents overlaps
 4. **Rendering**: CanvasRenderer draws the grid and blocks on HTML5 Canvas
 5. **Export**: Supports PNG (Canvas) and SVG export functionality
-
-### Grid System
-
-- Work week: Monday-Friday, 6:00-24:00
-- 30-minute time slots (20px height)
-- 140px day width, 80px time column
-- Blocks snap to grid and can span 1-5 days
-- Overlap prevention enforced in TimeBlockManager
 
 ### File Structure
 

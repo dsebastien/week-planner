@@ -10,3 +10,6 @@
 - When right clicking on a time block, a menu should be shown with the following options: copy style, paste style (if one was copied previously), copy, duplicate
 - The canvas should actually take the whole viewport! The buttons (export svg, png, clear all etc should be within)
 - By default the text in a time block should be aligned center & middle
+- In top left, time blocks should display start time - end time (duration in hours/minutes) (e.g., 13:00 - 14:00 (1h))
+- Colors should be hex codes
+- alignment (vertical, horizontal), etc should be enums

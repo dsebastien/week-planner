@@ -3,11 +3,13 @@
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
 ## MAIN RULES
+- NEVER read or modify the TODO.md file
 - I'm an expert, consult me for everything you're not certain about
 - In doubt, ask me questions about the desired behavior
-- Always run `npm run serve` in the background
+- Always serve the application in the background with `npm run serve`
 - Use Puppeteer via the Dockmaster MCP server to check the results, see if everything works correctly, understand issues, bugs, etc
-- Whenever you make important changes to the domain model, to the UI, etc, make sure to update/save the memory
+- Read @./PROJECT_KNOWLEDGE.md to refresh your memory about the project
+- Whenever you make changes, update/save PROJECT_KNOWLEDGE.md
 
 ## Development Commands
 
@@ -15,80 +17,19 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - **Watch mode**: `npm run watch` - Auto-compiles TypeScript on file changes
 - **Serve**: `npm run serve` - Starts HTTP server on port 8080
 - **Development**: `npm run dev` - Builds and serves the application
+- **Test**: `npm run test` - Runs comprehensive unit tests
 
-## Overview
-This is a visual week planning creator.
+## Quick Reference
 
-## Main concepts
-- Week: Monday to Sunday
-- Hours: 06:00 to 24:00
-- Time slot: Hours split in 30 minute time slots
-- Time block: time to spend on some activity
+- **Project**: Visual week planner with TypeScript + Canvas
+- **URL**: http://localhost:8080 when serving
+- **Architecture**: Clean TypeScript with strict configuration
+- **Key Files**: See PROJECT_KNOWLEDGE.md for complete documentation
 
-## Business rules
-- Time blocks can span from 30 minutes to the whole week
-- Time blocks MUST NOT overlap each other
-- Time blocks MUST remain within the grid
+## Development Notes
 
-## User interface
-The UI is a grid on a Canvas with:
-- Grid using the full width and height of the page
-- Rows: Time slots (one line = 30 minutes)
-- Same height for all rows
-- Columns: Days
-- Same width for all columns
-- Hours/Time displayed using HH:mm
-- Time blocks with their start time, end time, duration in the top left as well as their text (default: center, middle, bold)
-
-Behavior:
-- Clicking on an empty cell in the grid creates a time block
-- Clicking and dragging in the grid creates a time block that can span over multiple time slots/days
-- Time blocks snapping to grid
-- Clicking on the "..." in the top right shows the menu
-- Double clicking on a time block edits the text in the block
-
-Menu actions:
-- Export to PNG
-- Export to JSON
-- Import from JSON
-
-## Domain model
-Time blocks:
-- id
-- X position
-- Y position
-- Start time
-- Duration
-- Day span (number of days: 1-7)
-- Text
-- Color (string)
-- Selected (boolean)
-
-## Architecture Overview
-This is a TypeScript-based Canvas week planner application with a modular architecture:
-
-### Core Classes
-
-- **WeekPlanner** (`src/week-planner.ts`) - Main application controller, handles UI events and coordinates other components
-- **TimeBlockManager** (`src/time-block-manager.ts`) - Manages time blocks data, validation, and overlap detection
-- **CanvasRenderer** (`src/canvas-renderer.ts`) - Handles all Canvas drawing operations and SVG export
-- **GridUtils** (`src/grid-utils.ts`) - Utility functions for grid calculations, time formatting, and coordinate conversions
-
-### Application Flow
-
-1. **Initialization**: `main.ts` bootstraps the WeekPlanner on DOM ready
-2. **Event Handling**: WeekPlanner manages mouse/keyboard events for creating, selecting, and editing blocks
-3. **Block Management**: TimeBlockManager validates blocks and prevents overlaps
-4. **Rendering**: CanvasRenderer draws the grid and blocks on HTML5 Canvas
-5. **Export**: Supports PNG (Canvas) and SVG export functionality
-
-### File Structure
-
-- `src/main.ts` - Entry point
-- `src/types.ts` - TypeScript interfaces
-- `src/week-planner.ts` - Main application logic
-- `src/time-block-manager.ts` - Block state management
-- `src/canvas-renderer.ts` - Drawing and export
-- `src/grid-utils.ts` - Grid calculations
-- `index.html` - Complete HTML with embedded CSS
-- `tsconfig.json` - TypeScript configuration targeting ES2020
+- Application uses full-page Canvas grid (06:00-24:00, Monday-Sunday)
+- Time blocks snap to 30-minute grid intersections  
+- All business rules enforced with validation
+- 35 unit tests ensure code quality
+- Export/import functionality with PNG, SVG, JSON formats

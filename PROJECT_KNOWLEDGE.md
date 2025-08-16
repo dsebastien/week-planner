@@ -3,6 +3,51 @@
 ## Project Overview
 A visual week planning application built with TypeScript, HTML5 Canvas, and modern web technologies. The application allows users to create, edit, and manage time blocks across a weekly grid interface.
 
+## Main concepts
+- Week: Monday to Sunday
+- Hours: 06:00 to 24:00
+- Time slot: Hours split in 30 minute time slots
+- Time block: time to spend on some activity
+
+## Business rules
+- Time blocks can span from 30 minutes to the whole week
+- Time blocks MUST NOT overlap each other
+- Time blocks MUST remain within the grid
+
+## User interface
+The UI is a grid on a Canvas with:
+- Grid using the full width and height of the page
+- Rows: Time slots (one line = 30 minutes)
+- Same height for all rows
+- Columns: Days
+- Same width for all columns
+- Hours/Time displayed using HH:mm
+- Time blocks with their start time, end time, duration in the top left as well as their text (default: center, middle, bold)
+
+Behavior:
+- Clicking on an empty cell in the grid creates a time block
+- Clicking and dragging in the grid creates a time block that can span over multiple time slots/days
+- Time blocks snapping to grid
+- Clicking on the "..." in the top right shows the menu
+- Double clicking on a time block edits the text in the block
+
+Menu actions:
+- Export to PNG, SVG, JSON
+- Import from JSON
+
+## Domain model
+Time blocks:
+- id
+- X position
+- Y position
+- Start time
+- Duration
+- Day span (number of days: 1-7)
+- Text
+- Color (string)
+- Selected (boolean)
+
+
 ## Architecture
 
 ### Core Components
@@ -44,11 +89,6 @@ A visual week planning application built with TypeScript, HTML5 Canvas, and mode
 - Selection highlighting with dashed borders
 - Responsive canvas resizing
 
-## Business Rules
-- Time blocks span 30 minutes to full week
-- No overlapping blocks allowed
-- Blocks must remain within grid boundaries
-- Time blocks snap to 30-minute grid intersections
 
 ## Development Setup
 

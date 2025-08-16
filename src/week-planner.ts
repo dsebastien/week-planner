@@ -137,6 +137,10 @@ export class WeekPlanner {
         this.canvas.addEventListener('dblclick', this.onDoubleClick.bind(this));
         this.canvas.addEventListener('mouseleave', this.onMouseLeave.bind(this));
 
+        // Document-level events for tracking mouse outside window during drag
+        document.addEventListener('mousemove', this.onDocumentMouseMove.bind(this));
+        document.addEventListener('mouseup', this.onDocumentMouseUp.bind(this));
+
         // Keyboard events
         document.addEventListener('keydown', this.onKeyDown.bind(this));
 
@@ -214,6 +218,17 @@ export class WeekPlanner {
      * Get mouse position relative to canvas
      */
     private getMousePosition(event: MouseEvent): Point {
+        const rect = this.canvas.getBoundingClientRect();
+        return {
+            x: event.clientX - rect.left,
+            y: event.clientY - rect.top
+        };
+    }
+
+    /**
+     * Get mouse position relative to canvas from document-level events
+     */
+    private getMousePositionFromDocument(event: MouseEvent): Point {
         const rect = this.canvas.getBoundingClientRect();
         return {
             x: event.clientX - rect.left,
@@ -300,9 +315,43 @@ export class WeekPlanner {
     }
 
     /**
-     * Handle mouse leave events
+     * Handle mouse leave events from canvas
      */
     private onMouseLeave(): void {
+        // Don't reset mouse state if we're in the middle of dragging
+        // Document-level events will handle the rest
+        if (!this.mouseState.isDragging) {
+            this.resetMouseState();
+            this.render();
+        }
+    }
+
+    /**
+     * Handle document-level mouse move events (for tracking outside window)
+     */
+    private onDocumentMouseMove(event: MouseEvent): void {
+        // Only handle if we're currently dragging
+        if (!this.mouseState.isDragging || !this.mouseState.startPoint) {
+            return;
+        }
+
+        const point = this.getMousePositionFromDocument(event);
+        this.updateBlockCreation(point);
+    }
+
+    /**
+     * Handle document-level mouse up events (for releasing outside window)
+     */
+    private onDocumentMouseUp(): void {
+        // Only handle if we're currently dragging
+        if (!this.mouseState.isDragging) {
+            return;
+        }
+
+        if (this.previewBlock) {
+            this.finishBlockCreation();
+        }
+
         this.resetMouseState();
         this.render();
     }

@@ -55,6 +55,10 @@ export declare class WeekPlanner {
      */
     private getMousePosition;
     /**
+     * Get mouse position relative to canvas from document-level events
+     */
+    private getMousePositionFromDocument;
+    /**
      * Update cursor based on mouse position
      */
     private updateCursor;
@@ -71,9 +75,17 @@ export declare class WeekPlanner {
      */
     private onMouseUp;
     /**
-     * Handle mouse leave events
+     * Handle mouse leave events from canvas
      */
     private onMouseLeave;
+    /**
+     * Handle document-level mouse move events (for tracking outside window)
+     */
+    private onDocumentMouseMove;
+    /**
+     * Handle document-level mouse up events (for releasing outside window)
+     */
+    private onDocumentMouseUp;
     /**
      * Handle double click events for text editing and block creation
      */

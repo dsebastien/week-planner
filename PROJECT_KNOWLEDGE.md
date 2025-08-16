@@ -284,16 +284,19 @@ this.blocks.set(blockId, updatedBlock);
     - Apply same adaptive logic to preview blocks during drag operations
   - **Result**: Both time information and text are clearly visible in all block sizes
 
-- **Fixed**: Drag behavior when mouse goes outside grid boundaries
-  - **Problem**: Preview block disappeared when dragging outside grid, operation cancelled on mouse release
-  - **Root Cause**: `getCellFromPoint()` returned `null` for points outside grid, causing early return in `updateBlockCreation()`
-  - **Solution**: Implemented point clamping to keep preview block visible and functional
+- **Fixed**: Drag behavior when mouse goes outside grid boundaries and browser window
+  - **Problem**: Preview block disappeared when dragging outside grid, operation cancelled on mouse release; also failed when mouse left browser window/tab
+  - **Root Cause**: `getCellFromPoint()` returned `null` for points outside grid, causing early return in `updateBlockCreation()`, and canvas events stopped firing outside window
+  - **Solution**: Implemented comprehensive drag tracking system
   - **Implementation**: 
     - Added `clampPointToGrid()` method to constrain coordinates to grid boundaries
     - Modified `updateBlockCreation()` to clamp current point before cell detection
-    - Preview block now stays visible at grid edges when dragging outside
-    - Block creation completes normally when releasing mouse outside grid
-  - **Result**: Smooth drag experience with preview always visible, blocks created as expected
+    - Added document-level `mousemove` and `mouseup` events for tracking outside browser window
+    - Enhanced `onMouseLeave()` to preserve drag state when leaving canvas
+    - Added `getMousePositionFromDocument()` for handling document-level coordinate calculations
+    - Preview block stays visible and functional even when mouse leaves window
+    - Block creation completes normally regardless of where mouse is released
+  - **Result**: Robust drag experience that works seamlessly across canvas, outside grid, and outside browser window
 
 ### Visual Enhancements (Added)
 - **Added**: Lunch time background highlighting (12:00-14:00)

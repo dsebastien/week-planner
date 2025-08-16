@@ -1,7 +1,6 @@
 - start at 5:00 instead of 6:00
 - It should be possible to resize existing blocks (without overlapping other blocks)
-- Remove the "Block color" selector in the header. When a block is selected, an edit toolbar should be displayed, similar to the one of Miro, with the following options: Background color, Text color, Font Size, Font Style (bold, italic, underlined, striked), Alignment (left, center, right), Border style, opacity, corners, color. 
-- A normal cursor should be used in general. A hand cursor (pointer) should be displayed when hovering an existing block
+- When a block is selected, an edit toolbar should be displayed, similar to the one of Miro, with the following options: Background color, Text color, Font Size, Font Style (bold, italic, underlined, striked), Alignment (left, center, right), Border style, opacity, corners, color. Remove the "Block color" selector in the header.
 - A better font should be used
 - It should be possible to select multiple blocks at once and edit them all with the toolbar
 - By default the text in a time block should be aligned center & middle

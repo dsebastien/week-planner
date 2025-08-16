@@ -1,4 +1,28 @@
 /**
+ * Text alignment options
+ */
+export type TextAlignment = 'left' | 'center' | 'right';
+
+/**
+ * Font style options
+ */
+export interface FontStyle {
+    readonly bold: boolean;
+    readonly italic: boolean;
+    readonly underline: boolean;
+    readonly strikethrough: boolean;
+}
+
+/**
+ * Border style options
+ */
+export interface BorderStyle {
+    readonly width: number; // 1-10 pixels
+    readonly style: 'solid' | 'dashed' | 'dotted';
+    readonly color: HexColor;
+}
+
+/**
  * Domain model for time blocks in the week planner
  */
 export interface TimeBlock {
@@ -11,7 +35,13 @@ export interface TimeBlock {
     readonly duration: number; // minutes (minimum 30, multiple of 30)
     readonly daySpan: number; // number of days (1-7)
     text: string;
-    readonly color: string;
+    readonly color: string; // background color
+    readonly textColor: HexColor; // text color
+    readonly fontSize: number; // 8-24 pixels
+    readonly fontStyle: FontStyle;
+    readonly textAlignment: TextAlignment;
+    readonly borderStyle: BorderStyle;
+    readonly cornerRadius: number; // 0-20 pixels
     selected: boolean;
 }
 

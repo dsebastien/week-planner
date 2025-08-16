@@ -1,4 +1,4 @@
-import { GridConfig, TimeBlock, HexColor, Point, ResizeHandle } from './types.js';
+import { GridConfig, TimeBlock, HexColor, Point, ResizeHandle, TextAlignment } from './types.js';
 import { GridUtils } from './grid-utils.js';
 
 /**
@@ -336,6 +336,14 @@ export class CanvasRenderer {
      * Draws block background with modern gradient effect
      */
     private drawBlockBackground(block: TimeBlock): void {
+        this.ctx.save();
+        
+        // Create path for rounded rectangle if corner radius is set
+        if (block.cornerRadius > 0) {
+            this.drawRoundedRect(block.x, block.y, block.width, block.height, block.cornerRadius);
+            this.ctx.clip();
+        }
+        
         // Create subtle gradient for depth
         const gradient = this.ctx.createLinearGradient(
             block.x, block.y, 
@@ -351,7 +359,12 @@ export class CanvasRenderer {
         gradient.addColorStop(1, darkerColor);
         
         this.ctx.fillStyle = gradient;
-        this.ctx.fillRect(block.x, block.y, block.width, block.height);
+        
+        if (block.cornerRadius > 0) {
+            this.ctx.fill();
+        } else {
+            this.ctx.fillRect(block.x, block.y, block.width, block.height);
+        }
         
         // Add subtle inner glow for modern look
         if (block.selected) {
@@ -360,19 +373,79 @@ export class CanvasRenderer {
             this.ctx.shadowOffsetX = 0;
             this.ctx.shadowOffsetY = 0;
             this.ctx.fillStyle = this.adjustColorBrightness(baseColor, 5);
-            this.ctx.fillRect(block.x + 1, block.y + 1, block.width - 2, block.height - 2);
+            
+            if (block.cornerRadius > 0) {
+                this.drawRoundedRect(block.x + 1, block.y + 1, block.width - 2, block.height - 2, Math.max(0, block.cornerRadius - 1));
+                this.ctx.fill();
+            } else {
+                this.ctx.fillRect(block.x + 1, block.y + 1, block.width - 2, block.height - 2);
+            }
             this.ctx.shadowBlur = 0;
         }
+        
+        this.ctx.restore();
     }
 
     /**
-     * Draws block border
+     * Draws block border (inner border)
      */
     private drawBlockBorder(block: TimeBlock): void {
-        const borderColor = this.adjustColorBrightness(block.color, -20);
-        this.ctx.strokeStyle = borderColor;
-        this.ctx.lineWidth = block.selected ? 3 : 2;
-        this.ctx.strokeRect(block.x, block.y, block.width, block.height);
+        this.ctx.save();
+        
+        const borderStyle = block.borderStyle;
+        this.ctx.strokeStyle = borderStyle.color;
+        const lineWidth = block.selected ? Math.max(borderStyle.width, 3) : borderStyle.width;
+        this.ctx.lineWidth = lineWidth;
+        
+        // Set line dash pattern based on border style
+        switch (borderStyle.style) {
+            case 'dashed':
+                this.ctx.setLineDash([8, 4]);
+                break;
+            case 'dotted':
+                this.ctx.setLineDash([2, 2]);
+                break;
+            case 'solid':
+            default:
+                this.ctx.setLineDash([]);
+                break;
+        }
+        
+        // Calculate inner border rectangle (inset by half the line width to draw inside)
+        const halfLineWidth = lineWidth / 2;
+        const innerX = block.x + halfLineWidth;
+        const innerY = block.y + halfLineWidth;
+        const innerWidth = block.width - lineWidth;
+        const innerHeight = block.height - lineWidth;
+        const innerRadius = Math.max(0, block.cornerRadius - halfLineWidth);
+        
+        if (block.cornerRadius > 0) {
+            this.drawRoundedRect(innerX, innerY, innerWidth, innerHeight, innerRadius);
+            this.ctx.stroke();
+        } else {
+            this.ctx.strokeRect(innerX, innerY, innerWidth, innerHeight);
+        }
+        
+        // Reset line dash
+        this.ctx.setLineDash([]);
+        this.ctx.restore();
+    }
+
+    /**
+     * Draws a rounded rectangle path
+     */
+    private drawRoundedRect(x: number, y: number, width: number, height: number, radius: number): void {
+        this.ctx.beginPath();
+        this.ctx.moveTo(x + radius, y);
+        this.ctx.lineTo(x + width - radius, y);
+        this.ctx.arcTo(x + width, y, x + width, y + radius, radius);
+        this.ctx.lineTo(x + width, y + height - radius);
+        this.ctx.arcTo(x + width, y + height, x + width - radius, y + height, radius);
+        this.ctx.lineTo(x + radius, y + height);
+        this.ctx.arcTo(x, y + height, x, y + height - radius, radius);
+        this.ctx.lineTo(x, y + radius);
+        this.ctx.arcTo(x, y, x + radius, y, radius);
+        this.ctx.closePath();
     }
 
     /**
@@ -397,7 +470,8 @@ export class CanvasRenderer {
      * Draws time information in the top-left corner of the block
      */
     private drawBlockTimeInfo(block: TimeBlock): void {
-        this.ctx.fillStyle = this.getContrastColor(block.color);
+        this.ctx.save();
+        this.ctx.fillStyle = block.textColor;
         this.ctx.textAlign = 'left';
         this.ctx.textBaseline = 'top';
         
@@ -414,6 +488,8 @@ export class CanvasRenderer {
             this.ctx.font = CanvasRenderer.FONTS.blockTime;
             this.ctx.fillText(timeInfo, block.x + 6, block.y + 6);
         }
+        
+        this.ctx.restore();
     }
 
     /**
@@ -422,12 +498,21 @@ export class CanvasRenderer {
     private drawBlockText(block: TimeBlock): void {
         if (!block.text.trim()) return;
 
-        this.ctx.fillStyle = this.getContrastColor(block.color);
+        this.ctx.save();
         
-        // Use smaller font for small blocks
+        // Use block's text color
+        this.ctx.fillStyle = block.textColor;
+        
+        // Build font string from block properties
+        const fontWeight = block.fontStyle.bold ? '700' : '500';
+        const fontStyle = block.fontStyle.italic ? 'italic' : 'normal';
+        const fontSize = Math.max(8, Math.min(24, block.fontSize)); // Clamp between 8-24px
+        this.ctx.font = `${fontStyle} ${fontWeight} ${fontSize}px Inter, "Segoe UI", system-ui, sans-serif`;
+        
+        // Set text alignment
+        this.ctx.textAlign = block.textAlignment;
+        
         const isSmallBlock = block.height < 40;
-        this.ctx.font = isSmallBlock ? '500 14px Inter, "Segoe UI", system-ui, sans-serif' : CanvasRenderer.FONTS.blockText;
-        this.ctx.textAlign = 'center';
         this.ctx.textBaseline = isSmallBlock ? 'middle' : 'top';
 
         const textArea = this.getTextArea(block);
@@ -435,11 +520,18 @@ export class CanvasRenderer {
         if (isSmallBlock) {
             // For small blocks, center text vertically and use single line
             const centerY = block.y + block.height / 2;
-            this.ctx.fillText(block.text, textArea.x, centerY);
+            const textX = this.getTextX(block, textArea.x);
+            this.ctx.fillText(block.text, textX, centerY);
         } else {
             // For larger blocks, use wrapped text
-            this.drawWrappedText(block.text, textArea.x, textArea.y, textArea.maxWidth, textArea.maxHeight);
+            const textX = this.getTextX(block, textArea.x);
+            this.drawWrappedText(block.text, textX, textArea.y, textArea.maxWidth, textArea.maxHeight);
         }
+        
+        // Draw text decorations if needed
+        this.drawTextDecorations(block);
+        
+        this.ctx.restore();
     }
 
     /**
@@ -506,6 +598,69 @@ export class CanvasRenderer {
         const endTime = GridUtils.formatTime(block.startTime + block.duration);
         const duration = GridUtils.formatDuration(block.duration);
         return `${startTime}-${endTime} (${duration})`;
+    }
+
+    /**
+     * Gets X position for text based on alignment
+     */
+    private getTextX(block: TimeBlock, defaultX: number): number {
+        switch (block.textAlignment) {
+            case 'left':
+                return block.x + 8;
+            case 'right':
+                return block.x + block.width - 8;
+            case 'center':
+            default:
+                return defaultX;
+        }
+    }
+
+    /**
+     * Draws text decorations (underline, strikethrough)
+     */
+    private drawTextDecorations(block: TimeBlock): void {
+        if (!block.text.trim()) return;
+        
+        const { fontStyle } = block;
+        if (!fontStyle.underline && !fontStyle.strikethrough) return;
+
+        this.ctx.strokeStyle = block.textColor;
+        this.ctx.lineWidth = 1;
+
+        const textMetrics = this.ctx.measureText(block.text);
+        const textWidth = textMetrics.width;
+        const textX = this.getTextX(block, block.x + block.width / 2);
+        
+        // Adjust X position based on alignment for decorations
+        let startX: number;
+        switch (block.textAlignment) {
+            case 'left':
+                startX = textX;
+                break;
+            case 'right':
+                startX = textX - textWidth;
+                break;
+            case 'center':
+            default:
+                startX = textX - textWidth / 2;
+                break;
+        }
+
+        if (fontStyle.underline) {
+            const underlineY = block.y + block.height * 0.7;
+            this.ctx.beginPath();
+            this.ctx.moveTo(startX, underlineY);
+            this.ctx.lineTo(startX + textWidth, underlineY);
+            this.ctx.stroke();
+        }
+
+        if (fontStyle.strikethrough) {
+            const strikeY = block.y + block.height * 0.5;
+            this.ctx.beginPath();
+            this.ctx.moveTo(startX, strikeY);
+            this.ctx.lineTo(startX + textWidth, strikeY);
+            this.ctx.stroke();
+        }
     }
 
     private getTextArea(block: TimeBlock): { x: number; y: number; maxWidth: number; maxHeight: number } {
@@ -743,23 +898,118 @@ export class CanvasRenderer {
     }
 
     private generateBlockSVG(block: TimeBlock): string {
-        const borderColor = this.adjustColorBrightness(block.color, -20);
-        const textColor = this.getContrastColor(block.color);
         const timeInfo = this.getBlockTimeInfo(block);
+        let svg = '';
         
-        let svg = `<rect x="${block.x}" y="${block.y}" width="${block.width}" height="${block.height}" fill="${block.color}" stroke="${borderColor}" stroke-width="${block.selected ? 3 : 2}"/>`;
+        // Add defs for gradients and patterns if needed
+        const gradientId = `gradient-${block.id}`;
+        const lighterColor = this.adjustColorBrightness(block.color, 10);
+        const darkerColor = this.adjustColorBrightness(block.color, -10);
+        
+        svg += `<defs>
+            <linearGradient id="${gradientId}" x1="0%" y1="0%" x2="0%" y2="100%">
+                <stop offset="0%" style="stop-color:${lighterColor};stop-opacity:1" />
+                <stop offset="100%" style="stop-color:${darkerColor};stop-opacity:1" />
+            </linearGradient>
+        </defs>`;
+        
+        // Create block shape (rectangle or rounded rectangle)
+        if (block.cornerRadius > 0) {
+            svg += `<rect x="${block.x}" y="${block.y}" width="${block.width}" height="${block.height}" 
+                rx="${block.cornerRadius}" ry="${block.cornerRadius}" 
+                fill="url(#${gradientId})" 
+                stroke="${block.borderStyle.color}" 
+                stroke-width="${block.selected ? Math.max(block.borderStyle.width, 3) : block.borderStyle.width}"
+                stroke-dasharray="${this.getSVGStrokeDashArray(block.borderStyle.style)}"/>`;
+        } else {
+            svg += `<rect x="${block.x}" y="${block.y}" width="${block.width}" height="${block.height}" 
+                fill="url(#${gradientId})" 
+                stroke="${block.borderStyle.color}" 
+                stroke-width="${block.selected ? Math.max(block.borderStyle.width, 3) : block.borderStyle.width}"
+                stroke-dasharray="${this.getSVGStrokeDashArray(block.borderStyle.style)}"/>`;
+        }
         
         // Time information
-        svg += `<text x="${block.x + 6}" y="${block.y + 16}" fill="${textColor}" font-family="Inter, system-ui, sans-serif" font-size="13" font-weight="500">${timeInfo}</text>`;
+        svg += `<text x="${block.x + 6}" y="${block.y + 16}" 
+            fill="${block.textColor}" 
+            font-family="Inter, system-ui, sans-serif" 
+            font-size="13" 
+            font-weight="500">${timeInfo}</text>`;
         
-        // Block text (simplified for SVG)
+        // Block text with styling
         if (block.text.trim()) {
-            const textX = block.x + block.width / 2;
+            const fontWeight = block.fontStyle.bold ? '700' : '500';
+            const fontStyle = block.fontStyle.italic ? 'italic' : 'normal';
+            const fontSize = Math.max(8, Math.min(24, block.fontSize));
+            const textAnchor = this.getSVGTextAnchor(block.textAlignment);
+            
+            let textX: number;
+            switch (block.textAlignment) {
+                case 'left':
+                    textX = block.x + 8;
+                    break;
+                case 'right':
+                    textX = block.x + block.width - 8;
+                    break;
+                case 'center':
+                default:
+                    textX = block.x + block.width / 2;
+                    break;
+            }
+            
             const textY = block.y + block.height / 2;
-            svg += `<text x="${textX}" y="${textY}" text-anchor="middle" dominant-baseline="middle" fill="${textColor}" font-family="Inter, system-ui, sans-serif" font-size="16" font-weight="500">${this.escapeXml(block.text)}</text>`;
+            
+            svg += `<text x="${textX}" y="${textY}" 
+                text-anchor="${textAnchor}" 
+                dominant-baseline="middle" 
+                fill="${block.textColor}" 
+                font-family="Inter, system-ui, sans-serif" 
+                font-size="${fontSize}" 
+                font-weight="${fontWeight}"
+                font-style="${fontStyle}"`;
+            
+            // Add text decorations
+            const decorations = [];
+            if (block.fontStyle.underline) decorations.push('underline');
+            if (block.fontStyle.strikethrough) decorations.push('line-through');
+            if (decorations.length > 0) {
+                svg += ` text-decoration="${decorations.join(' ')}"`;
+            }
+            
+            svg += `>${this.escapeXml(block.text)}</text>`;
         }
         
         return svg;
+    }
+
+    /**
+     * Gets SVG stroke-dasharray for border styles
+     */
+    private getSVGStrokeDashArray(style: 'solid' | 'dashed' | 'dotted'): string {
+        switch (style) {
+            case 'dashed':
+                return '8,4';
+            case 'dotted':
+                return '2,2';
+            case 'solid':
+            default:
+                return 'none';
+        }
+    }
+
+    /**
+     * Gets SVG text-anchor for text alignment
+     */
+    private getSVGTextAnchor(alignment: TextAlignment): string {
+        switch (alignment) {
+            case 'left':
+                return 'start';
+            case 'right':
+                return 'end';
+            case 'center':
+            default:
+                return 'middle';
+        }
     }
 
     private escapeXml(text: string): string {

@@ -6,7 +6,10 @@ import {
     ValidationError,
     HexColor,
     WeekPlannerData,
-    ResizeHandle
+    ResizeHandle,
+    FontStyle,
+    BorderStyle,
+    TextAlignment
 } from './types.js';
 import { GridUtils } from './grid-utils.js';
 import { TimeBlockManager } from './time-block-manager.js';
@@ -19,10 +22,9 @@ import { CanvasRenderer } from './canvas-renderer.js';
 export class WeekPlanner {
     private readonly canvas: HTMLCanvasElement;
     private readonly textInput: HTMLInputElement;
-    private readonly colorPicker: HTMLInputElement;
     
     private renderer: CanvasRenderer;
-    private blockManager: TimeBlockManager;
+    public blockManager: TimeBlockManager;
     private config: GridConfig;
     
     private mouseState: MouseState = {
@@ -44,7 +46,6 @@ export class WeekPlanner {
         // Initialize DOM elements
         this.canvas = this.getRequiredElement('weekCanvas') as HTMLCanvasElement;
         this.textInput = this.getRequiredElement('textInput') as HTMLInputElement;
-        this.colorPicker = this.getRequiredElement('blockColor') as HTMLInputElement;
         
         // Initialize configuration
         this.config = this.createInitialConfig();
@@ -305,9 +306,9 @@ export class WeekPlanner {
         };
 
         if (clickedBlock) {
-            this.blockManager.selectBlock(clickedBlock.id);
+            this.handleSelectionChange(clickedBlock.id);
         } else {
-            this.blockManager.selectBlock(null);
+            this.handleSelectionChange(null);
             this.startBlockCreation(point);
         }
         
@@ -424,6 +425,10 @@ export class WeekPlanner {
             const selectedBlock = this.blockManager.getSelectedBlock();
             if (selectedBlock && !this.editingBlock) {
                 this.blockManager.removeBlock(selectedBlock.id);
+                // Hide toolbar when block is deleted
+                if ((window as any).editToolbar) {
+                    (window as any).editToolbar.hide();
+                }
                 this.render();
             }
         } else if (event.key === 'Escape') {
@@ -493,6 +498,8 @@ export class WeekPlanner {
         // Recalculate height based on clamped duration
         const finalHeight = GridUtils.getHeightFromDuration(clampedDuration, this.config);
 
+        const defaultStyling = this.getDefaultStyling();
+        
         // Create preview block
         this.previewBlock = {
             id: 'preview',
@@ -504,7 +511,13 @@ export class WeekPlanner {
             duration: clampedDuration,
             daySpan,
             text: '',
-            color: this.colorPicker.value as HexColor,
+            color: '#3b82f6',
+            textColor: defaultStyling.textColor,
+            fontSize: defaultStyling.fontSize,
+            fontStyle: defaultStyling.fontStyle,
+            textAlignment: defaultStyling.textAlignment,
+            borderStyle: defaultStyling.borderStyle,
+            cornerRadius: defaultStyling.cornerRadius,
             selected: false
         };
 
@@ -528,7 +541,7 @@ export class WeekPlanner {
 
         const result = this.blockManager.addBlock(block);
         if (result.success) {
-            this.blockManager.selectBlock(block.id);
+            this.handleSelectionChange(block.id);
         } else {
             this.showError(result.error.message);
         }
@@ -566,6 +579,8 @@ export class WeekPlanner {
             return;
         }
         
+        const defaultStyling = this.getDefaultStyling();
+        
         // Create the block
         const block: TimeBlock = {
             id: this.generateBlockId(),
@@ -577,13 +592,19 @@ export class WeekPlanner {
             duration,
             daySpan: 1,
             text: '',
-            color: this.colorPicker.value as HexColor,
+            color: '#3b82f6',
+            textColor: defaultStyling.textColor,
+            fontSize: defaultStyling.fontSize,
+            fontStyle: defaultStyling.fontStyle,
+            textAlignment: defaultStyling.textAlignment,
+            borderStyle: defaultStyling.borderStyle,
+            cornerRadius: defaultStyling.cornerRadius,
             selected: true
         };
         
         const result = this.blockManager.addBlock(block);
         if (result.success) {
-            this.blockManager.selectBlock(block.id);
+            this.handleSelectionChange(block.id);
             this.render();
         } else {
             this.showError(result.error.message);
@@ -809,10 +830,77 @@ export class WeekPlanner {
     }
 
     /**
+     * Gets default styling properties for new blocks
+     */
+    private getDefaultStyling(): {
+        textColor: HexColor;
+        fontSize: number;
+        fontStyle: FontStyle;
+        textAlignment: TextAlignment;
+        borderStyle: BorderStyle;
+        cornerRadius: number;
+    } {
+        return {
+            textColor: '#ffffff',
+            fontSize: 16,
+            fontStyle: {
+                bold: false,
+                italic: false,
+                underline: false,
+                strikethrough: false
+            },
+            textAlignment: 'center',
+            borderStyle: {
+                width: 2,
+                style: 'solid',
+                color: '#3b82f6'
+            },
+            cornerRadius: 5
+        };
+    }
+
+    /**
      * Main render method
      */
     private render(): void {
         this.renderer.render(this.blockManager.getBlocks());
+    }
+
+    /**
+     * Updates the styling of the currently selected block
+     */
+    updateSelectedBlockStyle(property: string, value: any): void {
+        const selectedBlock = this.blockManager.getSelectedBlock();
+        if (!selectedBlock) return;
+
+        const updates: any = {};
+        updates[property] = value;
+
+        const result = this.blockManager.updateBlock(selectedBlock.id, updates);
+        if (result.success) {
+            this.render();
+            // Update toolbar position in case block size changed
+            if ((window as any).editToolbar) {
+                const updatedBlock = this.blockManager.getSelectedBlock();
+                if (updatedBlock) {
+                    (window as any).editToolbar.position(updatedBlock);
+                }
+            }
+        }
+    }
+
+    /**
+     * Handles block selection changes and updates toolbar
+     */
+    private handleSelectionChange(blockId: string | null): void {
+        this.blockManager.selectBlock(blockId);
+        
+        const selectedBlock = this.blockManager.getSelectedBlock();
+        if (selectedBlock && (window as any).editToolbar) {
+            (window as any).editToolbar.show(selectedBlock);
+        } else if ((window as any).editToolbar) {
+            (window as any).editToolbar.hide();
+        }
     }
 
     /**

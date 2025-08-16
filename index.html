@@ -62,12 +62,6 @@
             
             <!-- Quick Actions -->
             <div class="flex items-center gap-3">
-                <!-- Color Picker -->
-                <div class="flex items-center gap-2">
-                    <input type="color" id="blockColor" value="#3b82f6" 
-                           class="w-6 h-6 rounded border-2 border-dark-600 cursor-pointer bg-transparent hover:border-primary-400 transition-colors">
-                </div>
-                
                 <!-- Menu Toggle -->
                 <button id="toolbarToggle" class="btn-ghost p-2 relative group">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -252,6 +246,95 @@
                 class="absolute z-50 hidden px-3 py-2 bg-white text-black border-2 border-blue-500 rounded-lg shadow-lg focus:outline-none focus:ring-2 focus:ring-blue-400 text-sm font-medium"
                 style="color: #000000 !important; background-color: #ffffff !important; border: 2px solid #3b82f6 !important;"
             >
+
+            <!-- Edit Toolbar -->
+            <div id="editToolbar" class="absolute z-50 hidden bg-gray-800 border border-gray-600 rounded-lg shadow-xl p-3 min-w-[320px]" style="backdrop-filter: blur(16px);">
+                <!-- Toolbar Header -->
+                <div class="flex items-center justify-between mb-3 pb-2 border-b border-gray-600">
+                    <span class="text-sm font-medium text-white">Block Styling</span>
+                    <button id="closeToolbar" class="text-gray-400 hover:text-white transition-colors">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                        </svg>
+                    </button>
+                </div>
+
+                <!-- Toolbar Content -->
+                <div class="space-y-3">
+                    <!-- Colors Row -->
+                    <div class="flex items-center gap-3">
+                        <div class="flex items-center gap-2">
+                            <label class="text-xs text-gray-300 w-8">BG:</label>
+                            <input type="color" id="backgroundColor" class="w-8 h-8 rounded border border-gray-600 cursor-pointer">
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <label class="text-xs text-gray-300 w-8">Text:</label>
+                            <input type="color" id="textColor" class="w-8 h-8 rounded border border-gray-600 cursor-pointer">
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <label class="text-xs text-gray-300 w-8">Border:</label>
+                            <input type="color" id="borderColor" class="w-8 h-8 rounded border border-gray-600 cursor-pointer">
+                        </div>
+                    </div>
+
+                    <!-- Font Controls Row -->
+                    <div class="flex items-center gap-2">
+                        <div class="flex items-center gap-1">
+                            <label class="text-xs text-gray-300">Size:</label>
+                            <input type="range" id="fontSize" min="8" max="24" value="16" class="w-16 h-2 bg-gray-600 rounded-lg cursor-pointer">
+                            <span id="fontSizeValue" class="text-xs text-gray-300 w-6">16</span>
+                        </div>
+                        <div class="flex items-center gap-1">
+                            <button id="boldBtn" class="w-7 h-7 rounded border border-gray-600 text-white hover:bg-gray-700 transition-colors text-xs font-bold">B</button>
+                            <button id="italicBtn" class="w-7 h-7 rounded border border-gray-600 text-white hover:bg-gray-700 transition-colors text-xs italic">I</button>
+                            <button id="underlineBtn" class="w-7 h-7 rounded border border-gray-600 text-white hover:bg-gray-700 transition-colors text-xs underline">U</button>
+                            <button id="strikeBtn" class="w-7 h-7 rounded border border-gray-600 text-white hover:bg-gray-700 transition-colors text-xs line-through">S</button>
+                        </div>
+                    </div>
+
+                    <!-- Alignment Row -->
+                    <div class="flex items-center gap-2">
+                        <label class="text-xs text-gray-300">Align:</label>
+                        <button id="alignLeft" class="w-8 h-7 rounded border border-gray-600 text-white hover:bg-gray-700 transition-colors flex items-center justify-center">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h8m-8 6h16"></path>
+                            </svg>
+                        </button>
+                        <button id="alignCenter" class="w-8 h-7 rounded border border-gray-600 text-white hover:bg-gray-700 transition-colors flex items-center justify-center">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M8 12h8M6 18h12"></path>
+                            </svg>
+                        </button>
+                        <button id="alignRight" class="w-8 h-7 rounded border border-gray-600 text-white hover:bg-gray-700 transition-colors flex items-center justify-center">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M12 12h8M6 18h16"></path>
+                            </svg>
+                        </button>
+                    </div>
+
+                    <!-- Style Controls Row -->
+                    <div class="flex items-center gap-3">
+                        <div class="flex items-center gap-1">
+                            <label class="text-xs text-gray-300">Border:</label>
+                            <select id="borderStyle" class="text-xs bg-gray-700 border border-gray-600 rounded px-2 py-1 text-white">
+                                <option value="solid">Solid</option>
+                                <option value="dashed">Dashed</option>
+                                <option value="dotted">Dotted</option>
+                            </select>
+                            <input type="range" id="borderWidth" min="1" max="10" value="2" class="w-12 h-2 bg-gray-600 rounded-lg cursor-pointer">
+                        </div>
+                    </div>
+
+                    <!-- Sliders Row -->
+                    <div class="flex items-center gap-3">
+                        <div class="flex items-center gap-1">
+                            <label class="text-xs text-gray-300">Corners:</label>
+                            <input type="range" id="cornerRadius" min="0" max="20" value="5" class="w-16 h-2 bg-gray-600 rounded-lg cursor-pointer">
+                            <span id="cornerValue" class="text-xs text-gray-300 w-6">5</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
     </main>
 
@@ -335,6 +418,218 @@
                 }
             }
         });
+
+        // Edit Toolbar functionality
+        const editToolbar = document.getElementById('editToolbar');
+        const closeToolbar = document.getElementById('closeToolbar');
+        let currentSelectedBlock = null;
+
+        // Toolbar elements
+        const backgroundColor = document.getElementById('backgroundColor');
+        const textColor = document.getElementById('textColor');
+        const borderColor = document.getElementById('borderColor');
+        const fontSize = document.getElementById('fontSize');
+        const fontSizeValue = document.getElementById('fontSizeValue');
+        const boldBtn = document.getElementById('boldBtn');
+        const italicBtn = document.getElementById('italicBtn');
+        const underlineBtn = document.getElementById('underlineBtn');
+        const strikeBtn = document.getElementById('strikeBtn');
+        const alignLeft = document.getElementById('alignLeft');
+        const alignCenter = document.getElementById('alignCenter');
+        const alignRight = document.getElementById('alignRight');
+        const borderStyle = document.getElementById('borderStyle');
+        const borderWidth = document.getElementById('borderWidth');
+        const cornerRadius = document.getElementById('cornerRadius');
+        const cornerValue = document.getElementById('cornerValue');
+
+        // Position toolbar near selected block
+        function positionToolbar(block) {
+            if (!block || !editToolbar) return;
+
+            const canvas = document.getElementById('weekCanvas');
+            const canvasRect = canvas.getBoundingClientRect();
+            
+            // Calculate position relative to viewport
+            const blockCenterX = canvasRect.left + block.x + block.width / 2;
+            const blockBottom = canvasRect.top + block.y + block.height;
+            
+            // Position toolbar below block by default, or above if too close to bottom
+            const toolbarRect = editToolbar.getBoundingClientRect();
+            const viewportHeight = window.innerHeight;
+            
+            let top = blockBottom + 10;
+            if (top + toolbarRect.height > viewportHeight - 20) {
+                top = canvasRect.top + block.y - toolbarRect.height - 10;
+            }
+            
+            let left = blockCenterX - toolbarRect.width / 2;
+            const maxLeft = window.innerWidth - toolbarRect.width - 20;
+            left = Math.max(20, Math.min(left, maxLeft));
+            
+            editToolbar.style.left = `${left}px`;
+            editToolbar.style.top = `${top}px`;
+        }
+
+        // Show toolbar for selected block
+        function showToolbar(block) {
+            if (!block || !editToolbar) return;
+            
+            currentSelectedBlock = block;
+            
+            // Update toolbar values
+            backgroundColor.value = block.color;
+            textColor.value = block.textColor;
+            borderColor.value = block.borderStyle.color;
+            fontSize.value = block.fontSize;
+            fontSizeValue.textContent = block.fontSize;
+            borderStyle.value = block.borderStyle.style;
+            borderWidth.value = block.borderStyle.width;
+            cornerRadius.value = block.cornerRadius;
+            cornerValue.textContent = block.cornerRadius;
+            
+            // Update button states
+            boldBtn.classList.toggle('bg-blue-600', block.fontStyle.bold);
+            italicBtn.classList.toggle('bg-blue-600', block.fontStyle.italic);
+            underlineBtn.classList.toggle('bg-blue-600', block.fontStyle.underline);
+            strikeBtn.classList.toggle('bg-blue-600', block.fontStyle.strikethrough);
+            
+            // Update alignment buttons
+            alignLeft.classList.toggle('bg-blue-600', block.textAlignment === 'left');
+            alignCenter.classList.toggle('bg-blue-600', block.textAlignment === 'center');
+            alignRight.classList.toggle('bg-blue-600', block.textAlignment === 'right');
+            
+            editToolbar.classList.remove('hidden');
+            positionToolbar(block);
+        }
+
+        // Hide toolbar
+        function hideToolbar() {
+            if (editToolbar) {
+                editToolbar.classList.add('hidden');
+            }
+            currentSelectedBlock = null;
+        }
+
+        // Close toolbar button
+        closeToolbar?.addEventListener('click', hideToolbar);
+
+        // Font size slider
+        fontSize?.addEventListener('input', (e) => {
+            fontSizeValue.textContent = e.target.value;
+            updateBlockStyling('fontSize', parseInt(e.target.value));
+        });
+
+        // Corner radius slider
+        cornerRadius?.addEventListener('input', (e) => {
+            cornerValue.textContent = e.target.value;
+            updateBlockStyling('cornerRadius', parseInt(e.target.value));
+        });
+
+        // Color inputs - use 'input' for immediate feedback
+        backgroundColor?.addEventListener('input', (e) => {
+            updateBlockStyling('color', e.target.value);
+        });
+
+        textColor?.addEventListener('input', (e) => {
+            updateBlockStyling('textColor', e.target.value);
+        });
+
+        borderColor?.addEventListener('input', (e) => {
+            if (!window.weekPlanner) return;
+            const currentBlock = window.weekPlanner.blockManager?.getSelectedBlock();
+            if (!currentBlock) return;
+            updateBlockStyling('borderStyle', { ...currentBlock.borderStyle, color: e.target.value });
+        });
+
+        // Font style buttons
+        boldBtn?.addEventListener('click', () => {
+            if (!window.weekPlanner) return;
+            const currentBlock = window.weekPlanner.blockManager?.getSelectedBlock();
+            if (!currentBlock) return;
+            
+            const newBold = !currentBlock.fontStyle.bold;
+            boldBtn.classList.toggle('bg-blue-600', newBold);
+            updateBlockStyling('fontStyle', { ...currentBlock.fontStyle, bold: newBold });
+        });
+
+        italicBtn?.addEventListener('click', () => {
+            if (!window.weekPlanner) return;
+            const currentBlock = window.weekPlanner.blockManager?.getSelectedBlock();
+            if (!currentBlock) return;
+            
+            const newItalic = !currentBlock.fontStyle.italic;
+            italicBtn.classList.toggle('bg-blue-600', newItalic);
+            updateBlockStyling('fontStyle', { ...currentBlock.fontStyle, italic: newItalic });
+        });
+
+        underlineBtn?.addEventListener('click', () => {
+            if (!window.weekPlanner) return;
+            const currentBlock = window.weekPlanner.blockManager?.getSelectedBlock();
+            if (!currentBlock) return;
+            
+            const newUnderline = !currentBlock.fontStyle.underline;
+            underlineBtn.classList.toggle('bg-blue-600', newUnderline);
+            updateBlockStyling('fontStyle', { ...currentBlock.fontStyle, underline: newUnderline });
+        });
+
+        strikeBtn?.addEventListener('click', () => {
+            if (!window.weekPlanner) return;
+            const currentBlock = window.weekPlanner.blockManager?.getSelectedBlock();
+            if (!currentBlock) return;
+            
+            const newStrike = !currentBlock.fontStyle.strikethrough;
+            strikeBtn.classList.toggle('bg-blue-600', newStrike);
+            updateBlockStyling('fontStyle', { ...currentBlock.fontStyle, strikethrough: newStrike });
+        });
+
+        // Alignment buttons
+        alignLeft?.addEventListener('click', () => {
+            updateAlignment('left');
+        });
+
+        alignCenter?.addEventListener('click', () => {
+            updateAlignment('center');
+        });
+
+        alignRight?.addEventListener('click', () => {
+            updateAlignment('right');
+        });
+
+        function updateAlignment(alignment) {
+            alignLeft.classList.toggle('bg-blue-600', alignment === 'left');
+            alignCenter.classList.toggle('bg-blue-600', alignment === 'center');
+            alignRight.classList.toggle('bg-blue-600', alignment === 'right');
+            updateBlockStyling('textAlignment', alignment);
+        }
+
+        // Border style and width
+        borderStyle?.addEventListener('change', (e) => {
+            if (!window.weekPlanner) return;
+            const currentBlock = window.weekPlanner.blockManager?.getSelectedBlock();
+            if (!currentBlock) return;
+            updateBlockStyling('borderStyle', { ...currentBlock.borderStyle, style: e.target.value });
+        });
+
+        borderWidth?.addEventListener('input', (e) => {
+            if (!window.weekPlanner) return;
+            const currentBlock = window.weekPlanner.blockManager?.getSelectedBlock();
+            if (!currentBlock) return;
+            updateBlockStyling('borderStyle', { ...currentBlock.borderStyle, width: parseInt(e.target.value) });
+        });
+
+        // Function to update block styling (will be called by WeekPlanner)
+        function updateBlockStyling(property, value) {
+            if (window.weekPlanner && currentSelectedBlock) {
+                window.weekPlanner.updateSelectedBlockStyle(property, value);
+            }
+        }
+
+        // Expose functions for WeekPlanner to use
+        window.editToolbar = {
+            show: showToolbar,
+            hide: hideToolbar,
+            position: positionToolbar
+        };
     </script>
 </body>
 </html>

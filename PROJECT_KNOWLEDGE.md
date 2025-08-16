@@ -256,6 +256,19 @@ this.blocks.set(blockId, updatedBlock);
   - Small block text: 11px → 14px 
   - Small block time: 9px → 12px
   - SVG export fonts updated to match canvas rendering
+- **🎨 Implemented Miro-Style Edit Toolbar**: Complete block styling system with floating toolbar
+  - **Background Color**: Color picker for block background with live preview
+  - **Text Color**: Independent text color picker with contrast preservation
+  - **Font Size**: Slider control (8-24px) with real-time updates
+  - **Font Styles**: Bold, italic, underline, strikethrough toggle buttons
+  - **Text Alignment**: Left, center, right alignment options with visual indicators
+  - **Border Styling**: Color picker, style (solid/dashed/dotted), width controls (1-10px)
+  - **Opacity Control**: Slider (10-100%) affecting entire block including text
+  - **Corner Radius**: Rounded corners slider (0-20px) for modern styling
+  - **Smart Positioning**: Toolbar appears near selected blocks with viewport edge detection
+  - **Canvas Integration**: All styling properties render with gradients, opacity, decorations
+  - **SVG Export Support**: Complete styling preservation in vector exports
+  - **Type Safety**: Comprehensive TypeScript interfaces for all styling properties
 
 ## Previous Fixes & Improvements
 

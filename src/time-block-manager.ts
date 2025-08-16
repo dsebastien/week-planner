@@ -1,121 +1,365 @@
-import { TimeBlock, GridConfig } from './types.js';
+import { 
+    TimeBlock, 
+    GridConfig, 
+    ValidationError, 
+    Result, 
+    DayIndex, 
+    TimeMinutes, 
+    DurationMinutes,
+    WeekPlannerData
+} from './types.js';
 import { GridUtils } from './grid-utils.js';
 
+/**
+ * Manages time blocks in the week planner with validation and overlap detection
+ */
 export class TimeBlockManager {
-    private blocks: TimeBlock[] = [];
-    private selectedBlock: TimeBlock | null = null;
+    private readonly blocks: Map<string, TimeBlock> = new Map();
+    private selectedBlockId: string | null = null;
     private config: GridConfig;
 
-    constructor(config?: GridConfig) {
-        this.config = config || this.getDefaultConfig();
+    constructor(config: GridConfig) {
+        this.config = config;
     }
 
-    addBlock(block: TimeBlock): boolean {
-        if (this.hasOverlap(block)) {
-            return false;
+    /**
+     * Adds a new time block with validation
+     */
+    addBlock(block: TimeBlock): Result<void, ValidationError> {
+        const validation = this.validateBlock(block);
+        if (!validation.success) {
+            return validation;
         }
-        this.blocks.push(block);
+
+        const overlap = this.checkOverlap(block);
+        if (overlap.length > 0) {
+            return {
+                success: false,
+                error: {
+                    code: 'OVERLAP_ERROR',
+                    message: `Block overlaps with existing blocks: ${overlap.map(b => b.id).join(', ')}`,
+                    field: 'overlap'
+                }
+            };
+        }
+
+        this.blocks.set(block.id, { ...block });
+        return { success: true, data: undefined };
+    }
+
+    /**
+     * Removes a block by ID
+     */
+    removeBlock(blockId: string): boolean {
+        if (this.selectedBlockId === blockId) {
+            this.selectedBlockId = null;
+        }
+        return this.blocks.delete(blockId);
+    }
+
+    /**
+     * Updates an existing block with validation
+     */
+    updateBlock(blockId: string, updates: Partial<TimeBlock>): Result<void, ValidationError> {
+        const existingBlock = this.blocks.get(blockId);
+        if (!existingBlock) {
+            return {
+                success: false,
+                error: {
+                    code: 'NOT_FOUND',
+                    message: `Block with ID ${blockId} not found`
+                }
+            };
+        }
+
+        const updatedBlock: TimeBlock = { ...existingBlock, ...updates };
+        const validation = this.validateBlock(updatedBlock);
+        if (!validation.success) {
+            return validation;
+        }
+
+        // Check overlap excluding the current block
+        const otherBlocks = Array.from(this.blocks.values()).filter(b => b.id !== blockId);
+        const overlapping = this.findOverlappingBlocks(updatedBlock, otherBlocks);
+        if (overlapping.length > 0) {
+            return {
+                success: false,
+                error: {
+                    code: 'OVERLAP_ERROR',
+                    message: `Updated block would overlap with: ${overlapping.map(b => b.id).join(', ')}`,
+                    field: 'overlap'
+                }
+            };
+        }
+
+        this.blocks.set(blockId, updatedBlock);
+        return { success: true, data: undefined };
+    }
+
+    /**
+     * Updates block text (special case for editing)
+     */
+    updateBlockText(blockId: string, text: string): boolean {
+        const block = this.blocks.get(blockId);
+        if (!block) return false;
+
+        const updatedBlock: TimeBlock = { ...block, text: text.trim() };
+        this.blocks.set(blockId, updatedBlock);
         return true;
     }
 
-    removeBlock(blockId: string): void {
-        this.blocks = this.blocks.filter(block => block.id !== blockId);
-        if (this.selectedBlock?.id === blockId) {
-            this.selectedBlock = null;
-        }
+    /**
+     * Gets all blocks as a readonly array
+     */
+    getBlocks(): readonly TimeBlock[] {
+        return Array.from(this.blocks.values());
     }
 
-    getBlocks(): TimeBlock[] {
-        return this.blocks;
+    /**
+     * Gets a specific block by ID
+     */
+    getBlock(blockId: string): TimeBlock | null {
+        return this.blocks.get(blockId) || null;
     }
 
+    /**
+     * Selects a block by ID
+     */
     selectBlock(blockId: string | null): void {
-        this.blocks.forEach(block => {
-            block.selected = block.id === blockId;
-        });
-        this.selectedBlock = blockId ? this.blocks.find(b => b.id === blockId) || null : null;
+        // Update selection state for all blocks
+        for (const [id, block] of this.blocks) {
+            const updatedBlock: TimeBlock = { ...block, selected: id === blockId };
+            this.blocks.set(id, updatedBlock);
+        }
+        this.selectedBlockId = blockId;
     }
 
+    /**
+     * Gets the currently selected block
+     */
     getSelectedBlock(): TimeBlock | null {
-        return this.selectedBlock;
+        return this.selectedBlockId ? this.blocks.get(this.selectedBlockId) || null : null;
     }
 
+    /**
+     * Finds the topmost block at given coordinates
+     */
     getBlockAt(x: number, y: number): TimeBlock | null {
-        // Check blocks in reverse order (top to bottom in rendering)
-        for (let i = this.blocks.length - 1; i >= 0; i--) {
-            const block = this.blocks[i];
-            if (x >= block.x && x <= block.x + block.width &&
-                y >= block.y && y <= block.y + block.height) {
-                return block;
-            }
-        }
-        return null;
+        const blocksAtPoint = Array.from(this.blocks.values())
+            .filter(block => this.isPointInBlock(x, y, block))
+            .sort((a, b) => b.y - a.y); // Sort by y position (topmost first)
+
+        return blocksAtPoint[0] || null;
     }
 
-    updateBlockText(blockId: string, text: string): void {
-        const block = this.blocks.find(b => b.id === blockId);
-        if (block) {
-            block.text = text;
-        }
-    }
-
+    /**
+     * Clears all blocks
+     */
     clearAll(): void {
-        this.blocks = [];
-        this.selectedBlock = null;
+        this.blocks.clear();
+        this.selectedBlockId = null;
     }
 
-    private hasOverlap(newBlock: TimeBlock): boolean {
-        const newStartDay = GridUtils.getDayFromX(newBlock.x, this.config);
-        const newEndDay = newStartDay + newBlock.daySpan - 1;
-        const newStartTime = newBlock.startTime;
-        const newEndTime = newBlock.startTime + newBlock.duration;
+    /**
+     * Updates the grid configuration and recalculates block positions
+     */
+    updateConfig(newConfig: GridConfig): void {
+        const oldConfig = this.config;
+        this.config = newConfig;
 
-        return this.blocks.some(block => {
-            const blockStartDay = GridUtils.getDayFromX(block.x, this.config);
-            const blockEndDay = blockStartDay + block.daySpan - 1;
-            const blockStartTime = block.startTime;
-            const blockEndTime = block.startTime + block.duration;
+        // Recalculate positions for all blocks
+        for (const [id, block] of this.blocks) {
+            const dayIndex = GridUtils.getDayFromX(block.x, oldConfig);
+            const newX = GridUtils.getXFromDay(dayIndex, newConfig);
+            const newY = GridUtils.getYFromTime(block.startTime, newConfig);
+            const newWidth = GridUtils.getWidthFromDaySpan(block.daySpan, newConfig);
+            const newHeight = GridUtils.getHeightFromDuration(block.duration, newConfig);
 
-            // Check for day overlap
-            const dayOverlap = !(newEndDay < blockStartDay || newStartDay > blockEndDay);
-            
-            // Check for time overlap
-            const timeOverlap = !(newEndTime <= blockStartTime || newStartTime >= blockEndTime);
+            const updatedBlock: TimeBlock = {
+                ...block,
+                x: newX,
+                y: newY,
+                width: newWidth,
+                height: newHeight
+            };
 
-            return dayOverlap && timeOverlap;
-        });
+            this.blocks.set(id, updatedBlock);
+        }
     }
 
-    private getDefaultConfig(): GridConfig {
+    /**
+     * Exports all data for saving
+     */
+    exportData(): WeekPlannerData {
         return {
-            startHour: 6,
-            endHour: 24,
-            timeSlotHeight: 24,
-            dayWidth: 140,
-            headerHeight: 50,
-            timeColumnWidth: 80,
-            days: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
+            version: '1.0',
+            blocks: this.getBlocks(),
+            config: this.config,
+            exportedAt: new Date().toISOString()
         };
     }
 
-    // Method to update the grid configuration for scaling
-    updateConfig(config: GridConfig): void {
-        const oldConfig = this.config;
-        this.config = config;
+    /**
+     * Imports data from export
+     */
+    importData(data: WeekPlannerData): Result<void, ValidationError> {
+        // Validate version compatibility
+        if (data.version !== '1.0') {
+            return {
+                success: false,
+                error: {
+                    code: 'VERSION_MISMATCH',
+                    message: `Unsupported version: ${data.version}`
+                }
+            };
+        }
+
+        // Validate all blocks before importing
+        for (const block of data.blocks) {
+            const validation = this.validateBlock(block);
+            if (!validation.success) {
+                return {
+                    success: false,
+                    error: {
+                        code: 'INVALID_BLOCK',
+                        message: `Invalid block ${block.id}: ${validation.error.message}`
+                    }
+                };
+            }
+        }
+
+        // Check for overlaps in imported data
+        for (let i = 0; i < data.blocks.length; i++) {
+            for (let j = i + 1; j < data.blocks.length; j++) {
+                const blockI = data.blocks[i];
+                const blockJ = data.blocks[j];
+                if (blockI && blockJ && this.blocksOverlap(blockI, blockJ)) {
+                    return {
+                        success: false,
+                        error: {
+                            code: 'IMPORT_OVERLAP',
+                            message: `Overlapping blocks in import data: ${blockI.id} and ${blockJ.id}`
+                        }
+                    };
+                }
+            }
+        }
+
+        // Clear existing data and import
+        this.clearAll();
+        for (const block of data.blocks) {
+            this.blocks.set(block.id, { ...block });
+        }
+
+        return { success: true, data: undefined };
+    }
+
+    /**
+     * Validates a time block according to business rules
+     */
+    private validateBlock(block: TimeBlock): Result<void, ValidationError> {
+        // Validate ID
+        if (!block.id || block.id.trim() === '') {
+            return {
+                success: false,
+                error: { code: 'INVALID_ID', message: 'Block ID cannot be empty', field: 'id' }
+            };
+        }
+
+        // Validate duration (minimum 30 minutes, multiple of 30)
+        if (block.duration < 30) {
+            return {
+                success: false,
+                error: { code: 'INVALID_DURATION', message: 'Duration must be at least 30 minutes', field: 'duration' }
+            };
+        }
+
+        if (block.duration % 30 !== 0) {
+            return {
+                success: false,
+                error: { code: 'INVALID_DURATION', message: 'Duration must be a multiple of 30 minutes', field: 'duration' }
+            };
+        }
+
+        // Validate day span
+        if (block.daySpan < 1 || block.daySpan > 7) {
+            return {
+                success: false,
+                error: { code: 'INVALID_DAY_SPAN', message: 'Day span must be between 1 and 7', field: 'daySpan' }
+            };
+        }
+
+        // Validate time boundaries
+        const startHourMinutes = this.config.startHour * 60;
+        const endHourMinutes = this.config.endHour * 60;
         
-        // Update any blocks that depend on the configuration
-        this.blocks.forEach(block => {
-            // Recalculate block positions based on the old configuration
-            const day = GridUtils.getDayFromX(block.x, oldConfig);
-            const newX = GridUtils.getXFromDay(day, config);
-            const newWidth = GridUtils.getWidthFromDaySpan(block.daySpan, config);
-            const newY = GridUtils.getYFromTime(block.startTime, config);
-            const newHeight = GridUtils.getHeightFromDuration(block.duration, config);
-            
-            block.x = newX;
-            block.width = newWidth;
-            block.y = newY;
-            block.height = newHeight;
-        });
+        if (block.startTime < startHourMinutes) {
+            return {
+                success: false,
+                error: { code: 'TIME_OUT_OF_BOUNDS', message: `Start time cannot be before ${this.config.startHour}:00`, field: 'startTime' }
+            };
+        }
+
+        if (block.startTime + block.duration > endHourMinutes) {
+            return {
+                success: false,
+                error: { code: 'TIME_OUT_OF_BOUNDS', message: `End time cannot be after ${this.config.endHour}:00`, field: 'duration' }
+            };
+        }
+
+        // Validate color format
+        if (!/^#[0-9A-Fa-f]{6}$/.test(block.color)) {
+            return {
+                success: false,
+                error: { code: 'INVALID_COLOR', message: 'Color must be in hex format (#RRGGBB)', field: 'color' }
+            };
+        }
+
+        return { success: true, data: undefined };
+    }
+
+    /**
+     * Checks for overlaps with existing blocks
+     */
+    private checkOverlap(newBlock: TimeBlock): TimeBlock[] {
+        return this.findOverlappingBlocks(newBlock, Array.from(this.blocks.values()));
+    }
+
+    /**
+     * Finds overlapping blocks in a given set
+     */
+    private findOverlappingBlocks(block: TimeBlock, blocks: TimeBlock[]): TimeBlock[] {
+        return blocks.filter(existingBlock => this.blocksOverlap(block, existingBlock));
+    }
+
+    /**
+     * Checks if two blocks overlap
+     */
+    private blocksOverlap(block1: TimeBlock, block2: TimeBlock): boolean {
+        // Calculate day ranges
+        const block1StartDay = GridUtils.getDayFromX(block1.x, this.config);
+        const block1EndDay = block1StartDay + block1.daySpan - 1;
+        const block2StartDay = GridUtils.getDayFromX(block2.x, this.config);
+        const block2EndDay = block2StartDay + block2.daySpan - 1;
+
+        // Check for day overlap
+        const dayOverlap = !(block1EndDay < block2StartDay || block1StartDay > block2EndDay);
+        
+        // Check for time overlap
+        const block1EndTime = block1.startTime + block1.duration;
+        const block2EndTime = block2.startTime + block2.duration;
+        const timeOverlap = !(block1EndTime <= block2.startTime || block1.startTime >= block2EndTime);
+
+        return dayOverlap && timeOverlap;
+    }
+
+    /**
+     * Checks if a point is within a block's boundaries
+     */
+    private isPointInBlock(x: number, y: number, block: TimeBlock): boolean {
+        return x >= block.x && 
+               x <= block.x + block.width &&
+               y >= block.y && 
+               y <= block.y + block.height;
     }
 }

@@ -4,15 +4,19 @@
   "main": "index.js",
   "scripts": {
     "build": "tsc",
+    "build:test": "tsc -p tsconfig.test.json",
     "watch": "tsc --watch",
     "serve": "http-server -p 8080 .",
-    "dev": "npm run build && npm run serve"
+    "dev": "npm run build && npm run serve",
+    "test": "npm run build:test && node --test tests-dist/tests/**/*.test.js",
+    "test:watch": "npm run build:test && node --test --watch tests/**/*.test.js"
   },
   "author": "Sébastien Dubois",
   "license": "MIT",
   "description": "A week planner application with Canvas and TypeScript",
   "devDependencies": {
     "typescript": "^5.0.0",
-    "http-server": "^14.1.1"
+    "http-server": "^14.1.1",
+    "@types/node": "^20.0.0"
   }
 }

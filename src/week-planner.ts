@@ -1,83 +1,132 @@
-import { TimeBlock, GridConfig, Point } from './types.js';
+import { 
+    TimeBlock, 
+    GridConfig, 
+    Point, 
+    MouseState, 
+    ValidationError,
+    HexColor,
+    WeekPlannerData
+} from './types.js';
 import { GridUtils } from './grid-utils.js';
 import { TimeBlockManager } from './time-block-manager.js';
 import { CanvasRenderer } from './canvas-renderer.js';
 
+/**
+ * Main application controller for the week planner
+ * Handles UI events and coordinates other components
+ */
 export class WeekPlanner {
-    private canvas: HTMLCanvasElement;
-    private renderer!: CanvasRenderer;
-    private blockManager!: TimeBlockManager;
+    private readonly canvas: HTMLCanvasElement;
+    private readonly textInput: HTMLInputElement;
+    private readonly colorPicker: HTMLInputElement;
+    
+    private renderer: CanvasRenderer;
+    private blockManager: TimeBlockManager;
     private config: GridConfig;
-    private textInput: HTMLInputElement;
-    private colorPicker: HTMLInputElement;
-
-    private isDragging = false;
-    private dragStartPoint: Point | null = null;
-    private currentDragBlock: TimeBlock | null = null;
+    
+    private mouseState: MouseState = {
+        isDown: false,
+        startPoint: null,
+        currentPoint: null,
+        isDragging: false
+    };
+    
+    private previewBlock: TimeBlock | null = null;
     private editingBlock: TimeBlock | null = null;
+    private resizeTimeout: ReturnType<typeof setTimeout> | null = null;
 
     constructor() {
-        this.config = {
+        // Initialize DOM elements
+        this.canvas = this.getRequiredElement('weekCanvas') as HTMLCanvasElement;
+        this.textInput = this.getRequiredElement('textInput') as HTMLInputElement;
+        this.colorPicker = this.getRequiredElement('blockColor') as HTMLInputElement;
+        
+        // Initialize configuration
+        this.config = this.createInitialConfig();
+        
+        // Initialize components
+        this.blockManager = new TimeBlockManager(this.config);
+        this.renderer = new CanvasRenderer(this.canvas, this.config);
+        
+        // Setup and start
+        this.initialize();
+    }
+
+    /**
+     * Initialize the application
+     */
+    private initialize(): void {
+        this.setupCanvas();
+        this.setupEventListeners();
+        this.render();
+    }
+
+    /**
+     * Create initial configuration
+     */
+    private createInitialConfig(): GridConfig {
+        return {
             startHour: 6,
             endHour: 24,
             timeSlotHeight: 24,
             dayWidth: 140,
-            headerHeight: 50,
-            timeColumnWidth: 80,
-            days: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
+            headerHeight: 60,
+            timeColumnWidth: 120,
+            days: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'],
+            canvasWidth: window.innerWidth,
+            canvasHeight: window.innerHeight
         };
-
-        this.canvas = document.getElementById('weekCanvas') as HTMLCanvasElement;
-        this.textInput = document.getElementById('textInput') as HTMLInputElement;
-        this.colorPicker = document.getElementById('blockColor') as HTMLInputElement;
-        
-        // Initialize block manager first
-        this.blockManager = new TimeBlockManager(this.config);
-        
-        // Wait for next frame to ensure layout is complete
-        requestAnimationFrame(() => {
-            this.setupCanvas();
-            this.renderer = new CanvasRenderer(this.canvas, this.config);
-
-            this.setupEventListeners();
-            this.render();
-        });
     }
 
+    /**
+     * Helper to get required DOM elements with error handling
+     */
+    private getRequiredElement(id: string): HTMLElement {
+        const element = document.getElementById(id);
+        if (!element) {
+            throw new Error(`Required element with ID '${id}' not found`);
+        }
+        return element;
+    }
+
+    /**
+     * Setup canvas dimensions and calculate grid layout
+     */
     private setupCanvas(): void {
         const containerWidth = window.innerWidth;
         const containerHeight = window.innerHeight;
         
+        // Set canvas size
         this.canvas.width = containerWidth;
         this.canvas.height = containerHeight;
-        this.canvas.style.width = containerWidth + 'px';
-        this.canvas.style.height = containerHeight + 'px';
+        this.canvas.style.width = `${containerWidth}px`;
+        this.canvas.style.height = `${containerHeight}px`;
         
+        // Calculate grid dimensions
         const totalHours = this.config.endHour - this.config.startHour;
-        
-        this.config.timeColumnWidth = 120;
-        this.config.headerHeight = 60;
-        
-        // Calculate exact day width so 7 days fit perfectly
         const availableWidth = containerWidth - this.config.timeColumnWidth;
-        this.config.dayWidth = availableWidth / 7;  // Use exact division to utilize all available space
         
+        // Update configuration with calculated values
+        this.config.dayWidth = availableWidth / this.config.days.length;
         this.config.timeSlotHeight = (containerHeight - this.config.headerHeight) / (totalHours * 2);
-        
         this.config.canvasWidth = containerWidth;
         this.config.canvasHeight = containerHeight;
         
-        if (this.blockManager) {
-            this.blockManager.updateConfig(this.config);
-        }
+        // Update components with new configuration
+        this.blockManager.updateConfig(this.config);
+        this.renderer.updateConfig(this.config);
     }
 
+    /**
+     * Setup all event listeners
+     */
     private setupEventListeners(): void {
-        // Canvas events
+        // Canvas mouse events
         this.canvas.addEventListener('mousedown', this.onMouseDown.bind(this));
         this.canvas.addEventListener('mousemove', this.onMouseMove.bind(this));
         this.canvas.addEventListener('mouseup', this.onMouseUp.bind(this));
         this.canvas.addEventListener('dblclick', this.onDoubleClick.bind(this));
+        this.canvas.addEventListener('mouseleave', this.onMouseLeave.bind(this));
 
         // Keyboard events
         document.addEventListener('keydown', this.onKeyDown.bind(this));
@@ -86,12 +135,18 @@ export class WeekPlanner {
         this.textInput.addEventListener('blur', this.onTextInputBlur.bind(this));
         this.textInput.addEventListener('keydown', this.onTextInputKeyDown.bind(this));
 
-        // Toolbar events
-        document.getElementById('exportSVG')?.addEventListener('click', this.exportSVG.bind(this));
-        document.getElementById('exportPNG')?.addEventListener('click', this.exportPNG.bind(this));
-        document.getElementById('clearAll')?.addEventListener('click', this.clearAll.bind(this));
+        // Menu and export events
+        this.setupMenuEvents();
+        this.setupExportEvents();
 
-        // Toolbar toggle functionality
+        // Window events
+        this.setupWindowEvents();
+    }
+
+    /**
+     * Setup menu toggle functionality
+     */
+    private setupMenuEvents(): void {
         const toolbarToggle = document.getElementById('toolbarToggle');
         const toolbarMenu = document.getElementById('toolbarMenu');
         
@@ -102,187 +157,162 @@ export class WeekPlanner {
 
         // Close menu when clicking outside
         document.addEventListener('click', (e) => {
-            if (!toolbarToggle?.contains(e.target as Node) && !toolbarMenu?.contains(e.target as Node)) {
+            const target = e.target as Node;
+            if (!toolbarToggle?.contains(target) && !toolbarMenu?.contains(target)) {
                 toolbarMenu?.classList.remove('visible');
             }
         });
+    }
 
-        // Window resize and zoom handling
-        let resizeTimeout: ReturnType<typeof setTimeout>;
-        window.addEventListener('resize', () => {
-            clearTimeout(resizeTimeout);
-            resizeTimeout = setTimeout(() => {
-                this.setupCanvas();
-                if (this.renderer) {
-                    this.renderer = new CanvasRenderer(this.canvas, this.config);
-                }
-                this.render();
-            }, 100);
-        });
+    /**
+     * Setup export and utility button events
+     */
+    private setupExportEvents(): void {
+        document.getElementById('exportSVG')?.addEventListener('click', () => this.exportSVG());
+        document.getElementById('exportPNG')?.addEventListener('click', () => this.exportPNG());
+        document.getElementById('exportJSON')?.addEventListener('click', () => this.exportJSON());
+        document.getElementById('importJSON')?.addEventListener('click', () => this.importJSON());
+        document.getElementById('clearAll')?.addEventListener('click', () => this.clearAll());
+    }
 
-        // Handle zoom changes
+    /**
+     * Setup window resize and zoom handling
+     */
+    private setupWindowEvents(): void {
+        window.addEventListener('resize', () => this.handleResize());
         window.addEventListener('wheel', (e) => {
             if (e.ctrlKey) {
-                // Zoom detected, recalculate after a short delay
-                clearTimeout(resizeTimeout);
-                resizeTimeout = setTimeout(() => {
-                    this.setupCanvas();
-                    if (this.renderer) {
-                        this.renderer = new CanvasRenderer(this.canvas, this.config);
-                    }
-                    this.render();
-                }, 200);
+                this.handleResize();
             }
         });
     }
 
-    private updateCursor(x: number, y: number): void {
-        const block = this.blockManager.getBlockAt(x, y);
+    /**
+     * Handle window resize with debouncing
+     */
+    private handleResize(): void {
+        if (this.resizeTimeout) {
+            clearTimeout(this.resizeTimeout);
+        }
         
+        this.resizeTimeout = setTimeout(() => {
+            this.setupCanvas();
+            this.render();
+        }, 100);
+    }
+
+    /**
+     * Get mouse position relative to canvas
+     */
+    private getMousePosition(event: MouseEvent): Point {
+        const rect = this.canvas.getBoundingClientRect();
+        return {
+            x: event.clientX - rect.left,
+            y: event.clientY - rect.top
+        };
+    }
+
+    /**
+     * Update cursor based on mouse position
+     */
+    private updateCursor(x: number, y: number): void {
+        if (!GridUtils.isInGridArea(x, y, this.config)) {
+            this.canvas.classList.remove('creating', 'pointer');
+            return;
+        }
+
+        const block = this.blockManager.getBlockAt(x, y);
         if (block) {
             this.canvas.classList.remove('creating');
             this.canvas.classList.add('pointer');
-        } else if (x >= this.config.timeColumnWidth && y >= this.config.headerHeight) {
+        } else {
             this.canvas.classList.remove('pointer');
             this.canvas.classList.add('creating');
-        } else {
-            this.canvas.classList.remove('creating', 'pointer');
         }
     }
 
+    /**
+     * Handle mouse down events
+     */
     private onMouseDown(event: MouseEvent): void {
-        const rect = this.canvas.getBoundingClientRect();
-        const x = event.clientX - rect.left;
-        const y = event.clientY - rect.top;
-
-        // Check if click is in the valid grid area (not in time column or header)
-        if (x < this.config.timeColumnWidth || y < this.config.headerHeight) {
+        const point = this.getMousePosition(event);
+        
+        // Only handle clicks in the grid area
+        if (!GridUtils.isInGridArea(point.x, point.y, this.config)) {
             return;
         }
 
-        // Also check if we're beyond the right edge of the grid
-        const gridEndX = this.config.timeColumnWidth + (this.config.days.length * this.config.dayWidth);
-        if (x >= gridEndX) {
-            return;
-        }
+        this.mouseState = {
+            isDown: true,
+            startPoint: point,
+            currentPoint: point,
+            isDragging: false
+        };
 
-        const clickedBlock = this.blockManager.getBlockAt(x, y);
+        const clickedBlock = this.blockManager.getBlockAt(point.x, point.y);
         
         if (clickedBlock) {
-            // Select the clicked block
             this.blockManager.selectBlock(clickedBlock.id);
         } else {
-            // Start creating a new block
             this.blockManager.selectBlock(null);
-            this.isDragging = true;
-            this.dragStartPoint = GridUtils.snapToGrid(x, y, this.config);
+            this.startBlockCreation(point);
         }
         
         this.render();
     }
 
+    /**
+     * Handle mouse move events
+     */
     private onMouseMove(event: MouseEvent): void {
-        const rect = this.canvas.getBoundingClientRect();
-        const x = event.clientX - rect.left;
-        const y = event.clientY - rect.top;
+        const point = this.getMousePosition(event);
 
         // Update cursor if not dragging
-        if (!this.isDragging) {
-            this.updateCursor(x, y);
+        if (!this.mouseState.isDragging) {
+            this.updateCursor(point.x, point.y);
         }
 
-        if (!this.isDragging || !this.dragStartPoint) {
-            return;
-        }
-
-        const snappedPoint = GridUtils.snapToGrid(x, y, this.config);
-        
-        // Calculate which days the block spans
-        const startDay = GridUtils.getDayFromX(this.dragStartPoint.x, this.config);
-        const endDay = GridUtils.getDayFromX(snappedPoint.x, this.config);
-        
-        const minDay = Math.min(startDay, endDay);
-        const maxDay = Math.max(startDay, endDay);
-        const daySpan = maxDay - minDay + 1;
-        
-        // Calculate dimensions based on day boundaries
-        const finalX = GridUtils.getXFromDay(minDay, this.config);
-        const finalWidth = daySpan * this.config.dayWidth;
-        
-        // Calculate height normally
-        const height = Math.abs(snappedPoint.y - this.dragStartPoint.y);
-        const finalHeight = Math.max(this.config.timeSlotHeight, height);
-        const finalY = Math.min(this.dragStartPoint.y, snappedPoint.y);
-
-        // Strict grid boundaries - prevent any overflow
-        const gridStartX = this.config.timeColumnWidth;
-        const gridEndX = this.config.timeColumnWidth + (this.config.days.length * this.config.dayWidth);
-        
-        // Ensure block doesn't extend beyond grid
-        const constrainedX = Math.max(gridStartX, Math.min(finalX, gridEndX - finalWidth));
-        const maxWidth = gridEndX - constrainedX;
-        const constrainedWidth = Math.min(finalWidth, maxWidth);
-
-        // Create preview block
-        this.currentDragBlock = {
-            id: 'preview',
-            x: constrainedX,
-            y: finalY,
-            width: constrainedWidth,
-            height: finalHeight,
-            startTime: GridUtils.getTimeFromY(finalY, this.config),
-            duration: GridUtils.getDurationInMinutes(finalHeight, this.config),
-            daySpan: daySpan,  // Use calculated daySpan directly
-            text: '',
-            color: this.colorPicker.value,
-            selected: false
-        };
-
-        this.render();
-        
-        // Draw preview block with transparency
-        if (this.currentDragBlock) {
-            this.drawPreviewBlock(this.currentDragBlock);
+        // Handle block creation dragging
+        if (this.mouseState.isDown && this.mouseState.startPoint) {
+            this.updateBlockCreation(point);
         }
     }
 
-    private onMouseUp(event: MouseEvent): void {
-        if (!this.isDragging || !this.currentDragBlock) {
-            this.isDragging = false;
-            this.dragStartPoint = null;
-            this.currentDragBlock = null;
-            return;
+    /**
+     * Handle mouse up events
+     */
+    private onMouseUp(): void {
+        if (this.mouseState.isDragging && this.previewBlock) {
+            this.finishBlockCreation();
         }
 
-        // Create the actual block
-        const block: TimeBlock = {
-            ...this.currentDragBlock,
-            id: this.generateBlockId(),
-            selected: true
-        };
-
-        const success = this.blockManager.addBlock(block);
-        if (success) {
-            this.blockManager.selectBlock(block.id);
-        }
-
-        this.isDragging = false;
-        this.dragStartPoint = null;
-        this.currentDragBlock = null;
+        this.resetMouseState();
         this.render();
     }
 
+    /**
+     * Handle mouse leave events
+     */
+    private onMouseLeave(): void {
+        this.resetMouseState();
+        this.render();
+    }
+
+    /**
+     * Handle double click events for text editing
+     */
     private onDoubleClick(event: MouseEvent): void {
-        const rect = this.canvas.getBoundingClientRect();
-        const x = event.clientX - rect.left;
-        const y = event.clientY - rect.top;
-
-        const clickedBlock = this.blockManager.getBlockAt(x, y);
+        const point = this.getMousePosition(event);
+        const clickedBlock = this.blockManager.getBlockAt(point.x, point.y);
+        
         if (clickedBlock) {
             this.startEditingBlock(clickedBlock);
         }
     }
 
+    /**
+     * Handle keyboard events
+     */
     private onKeyDown(event: KeyboardEvent): void {
         if (event.key === 'Delete' || event.key === 'Backspace') {
             const selectedBlock = this.blockManager.getSelectedBlock();
@@ -295,6 +325,102 @@ export class WeekPlanner {
         }
     }
 
+    /**
+     * Start creating a new block
+     */
+    private startBlockCreation(point: Point): void {
+        this.mouseState = {
+            ...this.mouseState,
+            isDragging: true
+        };
+    }
+
+    /**
+     * Update block creation during drag
+     */
+    private updateBlockCreation(currentPoint: Point): void {
+        if (!this.mouseState.startPoint) return;
+
+        this.mouseState = {
+            ...this.mouseState,
+            currentPoint,
+            isDragging: true
+        };
+
+        const snappedStart = GridUtils.snapToGrid(this.mouseState.startPoint!.x, this.mouseState.startPoint!.y, this.config);
+        const snappedEnd = GridUtils.snapToGrid(currentPoint.x, currentPoint.y, this.config);
+
+        // Calculate block dimensions
+        const startDay = GridUtils.getDayFromX(snappedStart.x, this.config);
+        const endDay = GridUtils.getDayFromX(snappedEnd.x, this.config);
+        const minDay = Math.min(startDay, endDay);
+        const maxDay = Math.max(startDay, endDay);
+        const daySpan = maxDay - minDay + 1;
+
+        const x = GridUtils.getXFromDay(minDay, this.config);
+        const width = GridUtils.getWidthFromDaySpan(daySpan, this.config);
+        const y = Math.min(snappedStart.y, snappedEnd.y);
+        const height = Math.max(this.config.timeSlotHeight, Math.abs(snappedEnd.y - snappedStart.y));
+
+        // Create preview block
+        this.previewBlock = {
+            id: 'preview',
+            x,
+            y,
+            width,
+            height,
+            startTime: GridUtils.getTimeFromY(y, this.config),
+            duration: GridUtils.getDurationInMinutes(height, this.config),
+            daySpan,
+            text: '',
+            color: this.colorPicker.value as HexColor,
+            selected: false
+        };
+
+        this.render();
+        if (this.previewBlock) {
+            this.renderer.drawPreviewBlock(this.previewBlock);
+        }
+    }
+
+    /**
+     * Finish creating a block
+     */
+    private finishBlockCreation(): void {
+        if (!this.previewBlock) return;
+
+        const block: TimeBlock = {
+            ...this.previewBlock,
+            id: this.generateBlockId(),
+            selected: true
+        };
+
+        const result = this.blockManager.addBlock(block);
+        if (result.success) {
+            this.blockManager.selectBlock(block.id);
+        } else {
+            this.showError(result.error.message);
+        }
+
+        this.previewBlock = null;
+    }
+
+    /**
+     * Reset mouse state
+     */
+    private resetMouseState(): void {
+        this.mouseState = {
+            isDown: false,
+            startPoint: null,
+            currentPoint: null,
+            isDragging: false
+        };
+        this.previewBlock = null;
+    }
+
+    /**
+     * Start editing a block's text
+     */
     private startEditingBlock(block: TimeBlock): void {
         this.editingBlock = block;
         this.textInput.value = block.text;
@@ -306,6 +432,9 @@ export class WeekPlanner {
         this.textInput.select();
     }
 
+    /**
+     * Stop editing a block's text
+     */
     private stopEditingBlock(): void {
         if (this.editingBlock) {
             this.blockManager.updateBlockText(this.editingBlock.id, this.textInput.value);
@@ -315,6 +444,9 @@ export class WeekPlanner {
         }
     }
 
+    /**
+     * Text input event handlers
+     */
     private onTextInputBlur(): void {
         this.stopEditingBlock();
     }
@@ -328,79 +460,26 @@ export class WeekPlanner {
         }
     }
 
-    private drawPreviewBlock(block: TimeBlock): void {
-        const ctx = this.canvas.getContext('2d')!;
-        
-        // Draw preview block with transparency
-        ctx.globalAlpha = 0.7;
-        ctx.fillStyle = block.color;
-        ctx.fillRect(block.x, block.y, block.width, block.height);
-        
-        // Draw dashed border
-        ctx.strokeStyle = this.darkenColor(block.color, 0.3);
-        ctx.lineWidth = 2;
-        ctx.setLineDash([8, 4]);
-        ctx.strokeRect(block.x, block.y, block.width, block.height);
-        ctx.setLineDash([]);
-        
-        // Draw time information
-        ctx.globalAlpha = 1.0;
-        const startTime = GridUtils.formatTime(block.startTime);
-        const endTime = GridUtils.formatTime(block.startTime + block.duration);
-        const timeText = `${startTime} - ${endTime}`;
-        
-        ctx.fillStyle = this.getContrastColor(block.color);
-        ctx.font = '500 11px Inter, "Segoe UI", system-ui, sans-serif';
-        ctx.textAlign = 'center';
-        ctx.textBaseline = 'middle';
-        ctx.fillText(timeText, block.x + block.width / 2, block.y + block.height / 2);
-        
-        ctx.globalAlpha = 1.0;
-    }
-
-    private darkenColor(color: string, factor: number): string {
-        const hex = color.replace('#', '');
-        const r = parseInt(hex.substring(0, 2), 16);
-        const g = parseInt(hex.substring(2, 4), 16);
-        const b = parseInt(hex.substring(4, 6), 16);
-
-        const newR = Math.round(r * (1 - factor));
-        const newG = Math.round(g * (1 - factor));
-        const newB = Math.round(b * (1 - factor));
-
-        return `#${newR.toString(16).padStart(2, '0')}${newG.toString(16).padStart(2, '0')}${newB.toString(16).padStart(2, '0')}`;
-    }
-
-    private getContrastColor(hexColor: string): string {
-        const hex = hexColor.replace('#', '');
-        const r = parseInt(hex.substring(0, 2), 16);
-        const g = parseInt(hex.substring(2, 4), 16);
-        const b = parseInt(hex.substring(4, 6), 16);
-
-        // Calculate brightness
-        const brightness = (r * 299 + g * 587 + b * 114) / 1000;
-        return brightness > 128 ? '#000000' : '#ffffff';
-    }
-
+    /**
+     * Generate a unique block ID
+     */
     private generateBlockId(): string {
-        return Date.now().toString() + Math.random().toString(36).substring(2, 11);
+        return `block_${Date.now()}_${Math.random().toString(36).substring(2, 11)}`;
     }
 
+    /**
+     * Main render method
+     */
     private render(): void {
         this.renderer.render(this.blockManager.getBlocks());
     }
 
+    /**
+     * Export functionality
+     */
     private exportSVG(): void {
         const svg = this.renderer.exportSVG(this.blockManager.getBlocks());
-        const blob = new Blob([svg], { type: 'image/svg+xml' });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = 'week-planner.svg';
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        URL.revokeObjectURL(url);
+        this.downloadFile(svg, 'week-planner.svg', 'image/svg+xml');
     }
 
     private exportPNG(): void {
@@ -410,10 +489,67 @@ export class WeekPlanner {
         link.click();
     }
 
+    private exportJSON(): void {
+        const data = this.blockManager.exportData();
+        const json = JSON.stringify(data, null, 2);
+        this.downloadFile(json, 'week-planner.json', 'application/json');
+    }
+
+    private importJSON(): void {
+        const input = document.createElement('input');
+        input.type = 'file';
+        input.accept = '.json';
+        input.onchange = (e) => {
+            const file = (e.target as HTMLInputElement).files?.[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    try {
+                        const data = JSON.parse(e.target?.result as string) as WeekPlannerData;
+                        const result = this.blockManager.importData(data);
+                        if (result.success) {
+                            this.render();
+                        } else {
+                            this.showError(result.error.message);
+                        }
+                    } catch (error) {
+                        this.showError('Invalid JSON file');
+                    }
+                };
+                reader.readAsText(file);
+            }
+        };
+        input.click();
+    }
+
+    /**
+     * Clear all blocks with confirmation
+     */
     private clearAll(): void {
         if (confirm('Are you sure you want to clear all blocks?')) {
             this.blockManager.clearAll();
             this.render();
         }
+    }
+
+    /**
+     * Utility methods
+     */
+    private downloadFile(content: string, filename: string, contentType: string): void {
+        const blob = new Blob([content], { type: contentType });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = filename;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+    }
+
+    private showError(message: string): void {
+        console.error(message);
+        // Could be enhanced with a proper notification system
+        alert(message);
     }
 }

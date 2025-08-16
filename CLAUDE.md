@@ -7,6 +7,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - In doubt, ask me questions about the desired behavior
 - Always run `npm run serve` in the background
 - Use Puppeteer via the Dockmaster MCP server to check the results, see if everything works correctly, understand issues, bugs, etc
+- Whenever you make important changes to the domain model, to the UI, etc, make sure to update/save the memory
 
 ## Development Commands
 

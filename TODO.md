@@ -1,4 +1,3 @@
-- The visual quality of the canvas as a whole and text is horrible. There's also a lot of whitespace on the right of the sunday. Needs huge improvements.
 - It should be possible to resize existing blocks (without overlapping other blocks)
 - Text of the block should not overlap time of the block
 - During block creation (during click and drag), the time of the block should be displayed
@@ -13,3 +12,10 @@
 - In top left, time blocks should display start time - end time (duration in hours/minutes) (e.g., 13:00 - 14:00 (1h))
 - Colors should be hex codes
 - alignment (vertical, horizontal), etc should be enums
+- On mouse release, there should be no warning if there's overlap and no block should be added
+- There should be no confirmation when initiating "Clear all"
+- Double clicking in a cell should add a time block in that cell
+- When zooming in, the visual quality of the UI/grid/canvas/... should remain perfect
+- the 00:00 time slot is not visible (the UI have some margin on all sides)
+- the 06:00 is hidden behind a line
+- 

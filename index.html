@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Week Planner</title>
+    <title>Visual Week Planner - Plan Your Week</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -71,14 +71,35 @@
             margin: 8px 0;
         }
 
+        .menu-section {
+            border-bottom: 1px solid #555;
+            padding-bottom: 12px;
+            margin-bottom: 12px;
+        }
+
+        .menu-section:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+        }
+
+        .menu-section h4 {
+            margin: 0 0 8px 0;
+            font-size: 12px;
+            color: #ccc;
+            text-transform: uppercase;
+            font-weight: 600;
+        }
+
         .color-picker {
             display: flex;
             align-items: center;
-            gap: 5px;
+            gap: 8px;
+            margin-bottom: 16px;
         }
 
         .color-picker label {
             font-size: 14px;
+            font-weight: 500;
         }
 
         .color-picker input[type="color"] {
@@ -90,6 +111,7 @@
         }
 
         button {
+            width: 100%;
             padding: 8px 16px;
             background-color: #0066cc;
             color: white;
@@ -97,6 +119,9 @@
             border-radius: 4px;
             cursor: pointer;
             font-size: 14px;
+            font-weight: 500;
+            margin-bottom: 4px;
+            transition: background-color 0.2s ease;
         }
 
         button:hover {
@@ -106,6 +131,14 @@
         button:disabled {
             background-color: #666;
             cursor: not-allowed;
+        }
+
+        button.danger {
+            background-color: #dc3545;
+        }
+
+        button.danger:hover {
+            background-color: #c82333;
         }
 
         .canvas-container {
@@ -160,9 +193,21 @@
                     <input type="color" id="blockColor" value="#4CAF50">
                 </div>
                 
-                <button id="exportSVG">Export SVG</button>
-                <button id="exportPNG">Export PNG</button>
-                <button id="clearAll">Clear All</button>
+                <div class="menu-section">
+                    <h4>Export</h4>
+                    <button id="exportPNG">Export to PNG</button>
+                    <button id="exportSVG">Export to SVG</button>
+                    <button id="exportJSON">Export to JSON</button>
+                </div>
+                
+                <div class="menu-section">
+                    <h4>Import</h4>
+                    <button id="importJSON">Import from JSON</button>
+                </div>
+                
+                <div class="menu-section">
+                    <button id="clearAll" class="danger">Clear All</button>
+                </div>
             </div>
         </div>
 

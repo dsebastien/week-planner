@@ -41,7 +41,7 @@ export class WeekPlanner {
      */
     createInitialConfig() {
         return {
-            startHour: 6,
+            startHour: 5,
             endHour: 24,
             timeSlotHeight: 24,
             dayWidth: 140,

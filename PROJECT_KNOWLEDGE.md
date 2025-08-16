@@ -5,7 +5,7 @@ A visual week planning application built with TypeScript, HTML5 Canvas, and mode
 
 ## Main concepts
 - Week: Monday to Sunday
-- Hours: 06:00 to 24:00
+- Hours: 05:00 to 24:00
 - Time slot: Hours split in 30 minute time slots
 - Time block: time to spend on some activity
 
@@ -17,7 +17,7 @@ A visual week planning application built with TypeScript, HTML5 Canvas, and mode
 ## User interface
 The UI is a grid on a Canvas with:
 - Grid precisely sized to content (no extra space below 00:00)
-- Rows: Time slots (30-minute intervals from 06:00 to 23:30)
+- Rows: Time slots (30-minute intervals from 05:00 to 23:30)
 - Responsive time slot height (minimum 20px, scales with screen size)
 - Columns: Days (Monday through Sunday)
 - Equal width columns across full viewport width
@@ -31,7 +31,7 @@ Behavior:
 - Clicking and dragging in the grid creates a time block that can span over multiple time slots/days
 - Double clicking on an empty cell creates a single 30-minute time block in that cell
 - Time blocks snap to 30-minute grid intersections
-- Interaction restricted to valid time range (06:00-23:30 only)
+- Interaction restricted to valid time range (05:00-23:30 only)
 - Clicking on the "..." in the top right shows the menu
 - Double clicking on a time block edits the text in the block
 - Delete/Backspace keys remove selected time blocks

@@ -301,11 +301,15 @@ export class WeekPlanner {
             currentPoint,
             isDragging: true
         };
-        // Use bulletproof cell detection for both start and end points
+        // Use bulletproof cell detection for start point
         const startCell = this.getCellFromPoint(this.mouseState.startPoint);
-        const endCell = this.getCellFromPoint(currentPoint);
-        if (!startCell || !endCell) {
-            return; // Invalid cell selection
+        if (!startCell)
+            return; // Start point must be valid
+        // Clamp current point to grid boundaries for smooth dragging experience
+        const clampedCurrentPoint = this.clampPointToGrid(currentPoint);
+        const endCell = this.getCellFromPoint(clampedCurrentPoint);
+        if (!endCell) {
+            return; // This should not happen with clamped point, but safety check
         }
         // Calculate block dimensions using cell-based approach
         const minDay = Math.min(startCell.dayIndex, endCell.dayIndex);
@@ -415,6 +419,16 @@ export class WeekPlanner {
         else {
             this.showError(result.error.message);
         }
+    }
+    /**
+     * Clamp a point to grid boundaries to ensure it remains within valid area
+     */
+    clampPointToGrid(point) {
+        const gridBounds = GridUtils.getGridBounds(this.config);
+        return {
+            x: Math.max(gridBounds.minX, Math.min(point.x, gridBounds.maxX)),
+            y: Math.max(gridBounds.minY, Math.min(point.y, gridBounds.maxY))
+        };
     }
     /**
      * Determine which cell a point falls into (bulletproof cell detection)

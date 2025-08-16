@@ -99,6 +99,10 @@ export declare class WeekPlanner {
      */
     private createBlockInCell;
     /**
+     * Clamp a point to grid boundaries to ensure it remains within valid area
+     */
+    private clampPointToGrid;
+    /**
      * Determine which cell a point falls into (bulletproof cell detection)
      */
     private getCellFromPoint;

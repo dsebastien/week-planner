@@ -284,6 +284,17 @@ this.blocks.set(blockId, updatedBlock);
     - Apply same adaptive logic to preview blocks during drag operations
   - **Result**: Both time information and text are clearly visible in all block sizes
 
+- **Fixed**: Drag behavior when mouse goes outside grid boundaries
+  - **Problem**: Preview block disappeared when dragging outside grid, operation cancelled on mouse release
+  - **Root Cause**: `getCellFromPoint()` returned `null` for points outside grid, causing early return in `updateBlockCreation()`
+  - **Solution**: Implemented point clamping to keep preview block visible and functional
+  - **Implementation**: 
+    - Added `clampPointToGrid()` method to constrain coordinates to grid boundaries
+    - Modified `updateBlockCreation()` to clamp current point before cell detection
+    - Preview block now stays visible at grid edges when dragging outside
+    - Block creation completes normally when releasing mouse outside grid
+  - **Result**: Smooth drag experience with preview always visible, blocks created as expected
+
 ### Visual Enhancements (Added)
 - **Added**: Lunch time background highlighting (12:00-14:00)
   - **Feature**: Lighter background (`#333333`) for lunch hours across all days

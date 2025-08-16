@@ -455,6 +455,46 @@ export class CanvasRenderer {
             const dayName = this.config.days[i] || '';
             svg += `<text x="${x}" y="${y}" text-anchor="middle" dominant-baseline="middle" fill="${CanvasRenderer.THEME.primaryText}" font-family="Inter, system-ui, sans-serif" font-size="16" font-weight="600">${dayName}</text>`;
         }
+        // Time labels
+        const totalHours = this.config.endHour - this.config.startHour;
+        const totalSlots = totalHours * 2; // 30-minute slots
+        for (let i = 0; i < totalSlots; i++) {
+            const minutes = this.config.startHour * 60 + i * 30;
+            const timeStr = GridUtils.formatTime(minutes);
+            const y = this.config.headerHeight + i * this.config.timeSlotHeight + (i === 0 ? 8 : 0);
+            if (y + 10 > this.config.canvasHeight)
+                continue;
+            const isHour = i % 2 === 0;
+            const textColor = isHour ? CanvasRenderer.THEME.primaryText : CanvasRenderer.THEME.secondaryText;
+            const fontSize = isHour ? "14" : "12";
+            const fontWeight = isHour ? "600" : "500";
+            svg += `<text x="${this.config.timeColumnWidth - 8}" y="${y}" text-anchor="end" dominant-baseline="middle" fill="${textColor}" font-family="Inter, system-ui, sans-serif" font-size="${fontSize}" font-weight="${fontWeight}">${timeStr}</text>`;
+        }
+        // Final 00:00 label
+        const finalY = this.config.headerHeight + totalSlots * this.config.timeSlotHeight;
+        if (finalY + 10 <= this.config.canvasHeight) {
+            svg += `<text x="${this.config.timeColumnWidth - 8}" y="${finalY}" text-anchor="end" dominant-baseline="middle" fill="${CanvasRenderer.THEME.primaryText}" font-family="Inter, system-ui, sans-serif" font-size="14" font-weight="600">00:00</text>`;
+        }
+        // Grid lines
+        const gridWidth = this.config.days.length * this.config.dayWidth;
+        // Vertical lines (day separators)
+        for (let i = 0; i <= this.config.days.length; i++) {
+            const x = this.config.timeColumnWidth + i * this.config.dayWidth;
+            svg += `<line x1="${x}" y1="${this.config.headerHeight}" x2="${x}" y2="${this.config.canvasHeight}" stroke="${CanvasRenderer.THEME.gridLines}" stroke-width="1"/>`;
+        }
+        // Horizontal lines (time slots)
+        for (let i = 0; i <= totalHours * 2; i++) {
+            const y = this.config.headerHeight + i * this.config.timeSlotHeight;
+            const isHourLine = i % 2 === 0;
+            const color = isHourLine ? CanvasRenderer.THEME.hourLines : CanvasRenderer.THEME.gridLines;
+            const width = isHourLine ? "1.5" : "1";
+            svg += `<line x1="${this.config.timeColumnWidth}" y1="${y}" x2="${this.config.timeColumnWidth + gridWidth}" y2="${y}" stroke="${color}" stroke-width="${width}"/>`;
+        }
+        // Separator lines
+        // Header separator
+        svg += `<line x1="0" y1="${this.config.headerHeight}" x2="${this.config.timeColumnWidth + gridWidth}" y2="${this.config.headerHeight}" stroke="${CanvasRenderer.THEME.separatorLines}" stroke-width="2"/>`;
+        // Time column separator
+        svg += `<line x1="${this.config.timeColumnWidth}" y1="0" x2="${this.config.timeColumnWidth}" y2="${this.config.canvasHeight}" stroke="${CanvasRenderer.THEME.separatorLines}" stroke-width="2"/>`;
         return svg;
     }
     generateBlockSVG(block) {

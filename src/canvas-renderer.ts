@@ -44,12 +44,13 @@ export class CanvasRenderer {
         const totalHours = this.config.endHour - this.config.startHour;
         const gridHeight = canvasHeight;
 
-        // Draw header background
-        this.ctx.fillStyle = '#333';
-        this.ctx.fillRect(gridStartX, gridStartY, gridWidth, this.config.headerHeight);
-
-        // Draw time column background
+        // Draw time column background - ensure it's always visible
+        this.ctx.fillStyle = '#2a2a2a';
         this.ctx.fillRect(gridStartX, gridStartY, this.config.timeColumnWidth, gridHeight);
+
+        // Draw main grid background
+        this.ctx.fillStyle = '#333';
+        this.ctx.fillRect(gridStartX + this.config.timeColumnWidth, gridStartY, gridWidth - this.config.timeColumnWidth, this.config.headerHeight);
 
         // Draw day headers with improved styling
         this.ctx.fillStyle = '#ffffff';
@@ -86,22 +87,25 @@ export class CanvasRenderer {
         // Draw grid lines with improved styling
         this.ctx.lineWidth = 1;
 
-        // Vertical lines (days)
+        // Vertical lines (days) - only draw within the actual grid area
+        const actualGridWidth = this.config.timeColumnWidth + (this.config.days.length * this.config.dayWidth);
         for (let i = 0; i <= this.config.days.length; i++) {
             const x = gridStartX + this.config.timeColumnWidth + i * this.config.dayWidth;
-            this.ctx.strokeStyle = '#555';
-            this.ctx.beginPath();
-            this.ctx.moveTo(x, gridStartY + this.config.headerHeight);
-            this.ctx.lineTo(x, gridStartY + gridHeight);
-            this.ctx.stroke();
+            if (x <= actualGridWidth) {
+                this.ctx.strokeStyle = '#555';
+                this.ctx.beginPath();
+                this.ctx.moveTo(x, gridStartY + this.config.headerHeight);
+                this.ctx.lineTo(x, gridStartY + gridHeight);
+                this.ctx.stroke();
+            }
         }
 
-        // Horizontal lines (time slots)
+        // Horizontal lines (time slots) - constrain to actual grid width
         for (let i = 0; i <= totalHours * 2; i++) {
             const y = gridStartY + this.config.headerHeight + i * this.config.timeSlotHeight;
             this.ctx.beginPath();
             this.ctx.moveTo(gridStartX + this.config.timeColumnWidth, y);
-            this.ctx.lineTo(gridStartX + gridWidth, y);
+            this.ctx.lineTo(gridStartX + actualGridWidth, y);
             
             if (i % 2 === 0) { // Full hour lines
                 this.ctx.strokeStyle = '#666';
@@ -118,7 +122,7 @@ export class CanvasRenderer {
         this.ctx.lineWidth = 2;
         this.ctx.beginPath();
         this.ctx.moveTo(gridStartX, gridStartY + this.config.headerHeight);
-        this.ctx.lineTo(gridStartX + gridWidth, gridStartY + this.config.headerHeight);
+        this.ctx.lineTo(gridStartX + actualGridWidth, gridStartY + this.config.headerHeight);
         this.ctx.stroke();
 
         // Draw time column separator

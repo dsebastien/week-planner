@@ -2,42 +2,36 @@ import { GridConfig, Point } from './types.js';
 
 export class GridUtils {
     static snapToGrid(x: number, y: number, config: GridConfig): Point {
-        const gridStartX = 0;
-        const gridStartY = 0;
+        // Ensure we stay within grid bounds
+        const minX = config.timeColumnWidth;
+        const maxX = config.timeColumnWidth + ((config.days.length - 1) * config.dayWidth);
+        const boundedX = Math.max(minX, Math.min(x, maxX));
         
-        // Snap to day boundaries
-        const snappedX = Math.round((x - gridStartX - config.timeColumnWidth) / config.dayWidth) * config.dayWidth + gridStartX + config.timeColumnWidth;
-        
-        // Snap to 30-minute boundaries
-        const snappedY = Math.round((y - gridStartY - config.headerHeight) / config.timeSlotHeight) * config.timeSlotHeight + gridStartY + config.headerHeight;
-        
+        const snappedX = Math.round((boundedX - config.timeColumnWidth) / config.dayWidth) * config.dayWidth + config.timeColumnWidth;
+        const snappedY = Math.round((y - config.headerHeight) / config.timeSlotHeight) * config.timeSlotHeight + config.headerHeight;
         return { x: snappedX, y: snappedY };
     }
 
     static getTimeFromY(y: number, config: GridConfig): number {
-        const gridStartY = 0;
-        const relativeY = y - gridStartY - config.headerHeight;
+        const relativeY = y - config.headerHeight;
         const timeSlots = Math.floor(relativeY / config.timeSlotHeight);
-        return config.startHour * 60 + timeSlots * 30; // minutes from midnight
+        return config.startHour * 60 + timeSlots * 30;
     }
 
     static getYFromTime(timeMinutes: number, config: GridConfig): number {
-        const gridStartY = 0;
         const startMinutes = config.startHour * 60;
         const relativeMinutes = timeMinutes - startMinutes;
         const timeSlots = relativeMinutes / 30;
-        return gridStartY + config.headerHeight + timeSlots * config.timeSlotHeight;
+        return config.headerHeight + timeSlots * config.timeSlotHeight;
     }
 
     static getDayFromX(x: number, config: GridConfig): number {
-        const gridStartX = 0;
-        const relativeX = x - gridStartX - config.timeColumnWidth;
+        const relativeX = x - config.timeColumnWidth;
         return Math.floor(relativeX / config.dayWidth);
     }
 
     static getXFromDay(day: number, config: GridConfig): number {
-        const gridStartX = 0;
-        return gridStartX + config.timeColumnWidth + day * config.dayWidth;
+        return config.timeColumnWidth + day * config.dayWidth;
     }
 
     static formatTime(minutes: number): string {

@@ -45,33 +45,28 @@ export class WeekPlanner {
     }
 
     private setupCanvas(): void {
-        // Force container to full viewport
-        const container = this.canvas.parentElement!;
-        container.style.width = '100vw';
-        container.style.height = '100vh';
-        
-        // Get ACTUAL container dimensions after forcing size
         const containerWidth = window.innerWidth;
-        const containerHeight = window.innerHeight - 80; // Account for toolbar
+        const containerHeight = window.innerHeight;
         
-        // FORCE canvas to these exact dimensions
         this.canvas.width = containerWidth;
         this.canvas.height = containerHeight;
         this.canvas.style.width = containerWidth + 'px';
         this.canvas.style.height = containerHeight + 'px';
         
-        // Calculate grid to fill ENTIRE canvas
         const totalHours = this.config.endHour - this.config.startHour;
         
         this.config.timeColumnWidth = 120;
         this.config.headerHeight = 60;
-        this.config.dayWidth = (containerWidth - this.config.timeColumnWidth) / 7;
+        
+        // Calculate exact day width so 7 days fit perfectly
+        const availableWidth = containerWidth - this.config.timeColumnWidth;
+        this.config.dayWidth = Math.floor(availableWidth / 7);
+        
         this.config.timeSlotHeight = (containerHeight - this.config.headerHeight) / (totalHours * 2);
         
         this.config.canvasWidth = containerWidth;
         this.config.canvasHeight = containerHeight;
         
-        // Update block manager with new configuration
         if (this.blockManager) {
             this.blockManager.updateConfig(this.config);
         }
@@ -96,32 +91,61 @@ export class WeekPlanner {
         document.getElementById('exportPNG')?.addEventListener('click', this.exportPNG.bind(this));
         document.getElementById('clearAll')?.addEventListener('click', this.clearAll.bind(this));
 
-        // Window resize
-        window.addEventListener('resize', () => {
-            this.setupCanvas();
-            if (this.renderer) {
-                this.renderer = new CanvasRenderer(this.canvas, this.config);
+        // Toolbar toggle functionality
+        const toolbarToggle = document.getElementById('toolbarToggle');
+        const toolbarMenu = document.getElementById('toolbarMenu');
+        
+        toolbarToggle?.addEventListener('click', (e) => {
+            e.stopPropagation();
+            toolbarMenu?.classList.toggle('visible');
+        });
+
+        // Close menu when clicking outside
+        document.addEventListener('click', (e) => {
+            if (!toolbarToggle?.contains(e.target as Node) && !toolbarMenu?.contains(e.target as Node)) {
+                toolbarMenu?.classList.remove('visible');
             }
-            this.render();
+        });
+
+        // Window resize and zoom handling
+        let resizeTimeout: number;
+        window.addEventListener('resize', () => {
+            clearTimeout(resizeTimeout);
+            resizeTimeout = window.setTimeout(() => {
+                this.setupCanvas();
+                if (this.renderer) {
+                    this.renderer = new CanvasRenderer(this.canvas, this.config);
+                }
+                this.render();
+            }, 100);
+        });
+
+        // Handle zoom changes
+        window.addEventListener('wheel', (e) => {
+            if (e.ctrlKey) {
+                // Zoom detected, recalculate after a short delay
+                clearTimeout(resizeTimeout);
+                resizeTimeout = window.setTimeout(() => {
+                    this.setupCanvas();
+                    if (this.renderer) {
+                        this.renderer = new CanvasRenderer(this.canvas, this.config);
+                    }
+                    this.render();
+                }, 200);
+            }
         });
     }
 
     private updateCursor(x: number, y: number): void {
-        const gridStartX = 0;
-        const gridStartY = 0;
-        
-        // Check if mouse is over a block
         const block = this.blockManager.getBlockAt(x, y);
         
         if (block) {
             this.canvas.classList.remove('creating');
             this.canvas.classList.add('pointer');
-        } else if (x >= gridStartX + this.config.timeColumnWidth && y >= gridStartY + this.config.headerHeight) {
-            // In grid area
+        } else if (x >= this.config.timeColumnWidth && y >= this.config.headerHeight) {
             this.canvas.classList.remove('pointer');
             this.canvas.classList.add('creating');
         } else {
-            // Outside grid area
             this.canvas.classList.remove('creating', 'pointer');
         }
     }
@@ -131,11 +155,14 @@ export class WeekPlanner {
         const x = event.clientX - rect.left;
         const y = event.clientY - rect.top;
 
-        const gridStartX = 0;
-        const gridStartY = 0;
+        // Check if click is in the valid grid area (not in time column or header)
+        if (x < this.config.timeColumnWidth || y < this.config.headerHeight) {
+            return;
+        }
 
-        // Check if click is in the grid area
-        if (x < gridStartX + this.config.timeColumnWidth || y < gridStartY + this.config.headerHeight) {
+        // Also check if we're beyond the right edge of the grid
+        const gridEndX = this.config.timeColumnWidth + (this.config.days.length * this.config.dayWidth);
+        if (x >= gridEndX) {
             return;
         }
 
@@ -182,10 +209,14 @@ export class WeekPlanner {
         const finalX = Math.min(this.dragStartPoint.x, snappedPoint.x);
         const finalY = Math.min(this.dragStartPoint.y, snappedPoint.y);
 
-        // Constrain to grid boundaries
-        const maxX = this.config.timeColumnWidth + (this.config.days.length - 1) * this.config.dayWidth;
-        const constrainedX = Math.min(finalX, maxX);
-        const constrainedWidth = Math.min(finalWidth, maxX + this.config.dayWidth - constrainedX);
+        // Strict grid boundaries - prevent any overflow
+        const gridStartX = this.config.timeColumnWidth;
+        const gridEndX = this.config.timeColumnWidth + (this.config.days.length * this.config.dayWidth);
+        
+        // Constrain X position and width
+        const constrainedX = Math.max(gridStartX, Math.min(finalX, gridEndX - this.config.dayWidth));
+        const maxWidth = gridEndX - constrainedX;
+        const constrainedWidth = Math.min(finalWidth, maxWidth);
 
         // Create preview block
         this.currentDragBlock = {

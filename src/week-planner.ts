@@ -551,10 +551,8 @@ export class WeekPlanner {
      * Clear all blocks with confirmation
      */
     private clearAll(): void {
-        if (confirm('Are you sure you want to clear all blocks?')) {
-            this.blockManager.clearAll();
-            this.render();
-        }
+        this.blockManager.clearAll();
+        this.render();
     }
 
     /**

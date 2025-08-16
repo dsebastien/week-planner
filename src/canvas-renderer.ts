@@ -29,8 +29,8 @@ export class CanvasRenderer {
         dayHeader: '600 16px Inter, "Segoe UI", system-ui, sans-serif',
         timeHour: '600 14px Inter, "Segoe UI", system-ui, sans-serif',
         timeHalf: '500 12px Inter, "Segoe UI", system-ui, sans-serif',
-        blockText: '500 13px Inter, "Segoe UI", system-ui, sans-serif',
-        blockTime: '500 10px Inter, "Segoe UI", system-ui, sans-serif'
+        blockText: '500 16px Inter, "Segoe UI", system-ui, sans-serif',
+        blockTime: '500 13px Inter, "Segoe UI", system-ui, sans-serif'
     } as const;
 
     constructor(canvas: HTMLCanvasElement, config: GridConfig) {
@@ -79,7 +79,7 @@ export class CanvasRenderer {
         if (block.height < 40) {
             // Compact time display for small preview blocks
             const startTime = GridUtils.formatTime(block.startTime);
-            this.ctx.font = '500 9px Inter, "Segoe UI", system-ui, sans-serif';
+            this.ctx.font = '500 12px Inter, "Segoe UI", system-ui, sans-serif';
             this.ctx.textAlign = 'center';
             this.ctx.textBaseline = 'middle';
             this.ctx.fillText(startTime, block.x + block.width / 2, block.y + block.height / 2);
@@ -406,7 +406,7 @@ export class CanvasRenderer {
         if (isSmallBlock) {
             // Compact format for small blocks: just start time
             const startTime = GridUtils.formatTime(block.startTime);
-            this.ctx.font = '500 9px Inter, "Segoe UI", system-ui, sans-serif';
+            this.ctx.font = '500 12px Inter, "Segoe UI", system-ui, sans-serif';
             this.ctx.fillText(startTime, block.x + 3, block.y + 2);
         } else {
             // Full format for larger blocks
@@ -426,7 +426,7 @@ export class CanvasRenderer {
         
         // Use smaller font for small blocks
         const isSmallBlock = block.height < 40;
-        this.ctx.font = isSmallBlock ? '500 11px Inter, "Segoe UI", system-ui, sans-serif' : CanvasRenderer.FONTS.blockText;
+        this.ctx.font = isSmallBlock ? '500 14px Inter, "Segoe UI", system-ui, sans-serif' : CanvasRenderer.FONTS.blockText;
         this.ctx.textAlign = 'center';
         this.ctx.textBaseline = isSmallBlock ? 'middle' : 'top';
 
@@ -750,13 +750,13 @@ export class CanvasRenderer {
         let svg = `<rect x="${block.x}" y="${block.y}" width="${block.width}" height="${block.height}" fill="${block.color}" stroke="${borderColor}" stroke-width="${block.selected ? 3 : 2}"/>`;
         
         // Time information
-        svg += `<text x="${block.x + 6}" y="${block.y + 16}" fill="${textColor}" font-family="Inter, system-ui, sans-serif" font-size="10" font-weight="500">${timeInfo}</text>`;
+        svg += `<text x="${block.x + 6}" y="${block.y + 16}" fill="${textColor}" font-family="Inter, system-ui, sans-serif" font-size="13" font-weight="500">${timeInfo}</text>`;
         
         // Block text (simplified for SVG)
         if (block.text.trim()) {
             const textX = block.x + block.width / 2;
             const textY = block.y + block.height / 2;
-            svg += `<text x="${textX}" y="${textY}" text-anchor="middle" dominant-baseline="middle" fill="${textColor}" font-family="Inter, system-ui, sans-serif" font-size="13" font-weight="500">${this.escapeXml(block.text)}</text>`;
+            svg += `<text x="${textX}" y="${textY}" text-anchor="middle" dominant-baseline="middle" fill="${textColor}" font-family="Inter, system-ui, sans-serif" font-size="16" font-weight="500">${this.escapeXml(block.text)}</text>`;
         }
         
         return svg;

@@ -1,7 +1,4 @@
-- start at 5:00 instead of 6:00
-- It should be possible to resize existing blocks (without overlapping other blocks)
 - When a block is selected, an edit toolbar should be displayed, similar to the one of Miro, with the following options: Background color, Text color, Font Size, Font Style (bold, italic, underlined, striked), Alignment (left, center, right), Border style, opacity, corners, color. Remove the "Block color" selector in the header.
-- A better font should be used
 - It should be possible to select multiple blocks at once and edit them all with the toolbar
 - By default the text in a time block should be aligned center & middle
 - alignment (vertical, horizontal), etc should be enums
@@ -10,8 +7,6 @@
 - ctrl + a should select all blocks
 - when releasing the mouse after click + drag over existing time blocks, it should select those that are completely in the selected area
 - When clicking and dragging outside of the grid, the preview block disappears and the operation is cancelled on mouse relese. Instead, the "preview block" should be limited by the grid (remain visible) and it should be added normally
-- Have a domain called dsebastien.net. Want to store this app on GitHub and deploy on weekplanner.tools.dsebastien.net. How to handle this?
-
-
+- The code of this app is on GitHub and I want to build it and deploy it from there. I own dsebastien.net and want to deploy this at weekplanner.tools.dsebastien.net. My GitHub account has already two custom domains (dsebastien.net and stats.notes.dsebastien.net), so I suppose I could add one more. Generate the GitHub actions workflow I need to (release/build/deploy...) and explain how I should setup everything
 - showError(message: string) should display a notification, not an alert
 

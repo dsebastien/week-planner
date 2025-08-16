@@ -22,7 +22,7 @@ export class TimeBlockManager {
                 success: false,
                 error: {
                     code: 'OVERLAP_ERROR',
-                    message: `Block overlaps with existing blocks: ${overlap.map(b => b.id).join(', ')}`,
+                    message: `Block overlaps with existing blocks`,
                     field: 'overlap'
                 }
             };

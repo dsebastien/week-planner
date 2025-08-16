@@ -248,13 +248,22 @@ export class WeekPlanner {
         this.render();
     }
     /**
-     * Handle double click events for text editing
+     * Handle double click events for text editing and block creation
      */
     onDoubleClick(event) {
         const point = this.getMousePosition(event);
+        // Only handle double clicks in the grid area
+        if (!GridUtils.isInGridArea(point.x, point.y, this.config)) {
+            return;
+        }
         const clickedBlock = this.blockManager.getBlockAt(point.x, point.y);
         if (clickedBlock) {
+            // Edit existing block
             this.startEditingBlock(clickedBlock);
+        }
+        else {
+            // Create new block in the cell
+            this.createBlockInCell(point);
         }
     }
     /**
@@ -355,6 +364,53 @@ export class WeekPlanner {
             this.showError(result.error.message);
         }
         this.previewBlock = null;
+    }
+    /**
+     * Create a single time block in the clicked cell (30-minute slot)
+     */
+    createBlockInCell(point) {
+        const snappedPoint = GridUtils.snapToGrid(point.x, point.y, this.config);
+        // Get valid grid bounds to ensure the block is within valid time range
+        const gridBounds = GridUtils.getGridBounds(this.config);
+        const clampedY = Math.max(gridBounds.minY, Math.min(snappedPoint.y, gridBounds.maxY));
+        // Calculate block position and dimensions for a single cell
+        const dayIndex = GridUtils.getDayFromX(snappedPoint.x, this.config);
+        const x = GridUtils.getXFromDay(dayIndex, this.config);
+        const width = this.config.dayWidth;
+        const y = clampedY;
+        const height = this.config.timeSlotHeight; // Single 30-minute slot
+        // Calculate time values
+        const startTime = GridUtils.getTimeFromY(y, this.config);
+        const duration = 30; // Fixed 30-minute duration for single cell
+        // Validate that the block doesn't exceed the time range
+        const endTime = startTime + duration;
+        const maxValidTime = this.config.endHour * 60; // 24:00 in minutes
+        if (endTime > maxValidTime) {
+            this.showError('Cannot create block: would exceed valid time range');
+            return;
+        }
+        // Create the block
+        const block = {
+            id: this.generateBlockId(),
+            x,
+            y,
+            width,
+            height,
+            startTime,
+            duration,
+            daySpan: 1,
+            text: '',
+            color: this.colorPicker.value,
+            selected: true
+        };
+        const result = this.blockManager.addBlock(block);
+        if (result.success) {
+            this.blockManager.selectBlock(block.id);
+            this.render();
+        }
+        else {
+            this.showError(result.error.message);
+        }
     }
     /**
      * Reset mouse state
@@ -469,10 +525,8 @@ export class WeekPlanner {
      * Clear all blocks with confirmation
      */
     clearAll() {
-        if (confirm('Are you sure you want to clear all blocks?')) {
-            this.blockManager.clearAll();
-            this.render();
-        }
+        this.blockManager.clearAll();
+        this.render();
     }
     /**
      * Utility methods
@@ -490,8 +544,6 @@ export class WeekPlanner {
     }
     showError(message) {
         console.error(message);
-        // Could be enhanced with a proper notification system
-        alert(message);
     }
 }
 //# sourceMappingURL=week-planner.js.map

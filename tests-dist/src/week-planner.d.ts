@@ -75,7 +75,7 @@ export declare class WeekPlanner {
      */
     private onMouseLeave;
     /**
-     * Handle double click events for text editing
+     * Handle double click events for text editing and block creation
      */
     private onDoubleClick;
     /**
@@ -94,6 +94,10 @@ export declare class WeekPlanner {
      * Finish creating a block
      */
     private finishBlockCreation;
+    /**
+     * Create a single time block in the clicked cell (30-minute slot)
+     */
+    private createBlockInCell;
     /**
      * Reset mouse state
      */

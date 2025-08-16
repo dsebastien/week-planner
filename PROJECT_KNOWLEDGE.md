@@ -29,6 +29,7 @@ The UI is a grid on a Canvas with:
 Behavior:
 - Clicking on an empty cell in the grid creates a time block
 - Clicking and dragging in the grid creates a time block that can span over multiple time slots/days
+- Double clicking on an empty cell creates a single 30-minute time block in that cell
 - Time blocks snap to 30-minute grid intersections
 - Interaction restricted to valid time range (06:00-23:30 only)
 - Clicking on the "..." in the top right shows the menu

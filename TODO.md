@@ -1,16 +1,13 @@
 - It should be possible to resize existing blocks (without overlapping other blocks)
 - Text of the block should not overlap time of the block
-- During block creation (during click and drag), the time of the block should be displayed
 - A normal cursor should be used in general. A hand cursor (pointer) should be displayed when hovering an existing block
 - A better font should be used
-- It should be possible to select multiple blocks at once and edit them all with the toolbar
-- The SVG export is broken
 - When a block is selected, an edit toolbar should be displayed, similar to the one of Miro, with the following options: Background color, Text color, Font Size, Font Style (bold, italic, underlined, striked), Alignment (left, center, right), Border style, opacity, corners, color. 
-- When right clicking on a time block, a menu should be shown with the following options: copy style, paste style (if one was copied previously), copy, duplicate
+- It should be possible to select multiple blocks at once and edit them all with the toolbar
 - By default the text in a time block should be aligned center & middle
-- In top left, time blocks should display start time - end time (duration in hours/minutes) (e.g., 13:00 - 14:00 (1h))
 - Colors should be hex codes
 - alignment (vertical, horizontal), etc should be enums
-- On mouse release, there should be no warning if there's overlap and no block should be added
-- Double clicking in a cell should add a time block in that cell
 - When zooming in, the visual quality of the UI/grid/canvas/... should remain perfect
+- When right clicking on a time block, a menu should be shown with the following options: copy style, paste style (if one was copied previously), copy. When right clicking on an empty cell, the menu should show the following options: paste (if a time block was copied previously), Add time block here
+- showError(message: string) should display a notification, not an alert
+- Text of 30-min time slots is not visible

@@ -262,12 +262,25 @@ this.blocks.set(blockId, updatedBlock);
   - **Formula**: `headerHeight + (totalSlots × optimalSlotHeight)` - no extra space
   - **Result**: Grid ends exactly at 00:00 line with no cells below
 
-- **Fixed**: Bulletproof cell detection for double-click block creation
-  - **Problem**: Double-clicking sometimes created blocks in wrong time slots due to grid snapping
+- **Fixed**: Bulletproof cell detection for both double-click and drag block creation
+  - **Problem**: Double-clicking and drag creation sometimes created blocks in wrong time slots due to grid snapping
   - **Root Cause**: `snapToGrid()` uses `Math.round()` which can snap to adjacent cells when clicking near edges
   - **Solution**: Implemented `getCellFromPoint()` method using `Math.floor()` for precise cell detection
   - **Method**: Directly calculates which cell a point falls into without rounding/snapping
-  - **Result**: Time blocks now always appear exactly in the cell that was double-clicked
+  - **Applied To**: Both `createBlockInCell()` (double-click) and `updateBlockCreation()` (drag)
+  - **Result**: Time blocks now always start exactly in the cell that was clicked/dragged from
+
+- **Fixed**: Text visibility in 30-minute time blocks
+  - **Problem**: Text was invisible in small (30-minute) time blocks due to layout constraints
+  - **Root Cause**: Text layout reserved 36px (20px time info + 16px padding) but minimum block height was only 20px
+  - **Solution**: Implemented adaptive rendering for small blocks (< 40px height)
+  - **Changes Made**:
+    - Hide time information in small blocks (saves 20px space)
+    - Reduce padding from 8px to 4px for small blocks
+    - Use smaller font size (11px vs 13px) for better fit
+    - Center text vertically in small blocks instead of using wrapped text
+    - Apply same logic to preview blocks during drag operations
+  - **Result**: Text is now clearly visible and properly centered in all block sizes
 
 ### Visual Enhancements (Added)
 - **Added**: Lunch time background highlighting (12:00-14:00)

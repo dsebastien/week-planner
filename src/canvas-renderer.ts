@@ -73,13 +73,15 @@ export class CanvasRenderer {
         
         this.ctx.globalAlpha = 1.0;
         
-        // Draw time information
-        const timeInfo = this.getBlockTimeInfo(block);
-        this.ctx.fillStyle = this.getContrastColor(block.color);
-        this.ctx.font = CanvasRenderer.FONTS.blockTime;
-        this.ctx.textAlign = 'center';
-        this.ctx.textBaseline = 'middle';
-        this.ctx.fillText(timeInfo, block.x + block.width / 2, block.y + block.height / 2);
+        // Draw time information (only for larger blocks)
+        if (block.height >= 40) {
+            const timeInfo = this.getBlockTimeInfo(block);
+            this.ctx.fillStyle = this.getContrastColor(block.color);
+            this.ctx.font = CanvasRenderer.FONTS.blockTime;
+            this.ctx.textAlign = 'center';
+            this.ctx.textBaseline = 'middle';
+            this.ctx.fillText(timeInfo, block.x + block.width / 2, block.y + block.height / 2);
+        }
         
         this.ctx.restore();
     }
@@ -360,6 +362,11 @@ export class CanvasRenderer {
      * Draws time information in the top-left corner of the block
      */
     private drawBlockTimeInfo(block: TimeBlock): void {
+        // Only show time info if block is tall enough (at least 40px)
+        if (block.height < 40) {
+            return;
+        }
+        
         const timeInfo = this.getBlockTimeInfo(block);
         
         this.ctx.fillStyle = this.getContrastColor(block.color);
@@ -376,12 +383,23 @@ export class CanvasRenderer {
         if (!block.text.trim()) return;
 
         this.ctx.fillStyle = this.getContrastColor(block.color);
-        this.ctx.font = CanvasRenderer.FONTS.blockText;
+        
+        // Use smaller font for small blocks
+        const isSmallBlock = block.height < 40;
+        this.ctx.font = isSmallBlock ? '500 11px Inter, "Segoe UI", system-ui, sans-serif' : CanvasRenderer.FONTS.blockText;
         this.ctx.textAlign = 'center';
-        this.ctx.textBaseline = 'top';
+        this.ctx.textBaseline = isSmallBlock ? 'middle' : 'top';
 
         const textArea = this.getTextArea(block);
-        this.drawWrappedText(block.text, textArea.x, textArea.y, textArea.maxWidth, textArea.maxHeight);
+        
+        if (isSmallBlock) {
+            // For small blocks, center text vertically and use single line
+            const centerY = block.y + block.height / 2;
+            this.ctx.fillText(block.text, textArea.x, centerY);
+        } else {
+            // For larger blocks, use wrapped text
+            this.drawWrappedText(block.text, textArea.x, textArea.y, textArea.maxWidth, textArea.maxHeight);
+        }
     }
 
     /**
@@ -451,14 +469,16 @@ export class CanvasRenderer {
     }
 
     private getTextArea(block: TimeBlock): { x: number; y: number; maxWidth: number; maxHeight: number } {
-        const padding = 8;
-        const timeInfoHeight = 20; // Space reserved for time information
+        // Adaptive layout based on block height
+        const isSmallBlock = block.height < 40;
+        const padding = isSmallBlock ? 4 : 8;
+        const timeInfoHeight = isSmallBlock ? 0 : 20; // No time info for small blocks
         
         return {
             x: block.x + block.width / 2,
             y: block.y + timeInfoHeight + padding,
             maxWidth: block.width - 2 * padding,
-            maxHeight: block.height - timeInfoHeight - 2 * padding
+            maxHeight: Math.max(0, block.height - timeInfoHeight - 2 * padding)
         };
     }
 

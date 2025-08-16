@@ -301,24 +301,25 @@ export class WeekPlanner {
             currentPoint,
             isDragging: true
         };
-        const snappedStart = GridUtils.snapToGrid(this.mouseState.startPoint.x, this.mouseState.startPoint.y, this.config);
-        const snappedEnd = GridUtils.snapToGrid(currentPoint.x, currentPoint.y, this.config);
-        // Get valid grid bounds to clamp Y coordinates
-        const gridBounds = GridUtils.getGridBounds(this.config);
-        const clampedStartY = Math.max(gridBounds.minY, Math.min(snappedStart.y, gridBounds.maxY));
-        const clampedEndY = Math.max(gridBounds.minY, Math.min(snappedEnd.y, gridBounds.maxY));
-        // Calculate block dimensions
-        const startDay = GridUtils.getDayFromX(snappedStart.x, this.config);
-        const endDay = GridUtils.getDayFromX(snappedEnd.x, this.config);
-        const minDay = Math.min(startDay, endDay);
-        const maxDay = Math.max(startDay, endDay);
+        // Use bulletproof cell detection for both start and end points
+        const startCell = this.getCellFromPoint(this.mouseState.startPoint);
+        const endCell = this.getCellFromPoint(currentPoint);
+        if (!startCell || !endCell) {
+            return; // Invalid cell selection
+        }
+        // Calculate block dimensions using cell-based approach
+        const minDay = Math.min(startCell.dayIndex, endCell.dayIndex);
+        const maxDay = Math.max(startCell.dayIndex, endCell.dayIndex);
         const daySpan = maxDay - minDay + 1;
         const x = GridUtils.getXFromDay(minDay, this.config);
         const width = GridUtils.getWidthFromDaySpan(daySpan, this.config);
-        const y = Math.min(clampedStartY, clampedEndY);
-        const height = Math.max(this.config.timeSlotHeight, Math.abs(clampedEndY - clampedStartY));
-        // Calculate time values and validate
-        const startTime = GridUtils.getTimeFromY(y, this.config);
+        // Use the earlier time slot as the start
+        const minY = Math.min(startCell.y, endCell.y);
+        const maxY = Math.max(startCell.y, endCell.y);
+        const y = minY;
+        const height = Math.max(this.config.timeSlotHeight, maxY - minY + this.config.timeSlotHeight);
+        // Calculate time values using the earlier time
+        const startTime = Math.min(startCell.startTime, endCell.startTime);
         const duration = GridUtils.getDurationInMinutes(height, this.config);
         const endTime = startTime + duration;
         const maxValidTime = this.config.endHour * 60; // 24:00 in minutes
@@ -326,13 +327,15 @@ export class WeekPlanner {
         const clampedDuration = endTime > maxValidTime ?
             Math.max(30, maxValidTime - startTime) : // Minimum 30 minutes, but don't exceed valid range
             duration;
+        // Recalculate height based on clamped duration
+        const finalHeight = GridUtils.getHeightFromDuration(clampedDuration, this.config);
         // Create preview block
         this.previewBlock = {
             id: 'preview',
             x,
             y,
             width,
-            height,
+            height: finalHeight,
             startTime,
             duration: clampedDuration,
             daySpan,

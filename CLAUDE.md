@@ -31,16 +31,25 @@ This is a visual week planning creator.
 
 ## User interface
 The UI is a grid on a Canvas with:
+- Grid using the full width and height of the page
 - Rows: Time slots (one line = 30 minutes)
 - Same height for all rows
 - Columns: Days
 - Same width for all columns
 - Hours/Time displayed using HH:mm
+- Time blocks with their start time, end time, duration in the top left as well as their text (default: center, middle, bold)
 
 Behavior:
 - Clicking on an empty cell in the grid creates a time block
 - Clicking and dragging in the grid creates a time block that can span over multiple time slots/days
-- Time blocks snap to grid
+- Time blocks snapping to grid
+- Clicking on the "..." in the top right shows the menu
+- Double clicking on a time block edits the text in the block
+
+Menu actions:
+- Export to PNG
+- Export to JSON
+- Import from JSON
 
 ## Domain model
 Time blocks:

@@ -177,10 +177,16 @@ export class CanvasRenderer {
         const totalHours = this.config.endHour - this.config.startHour;
         const totalSlots = totalHours * 2; // 30-minute slots
         
-        for (let i = 0; i <= totalSlots; i++) {
+        // Draw time labels for actual time slots (0 to totalSlots-1)
+        for (let i = 0; i < totalSlots; i++) {
             const minutes = this.config.startHour * 60 + i * 30;
             const timeStr = GridUtils.formatTime(minutes);
-            const y = this.config.headerHeight + i * this.config.timeSlotHeight;
+            
+            // Position labels slightly offset from grid lines to avoid overlap
+            const y = this.config.headerHeight + i * this.config.timeSlotHeight + (i === 0 ? 8 : 0);
+            
+            // Make sure we don't draw labels beyond the visible canvas area
+            if (y + 10 > this.config.canvasHeight) continue;
             
             if (i % 2 === 0) { // Full hour
                 this.ctx.fillStyle = CanvasRenderer.THEME.primaryText;
@@ -191,6 +197,14 @@ export class CanvasRenderer {
             }
             
             this.ctx.fillText(timeStr, this.config.timeColumnWidth - 8, y);
+        }
+        
+        // Draw the final 00:00 label at the bottom boundary (non-interactive)
+        const finalY = this.config.headerHeight + totalSlots * this.config.timeSlotHeight;
+        if (finalY + 10 <= this.config.canvasHeight) {
+            this.ctx.fillStyle = CanvasRenderer.THEME.primaryText;
+            this.ctx.font = CanvasRenderer.FONTS.timeHour;
+            this.ctx.fillText('00:00', this.config.timeColumnWidth - 8, finalY);
         }
     }
 

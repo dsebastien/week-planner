@@ -119,10 +119,15 @@ describe('GridUtils', () => {
         test('should return correct grid bounds', () => {
             const bounds = GridUtils.getGridBounds(testConfig);
             
+            // Calculate expected max Y based on valid time slots (6:00 to 23:30)
+            const totalHours = testConfig.endHour - testConfig.startHour; // 18 hours
+            const totalSlots = totalHours * 2; // 36 slots
+            const expectedMaxY = testConfig.headerHeight + totalSlots * testConfig.timeSlotHeight; // 60 + 36 * 24 = 924
+            
             assert.strictEqual(bounds.minX, testConfig.timeColumnWidth);
             assert.strictEqual(bounds.maxX, testConfig.timeColumnWidth + testConfig.days.length * testConfig.dayWidth);
             assert.strictEqual(bounds.minY, testConfig.headerHeight);
-            assert.strictEqual(bounds.maxY, testConfig.canvasHeight);
+            assert.strictEqual(bounds.maxY, expectedMaxY);
         });
     });
 

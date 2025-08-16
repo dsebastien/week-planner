@@ -16,5 +16,3 @@
 - There should be no confirmation when initiating "Clear all"
 - Double clicking in a cell should add a time block in that cell
 - When zooming in, the visual quality of the UI/grid/canvas/... should remain perfect
-- the 00:00 time slot is not visible (the UI have some margin on all sides)
-- the 06:00 is hidden behind a line

@@ -114,11 +114,14 @@ export class GridUtils {
      * Gets the grid boundaries
      */
     static getGridBounds(config) {
+        const totalHours = config.endHour - config.startHour;
+        const totalSlots = totalHours * 2; // 30-minute slots
+        const maxValidY = config.headerHeight + totalSlots * config.timeSlotHeight;
         return {
             minX: config.timeColumnWidth,
             maxX: config.timeColumnWidth + (config.days.length * config.dayWidth),
             minY: config.headerHeight,
-            maxY: config.canvasHeight
+            maxY: maxValidY // Only allow interaction up to the last valid time slot (23:30)
         };
     }
     /**

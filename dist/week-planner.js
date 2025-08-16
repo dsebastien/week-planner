@@ -76,9 +76,12 @@ export class WeekPlanner {
         // Calculate grid dimensions
         const totalHours = this.config.endHour - this.config.startHour;
         const availableWidth = containerWidth - this.config.timeColumnWidth;
+        // Reserve small buffer at bottom to ensure last time slot is visible
+        const bottomBuffer = 20;
+        const availableHeight = containerHeight - this.config.headerHeight - bottomBuffer;
         // Update configuration with calculated values
         this.config.dayWidth = availableWidth / this.config.days.length;
-        this.config.timeSlotHeight = (containerHeight - this.config.headerHeight) / (totalHours * 2);
+        this.config.timeSlotHeight = availableHeight / (totalHours * 2);
         this.config.canvasWidth = containerWidth;
         this.config.canvasHeight = containerHeight;
         // Update components with new configuration

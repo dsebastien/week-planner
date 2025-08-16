@@ -229,6 +229,21 @@ this.blocks.set(blockId, updatedBlock);
 4. **Testing Pays Off**: Comprehensive tests catch edge cases early
 5. **User Experience**: Visual feedback and keyboard shortcuts improve usability
 6. **Clean Architecture**: Modular design makes code maintainable and testable
+7. **Canvas Rendering Order**: Drawing order matters - lines can hide text if drawn later
+
+## Known Issues & Fixes
+- **Fixed**: Time labels were overlapping with grid lines making them unreadable
+  - **Problem**: Labels positioned at exact same Y coordinates as horizontal grid lines
+  - **Solution**: Position time labels at center of each time slot: `(i + 0.5) * timeSlotHeight`
+  - **Result**: Clear visibility of all time labels including 06:00 and 24:00
+
+- **Fixed**: UI margins preventing full viewport utilization  
+  - **Problem**: Browser default margins and flexbox layout causing content to be cut off
+  - **Solution**: 
+    - CSS reset with `* { margin: 0; padding: 0; box-sizing: border-box; }`
+    - Absolute positioning for container and canvas: `position: absolute; top: 0; left: 0;`
+    - Full viewport dimensions: `width: 100vw; height: 100vh;`
+  - **Result**: Canvas now uses complete viewport without any margins
 
 ## Future Enhancement Ideas
 - Drag and drop for moving existing blocks

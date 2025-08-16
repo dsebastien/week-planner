@@ -99,6 +99,10 @@ export declare class WeekPlanner {
      */
     private createBlockInCell;
     /**
+     * Determine which cell a point falls into (bulletproof cell detection)
+     */
+    private getCellFromPoint;
+    /**
      * Reset mouse state
      */
     private resetMouseState;

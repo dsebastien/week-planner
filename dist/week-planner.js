@@ -369,18 +369,19 @@ export class WeekPlanner {
      * Create a single time block in the clicked cell (30-minute slot)
      */
     createBlockInCell(point) {
-        const snappedPoint = GridUtils.snapToGrid(point.x, point.y, this.config);
-        // Get valid grid bounds to ensure the block is within valid time range
-        const gridBounds = GridUtils.getGridBounds(this.config);
-        const clampedY = Math.max(gridBounds.minY, Math.min(snappedPoint.y, gridBounds.maxY));
-        // Calculate block position and dimensions for a single cell
-        const dayIndex = GridUtils.getDayFromX(snappedPoint.x, this.config);
-        const x = GridUtils.getXFromDay(dayIndex, this.config);
+        // Determine which cell the user actually clicked in (not snapped to)
+        const cellInfo = this.getCellFromPoint(point);
+        if (!cellInfo) {
+            this.showError('Invalid cell location');
+            return;
+        }
+        // Calculate exact block position for the clicked cell
+        const x = GridUtils.getXFromDay(cellInfo.dayIndex, this.config);
         const width = this.config.dayWidth;
-        const y = clampedY;
-        const height = this.config.timeSlotHeight; // Single 30-minute slot
+        const y = cellInfo.y;
+        const height = this.config.timeSlotHeight;
         // Calculate time values
-        const startTime = GridUtils.getTimeFromY(y, this.config);
+        const startTime = cellInfo.startTime;
         const duration = 30; // Fixed 30-minute duration for single cell
         // Validate that the block doesn't exceed the time range
         const endTime = startTime + duration;
@@ -411,6 +412,37 @@ export class WeekPlanner {
         else {
             this.showError(result.error.message);
         }
+    }
+    /**
+     * Determine which cell a point falls into (bulletproof cell detection)
+     */
+    getCellFromPoint(point) {
+        // Check if point is in grid area
+        if (!GridUtils.isInGridArea(point.x, point.y, this.config)) {
+            return null;
+        }
+        // Determine day index (which column)
+        const relativeX = point.x - this.config.timeColumnWidth;
+        const dayIndex = Math.floor(relativeX / this.config.dayWidth);
+        // Clamp day index to valid range
+        const clampedDayIndex = Math.max(0, Math.min(this.config.days.length - 1, dayIndex));
+        // Determine time slot (which row) - use floor to get the cell the point is actually in
+        const relativeY = point.y - this.config.headerHeight;
+        const timeSlotIndex = Math.floor(relativeY / this.config.timeSlotHeight);
+        // Calculate the Y position of the top of this cell
+        const cellY = this.config.headerHeight + timeSlotIndex * this.config.timeSlotHeight;
+        // Calculate start time for this cell
+        const startTime = this.config.startHour * 60 + timeSlotIndex * 30; // 30 minutes per slot
+        // Validate the time slot is within valid bounds
+        const maxValidTime = this.config.endHour * 60;
+        if (startTime < this.config.startHour * 60 || startTime >= maxValidTime) {
+            return null;
+        }
+        return {
+            dayIndex: clampedDayIndex,
+            y: cellY,
+            startTime
+        };
     }
     /**
      * Reset mouse state

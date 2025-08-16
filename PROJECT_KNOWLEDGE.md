@@ -262,6 +262,13 @@ this.blocks.set(blockId, updatedBlock);
   - **Formula**: `headerHeight + (totalSlots × optimalSlotHeight)` - no extra space
   - **Result**: Grid ends exactly at 00:00 line with no cells below
 
+- **Fixed**: Bulletproof cell detection for double-click block creation
+  - **Problem**: Double-clicking sometimes created blocks in wrong time slots due to grid snapping
+  - **Root Cause**: `snapToGrid()` uses `Math.round()` which can snap to adjacent cells when clicking near edges
+  - **Solution**: Implemented `getCellFromPoint()` method using `Math.floor()` for precise cell detection
+  - **Method**: Directly calculates which cell a point falls into without rounding/snapping
+  - **Result**: Time blocks now always appear exactly in the cell that was double-clicked
+
 ### Visual Enhancements (Added)
 - **Added**: Lunch time background highlighting (12:00-14:00)
   - **Feature**: Lighter background (`#333333`) for lunch hours across all days

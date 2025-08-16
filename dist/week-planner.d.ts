@@ -119,6 +119,10 @@ export declare class WeekPlanner {
      */
     private getCellFromPoint;
     /**
+     * Update resize operation during mouse drag
+     */
+    private updateResize;
+    /**
      * Reset mouse state
      */
     private resetMouseState;

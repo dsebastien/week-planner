@@ -234,6 +234,7 @@ export class CanvasRenderer {
         this.drawBlockSelection(block);
         this.drawBlockTimeInfo(block);
         this.drawBlockText(block);
+        this.drawResizeHandles(block);
     }
     /**
      * Draws block background with modern gradient effect
@@ -421,6 +422,87 @@ export class CanvasRenderer {
         // Calculate relative luminance
         const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
         return luminance > 0.5 ? '#000000' : '#ffffff';
+    }
+    /**
+     * Draws resize handles on selected blocks
+     */
+    drawResizeHandles(block) {
+        if (!block.selected)
+            return;
+        const handleSize = 8;
+        const handleColor = CanvasRenderer.THEME.selectionHighlight;
+        const handleBorderColor = '#ffffff';
+        // Define handle positions
+        const handles = this.getResizeHandlePositions(block, handleSize);
+        // Draw each handle
+        for (const [handle, position] of handles.entries()) {
+            this.ctx.fillStyle = handleColor;
+            this.ctx.fillRect(position.x, position.y, handleSize, handleSize);
+            this.ctx.strokeStyle = handleBorderColor;
+            this.ctx.lineWidth = 1;
+            this.ctx.strokeRect(position.x, position.y, handleSize, handleSize);
+        }
+    }
+    /**
+     * Gets resize handle positions for a block
+     */
+    getResizeHandlePositions(block, handleSize) {
+        const handles = new Map();
+        const half = handleSize / 2;
+        // Corner handles
+        handles.set('top-left', { x: block.x - half, y: block.y - half });
+        handles.set('top-right', { x: block.x + block.width - half, y: block.y - half });
+        handles.set('bottom-left', { x: block.x - half, y: block.y + block.height - half });
+        handles.set('bottom-right', { x: block.x + block.width - half, y: block.y + block.height - half });
+        // Edge handles (only show for blocks large enough)
+        if (block.width > 60) {
+            handles.set('top', { x: block.x + block.width / 2 - half, y: block.y - half });
+            handles.set('bottom', { x: block.x + block.width / 2 - half, y: block.y + block.height - half });
+        }
+        if (block.height > 60) {
+            handles.set('left', { x: block.x - half, y: block.y + block.height / 2 - half });
+            handles.set('right', { x: block.x + block.width - half, y: block.y + block.height / 2 - half });
+        }
+        return handles;
+    }
+    /**
+     * Checks if a point is over a resize handle
+     */
+    getResizeHandleAt(point, block) {
+        if (!block.selected)
+            return null;
+        const handleSize = 8;
+        const handles = this.getResizeHandlePositions(block, handleSize);
+        for (const [handle, position] of handles.entries()) {
+            if (point.x >= position.x &&
+                point.x <= position.x + handleSize &&
+                point.y >= position.y &&
+                point.y <= position.y + handleSize) {
+                return handle;
+            }
+        }
+        return null;
+    }
+    /**
+     * Gets the appropriate cursor for a resize handle
+     */
+    getResizeCursor(handle) {
+        switch (handle) {
+            case 'top':
+            case 'bottom':
+                return 'ns-resize';
+            case 'left':
+            case 'right':
+                return 'ew-resize';
+            case 'top-left':
+            case 'bottom-right':
+                return 'nw-resize';
+            case 'top-right':
+            case 'bottom-left':
+                return 'ne-resize';
+            default:
+                return 'default';
+        }
     }
     /**
      * SVG export helper methods

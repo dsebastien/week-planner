@@ -1,4 +1,4 @@
-import { GridConfig, TimeBlock } from './types.js';
+import { GridConfig, TimeBlock, Point, ResizeHandle } from './types.js';
 /**
  * Handles all Canvas drawing operations and export functionality
  */
@@ -108,6 +108,22 @@ export declare class CanvasRenderer {
      */
     private adjustColorBrightness;
     private getContrastColor;
+    /**
+     * Draws resize handles on selected blocks
+     */
+    private drawResizeHandles;
+    /**
+     * Gets resize handle positions for a block
+     */
+    private getResizeHandlePositions;
+    /**
+     * Checks if a point is over a resize handle
+     */
+    getResizeHandleAt(point: Point, block: TimeBlock): ResizeHandle | null;
+    /**
+     * Gets the appropriate cursor for a resize handle
+     */
+    getResizeCursor(handle: ResizeHandle): string;
     /**
      * SVG export helper methods
      */

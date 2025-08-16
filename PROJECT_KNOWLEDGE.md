@@ -36,6 +36,9 @@ Behavior:
 - Double clicking on a time block edits the text in the block
 - Delete/Backspace keys remove selected time blocks
 - Escape key cancels text editing
+- **Resize functionality**: Selected blocks show resize handles (blue squares) at corners and edges
+- Dragging resize handles resizes blocks while preventing overlaps with other blocks
+- Resize operations snap to grid boundaries and maintain minimum size constraints
 
 Menu actions:
 - Export to PNG, SVG, JSON

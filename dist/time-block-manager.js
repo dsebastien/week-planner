@@ -86,6 +86,59 @@ export class TimeBlockManager {
         return true;
     }
     /**
+     * Resizes a block with validation
+     */
+    resizeBlock(blockId, newX, newY, newWidth, newHeight) {
+        const originalBlock = this.blocks.get(blockId);
+        if (!originalBlock) {
+            return {
+                success: false,
+                error: {
+                    code: 'BLOCK_NOT_FOUND',
+                    message: 'Block not found',
+                    field: 'blockId'
+                }
+            };
+        }
+        // Calculate new time properties from position and size
+        const startTimeMinutes = this.config.startHour * 60 +
+            Math.round((newY - this.config.headerHeight) / this.config.timeSlotHeight) * 30;
+        const duration = Math.max(30, Math.round(newHeight / this.config.timeSlotHeight) * 30);
+        const daySpan = Math.max(1, Math.round(newWidth / this.config.dayWidth));
+        // Create the resized block
+        const resizedBlock = {
+            ...originalBlock,
+            x: newX,
+            y: newY,
+            width: newWidth,
+            height: newHeight,
+            startTime: startTimeMinutes,
+            duration,
+            daySpan
+        };
+        // Validate the resized block
+        const validation = this.validateBlock(resizedBlock);
+        if (!validation.success) {
+            return validation;
+        }
+        // Check for overlaps (excluding the original block)
+        const otherBlocks = Array.from(this.blocks.values()).filter(block => block.id !== blockId);
+        const hasOverlap = otherBlocks.some(block => this.blocksOverlap(resizedBlock, block));
+        if (hasOverlap) {
+            return {
+                success: false,
+                error: {
+                    code: 'OVERLAP_ERROR',
+                    message: 'Resized block would overlap with existing blocks',
+                    field: 'overlap'
+                }
+            };
+        }
+        // Update the block
+        this.blocks.set(blockId, resizedBlock);
+        return { success: true, data: undefined };
+    }
+    /**
      * Gets all blocks as a readonly array
      */
     getBlocks() {

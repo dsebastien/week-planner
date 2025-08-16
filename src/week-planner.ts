@@ -5,7 +5,8 @@ import {
     MouseState, 
     ValidationError,
     HexColor,
-    WeekPlannerData
+    WeekPlannerData,
+    ResizeHandle
 } from './types.js';
 import { GridUtils } from './grid-utils.js';
 import { TimeBlockManager } from './time-block-manager.js';
@@ -28,7 +29,11 @@ export class WeekPlanner {
         isDown: false,
         startPoint: null,
         currentPoint: null,
-        isDragging: false
+        isDragging: false,
+        resizing: false,
+        resizeHandle: null,
+        resizeBlockId: null,
+        originalBlock: null
     };
     
     private previewBlock: TimeBlock | null = null;
@@ -229,16 +234,29 @@ export class WeekPlanner {
     private updateCursor(x: number, y: number): void {
         if (!GridUtils.isInGridArea(x, y, this.config)) {
             this.canvas.classList.remove('creating', 'pointer');
+            this.canvas.style.cursor = 'default';
             return;
         }
 
         const block = this.blockManager.getBlockAt(x, y);
+        if (block && block.selected) {
+            // Check for resize handles first
+            const resizeHandle = this.renderer.getResizeHandleAt({ x, y }, block);
+            if (resizeHandle) {
+                this.canvas.classList.remove('creating', 'pointer');
+                this.canvas.style.cursor = this.renderer.getResizeCursor(resizeHandle);
+                return;
+            }
+        }
+
         if (block) {
             this.canvas.classList.remove('creating');
             this.canvas.classList.add('pointer');
+            this.canvas.style.cursor = 'pointer';
         } else {
             this.canvas.classList.remove('pointer');
             this.canvas.classList.add('creating');
+            this.canvas.style.cursor = 'crosshair';
         }
     }
 
@@ -253,15 +271,39 @@ export class WeekPlanner {
             return;
         }
 
+        const clickedBlock = this.blockManager.getBlockAt(point.x, point.y);
+        
+        // Check for resize handle on selected block
+        if (clickedBlock && clickedBlock.selected) {
+            const resizeHandle = this.renderer.getResizeHandleAt(point, clickedBlock);
+            if (resizeHandle) {
+                this.mouseState = {
+                    isDown: true,
+                    startPoint: point,
+                    currentPoint: point,
+                    isDragging: false,
+                    resizing: true,
+                    resizeHandle,
+                    resizeBlockId: clickedBlock.id,
+                    originalBlock: { ...clickedBlock }
+                };
+                this.render();
+                return;
+            }
+        }
+
+        // Regular mouse down handling
         this.mouseState = {
             isDown: true,
             startPoint: point,
             currentPoint: point,
-            isDragging: false
+            isDragging: false,
+            resizing: false,
+            resizeHandle: null,
+            resizeBlockId: null,
+            originalBlock: null
         };
 
-        const clickedBlock = this.blockManager.getBlockAt(point.x, point.y);
-        
         if (clickedBlock) {
             this.blockManager.selectBlock(clickedBlock.id);
         } else {
@@ -278,13 +320,19 @@ export class WeekPlanner {
     private onMouseMove(event: MouseEvent): void {
         const point = this.getMousePosition(event);
 
-        // Update cursor if not dragging
-        if (!this.mouseState.isDragging) {
+        // Update cursor if not dragging or resizing
+        if (!this.mouseState.isDragging && !this.mouseState.resizing) {
             this.updateCursor(point.x, point.y);
         }
 
+        // Handle resize operation
+        if (this.mouseState.isDown && this.mouseState.resizing && this.mouseState.resizeBlockId) {
+            this.updateResize(point);
+            return;
+        }
+
         // Handle block creation dragging
-        if (this.mouseState.isDown && this.mouseState.startPoint) {
+        if (this.mouseState.isDown && this.mouseState.startPoint && !this.mouseState.resizing) {
             this.updateBlockCreation(point);
         }
     }
@@ -293,7 +341,10 @@ export class WeekPlanner {
      * Handle mouse up events
      */
     private onMouseUp(): void {
-        if (this.mouseState.isDragging && this.previewBlock) {
+        if (this.mouseState.resizing && this.mouseState.resizeBlockId) {
+            // Resize operation is finished, no additional action needed
+            // The resize was applied in real-time during updateResize
+        } else if (this.mouseState.isDragging && this.previewBlock) {
             this.finishBlockCreation();
         }
 
@@ -591,6 +642,107 @@ export class WeekPlanner {
     }
 
     /**
+     * Update resize operation during mouse drag
+     */
+    private updateResize(currentPoint: Point): void {
+        if (!this.mouseState.startPoint || !this.mouseState.resizeHandle || !this.mouseState.resizeBlockId || !this.mouseState.originalBlock) {
+            return;
+        }
+
+        const originalBlock = this.mouseState.originalBlock;
+        const deltaX = currentPoint.x - this.mouseState.startPoint.x;
+        const deltaY = currentPoint.y - this.mouseState.startPoint.y;
+
+        let newX = originalBlock.x;
+        let newY = originalBlock.y;
+        let newWidth = originalBlock.width;
+        let newHeight = originalBlock.height;
+
+        // Apply resize based on handle type
+        switch (this.mouseState.resizeHandle) {
+            case 'top':
+                newY = originalBlock.y + deltaY;
+                newHeight = originalBlock.height - deltaY;
+                break;
+            case 'bottom':
+                newHeight = originalBlock.height + deltaY;
+                break;
+            case 'left':
+                newX = originalBlock.x + deltaX;
+                newWidth = originalBlock.width - deltaX;
+                break;
+            case 'right':
+                newWidth = originalBlock.width + deltaX;
+                break;
+            case 'top-left':
+                newX = originalBlock.x + deltaX;
+                newY = originalBlock.y + deltaY;
+                newWidth = originalBlock.width - deltaX;
+                newHeight = originalBlock.height - deltaY;
+                break;
+            case 'top-right':
+                newY = originalBlock.y + deltaY;
+                newWidth = originalBlock.width + deltaX;
+                newHeight = originalBlock.height - deltaY;
+                break;
+            case 'bottom-left':
+                newX = originalBlock.x + deltaX;
+                newWidth = originalBlock.width - deltaX;
+                newHeight = originalBlock.height + deltaY;
+                break;
+            case 'bottom-right':
+                newWidth = originalBlock.width + deltaX;
+                newHeight = originalBlock.height + deltaY;
+                break;
+        }
+
+        // Snap to grid boundaries
+        if (this.mouseState.resizeHandle.includes('left') || this.mouseState.resizeHandle.includes('right')) {
+            // Snap horizontal positions to day boundaries
+            const leftDayIndex = Math.round((newX - this.config.timeColumnWidth) / this.config.dayWidth);
+            newX = this.config.timeColumnWidth + leftDayIndex * this.config.dayWidth;
+            
+            const rightDayIndex = Math.round((newX + newWidth - this.config.timeColumnWidth) / this.config.dayWidth);
+            newWidth = Math.max(this.config.dayWidth, (rightDayIndex - leftDayIndex) * this.config.dayWidth);
+        }
+
+        if (this.mouseState.resizeHandle.includes('top') || this.mouseState.resizeHandle.includes('bottom')) {
+            // Snap vertical positions to time slot boundaries
+            const topSlotIndex = Math.round((newY - this.config.headerHeight) / this.config.timeSlotHeight);
+            newY = this.config.headerHeight + topSlotIndex * this.config.timeSlotHeight;
+            
+            const bottomSlotIndex = Math.round((newY + newHeight - this.config.headerHeight) / this.config.timeSlotHeight);
+            newHeight = Math.max(this.config.timeSlotHeight, (bottomSlotIndex - topSlotIndex) * this.config.timeSlotHeight);
+        }
+
+        // Ensure minimum sizes
+        newWidth = Math.max(this.config.dayWidth, newWidth);
+        newHeight = Math.max(this.config.timeSlotHeight, newHeight);
+
+        // Ensure the block stays within grid bounds
+        newX = Math.max(this.config.timeColumnWidth, newX);
+        newY = Math.max(this.config.headerHeight, newY);
+        
+        const maxX = this.config.timeColumnWidth + (this.config.days.length - 1) * this.config.dayWidth;
+        const maxY = this.config.headerHeight + ((this.config.endHour - this.config.startHour) * 2 - 1) * this.config.timeSlotHeight;
+        
+        if (newX + newWidth > maxX + this.config.dayWidth) {
+            newWidth = maxX + this.config.dayWidth - newX;
+        }
+        if (newY + newHeight > maxY + this.config.timeSlotHeight) {
+            newHeight = maxY + this.config.timeSlotHeight - newY;
+        }
+
+        // Apply the resize
+        const result = this.blockManager.resizeBlock(this.mouseState.resizeBlockId, newX, newY, newWidth, newHeight);
+        
+        if (result.success) {
+            this.render();
+        }
+        // If resize failed due to overlap, we don't render to maintain visual feedback
+    }
+
+    /**
      * Reset mouse state
      */
     private resetMouseState(): void {
@@ -598,7 +750,11 @@ export class WeekPlanner {
             isDown: false,
             startPoint: null,
             currentPoint: null,
-            isDragging: false
+            isDragging: false,
+            resizing: false,
+            resizeHandle: null,
+            resizeBlockId: null,
+            originalBlock: null
         };
         this.previewBlock = null;
     }

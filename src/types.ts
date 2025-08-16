@@ -92,4 +92,23 @@ export interface MouseState {
     readonly startPoint: Point | null;
     readonly currentPoint: Point | null;
     readonly isDragging: boolean;
+    readonly resizing: boolean;
+    readonly resizeHandle: ResizeHandle | null;
+    readonly resizeBlockId: string | null;
+    readonly originalBlock: TimeBlock | null;
+}
+
+/**
+ * Resize handle types for time blocks
+ */
+export type ResizeHandle = 'top' | 'bottom' | 'left' | 'right' | 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right';
+
+/**
+ * Resize operation information
+ */
+export interface ResizeOperation {
+    readonly blockId: string;
+    readonly handle: ResizeHandle;
+    readonly originalBlock: TimeBlock;
+    readonly startPoint: Point;
 }

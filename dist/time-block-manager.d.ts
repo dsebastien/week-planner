@@ -24,6 +24,10 @@ export declare class TimeBlockManager {
      */
     updateBlockText(blockId: string, text: string): boolean;
     /**
+     * Resizes a block with validation
+     */
+    resizeBlock(blockId: string, newX: number, newY: number, newWidth: number, newHeight: number): Result<void, ValidationError>;
+    /**
      * Gets all blocks as a readonly array
      */
     getBlocks(): readonly TimeBlock[];

@@ -35,12 +35,16 @@ export class WeekPlanner {
         currentPoint: null,
         isDragging: false,
         resizing: false,
+        moving: false,
+        movingBlockIds: [],
+        originalBlockPositions: null,
         resizeHandle: null,
         resizeBlockId: null,
         originalBlock: null
     };
     
     private previewBlock: RenderedTimeBlock | null = null;
+    private movingPreviewBlocks: RenderedTimeBlock[] = [];
     private editingBlock: RenderedTimeBlock | null = null;
     private resizeTimeout: ReturnType<typeof setTimeout> | null = null;
 
@@ -285,6 +289,9 @@ export class WeekPlanner {
                     currentPoint: point,
                     isDragging: false,
                     resizing: true,
+                    moving: false,
+                    movingBlockIds: [],
+                    originalBlockPositions: null,
                     resizeHandle,
                     resizeBlockId: clickedBlock.id,
                     originalBlock: { ...clickedBlock }
@@ -294,27 +301,60 @@ export class WeekPlanner {
             }
         }
 
-        // Regular mouse down handling
-        this.mouseState = {
-            isDown: true,
-            startPoint: point,
-            currentPoint: point,
-            isDragging: false,
-            resizing: false,
-            resizeHandle: null,
-            resizeBlockId: null,
-            originalBlock: null
-        };
-
         if (clickedBlock) {
-            // Check if Ctrl is pressed for multi-selection
+            // Clicking on any block - handle selection and prepare for potential move operation
             if (event.ctrlKey || event.metaKey) {
+                // Multi-selection toggle
                 this.blockManager.toggleBlockSelection(clickedBlock.id);
                 this.updateToolbarForMultiSelection();
-            } else {
+            } else if (!clickedBlock.selected) {
+                // Select the clicked block if not already selected
                 this.handleSelectionChange(clickedBlock.id);
             }
+            
+            // Get all currently selected blocks (after potential selection change)
+            const selectedBlocks = this.blockManager.getSelectedBlocks();
+            const originalPositions = new Map<string, { startDay: number; startTime: number }>();
+            
+            for (const block of selectedBlocks) {
+                originalPositions.set(block.id, {
+                    startDay: block.startDay,
+                    startTime: block.startTime
+                });
+            }
+            
+            this.mouseState = {
+                isDown: true,
+                startPoint: point,
+                currentPoint: point,
+                isDragging: false,
+                resizing: false,
+                moving: false,
+                movingBlockIds: selectedBlocks.map(b => b.id),
+                originalBlockPositions: originalPositions,
+                resizeHandle: null,
+                resizeBlockId: null,
+                originalBlock: null
+            };
+            
+            // Clear any existing preview block when preparing to move
+            this.previewBlock = null;
         } else {
+            // Clicking on empty space - start block creation
+            this.mouseState = {
+                isDown: true,
+                startPoint: point,
+                currentPoint: point,
+                isDragging: false,
+                resizing: false,
+                moving: false,
+                movingBlockIds: [],
+                originalBlockPositions: null,
+                resizeHandle: null,
+                resizeBlockId: null,
+                originalBlock: null
+            };
+
             this.handleSelectionChange(null);
             this.startBlockCreation(point);
         }
@@ -339,8 +379,17 @@ export class WeekPlanner {
             return;
         }
 
-        // Handle block creation dragging
-        if (this.mouseState.isDown && this.mouseState.startPoint && !this.mouseState.resizing) {
+        // Handle block moving operation (highest priority after resize)
+        if (this.mouseState.isDown && this.mouseState.movingBlockIds.length > 0) {
+            this.updateBlockMove(point);
+            return; // Early return to prevent any other operations
+        }
+
+        // Handle block creation dragging (only if no other operation is active)
+        if (this.mouseState.isDown && this.mouseState.startPoint && 
+            !this.mouseState.resizing && 
+            !this.mouseState.moving && 
+            this.mouseState.movingBlockIds.length === 0) {
             this.updateBlockCreation(point);
         }
     }
@@ -352,6 +401,8 @@ export class WeekPlanner {
         if (this.mouseState.resizing && this.mouseState.resizeBlockId) {
             // Resize operation is finished, no additional action needed
             // The resize was applied in real-time during updateResize
+        } else if (this.mouseState.moving && this.mouseState.movingBlockIds.length > 0) {
+            this.finishBlockMove();
         } else if (this.mouseState.isDragging && this.previewBlock) {
             this.finishBlockCreation();
         }
@@ -492,6 +543,11 @@ export class WeekPlanner {
      */
     private updateBlockCreation(currentPoint: Point): void {
         if (!this.mouseState.startPoint) return;
+        
+        // Prevent block creation if we're in a move operation
+        if (this.mouseState.movingBlockIds.length > 0 || this.mouseState.moving) {
+            return;
+        }
 
         this.mouseState = {
             ...this.mouseState,
@@ -567,7 +623,8 @@ export class WeekPlanner {
         };
 
         this.render();
-        if (this.previewBlock) {
+        // Only draw creation preview block if we're not moving blocks
+        if (this.previewBlock && this.mouseState.movingBlockIds.length === 0 && !this.mouseState.moving) {
             this.renderer.drawPreviewBlock(this.previewBlock);
         }
     }
@@ -658,6 +715,56 @@ export class WeekPlanner {
         } else {
             this.showError(result.error.message);
         }
+    }
+
+    /**
+     * Complete block move operation
+     */
+    private finishBlockMove(): void {
+        if (!this.mouseState.startPoint || !this.mouseState.originalBlockPositions || this.mouseState.movingBlockIds.length === 0) {
+            return;
+        }
+
+        // Calculate the offset from original position
+        const currentPoint = this.mouseState.currentPoint || this.mouseState.startPoint;
+        const deltaX = currentPoint.x - this.mouseState.startPoint.x;
+        const deltaY = currentPoint.y - this.mouseState.startPoint.y;
+
+        // Convert pixel offset to logical offset (days and time slots)
+        const dayOffset = Math.round(deltaX / this.config.dayWidth);
+        const timeSlotOffset = Math.round(deltaY / this.config.timeSlotHeight);
+        const timeOffset = timeSlotOffset * 30; // 30 minutes per slot
+
+        // Get the first block to determine new position
+        const firstBlockId = this.mouseState.movingBlockIds[0];
+        if (!firstBlockId) return;
+        
+        const originalPositions = this.mouseState.originalBlockPositions;
+        if (!originalPositions) return;
+        
+        const originalPosition = originalPositions.get(firstBlockId);
+        if (!originalPosition) return;
+
+        let newStartDay = originalPosition.startDay + dayOffset;
+        let newStartTime = originalPosition.startTime + timeOffset;
+        
+        // Clamp to valid grid boundaries
+        newStartDay = Math.max(0, Math.min(6, newStartDay));
+        newStartTime = Math.max(this.config.startHour * 60, Math.min((this.config.endHour * 60) - 30, newStartTime));
+
+        // Only move if there was actual movement and the move is valid
+        if ((dayOffset !== 0 || timeOffset !== 0) && 
+            this.blockManager.canMoveToPosition(this.mouseState.movingBlockIds, newStartDay, newStartTime)) {
+            
+            const result = this.blockManager.moveBlocks(this.mouseState.movingBlockIds, newStartDay, newStartTime);
+            
+            if (!result.success) {
+                this.showError(result.error.message);
+            }
+        }
+
+        // Reset cursor
+        this.canvas.style.cursor = 'default';
     }
 
     /**
@@ -813,6 +920,130 @@ export class WeekPlanner {
     }
 
     /**
+     * Handle block moving during drag
+     */
+    private updateBlockMove(currentPoint: Point): void {
+        if (!this.mouseState.startPoint || !this.mouseState.originalBlockPositions || this.mouseState.movingBlockIds.length === 0) {
+            return;
+        }
+
+        const startPoint = this.mouseState.startPoint;
+
+        // Start moving mode if not already active
+        if (!this.mouseState.moving) {
+            this.mouseState = {
+                ...this.mouseState,
+                moving: true,
+                isDragging: true
+            };
+        }
+
+        this.mouseState = {
+            ...this.mouseState,
+            currentPoint
+        };
+
+        // Calculate the offset from original position
+        const deltaX = currentPoint.x - startPoint.x;
+        const deltaY = currentPoint.y - startPoint.y;
+
+        // Convert pixel offset to logical offset (days and time slots)
+        const dayOffset = Math.round(deltaX / this.config.dayWidth);
+        const timeSlotOffset = Math.round(deltaY / this.config.timeSlotHeight);
+        const timeOffset = timeSlotOffset * 30; // 30 minutes per slot
+
+        // Get the first block to determine new position
+        const firstBlockId = this.mouseState.movingBlockIds[0];
+        if (!firstBlockId) return;
+        
+        const originalPositions = this.mouseState.originalBlockPositions;
+        if (!originalPositions) return;
+        
+        const originalPosition = originalPositions.get(firstBlockId);
+        if (!originalPosition) return;
+
+        let newStartDay = originalPosition.startDay + dayOffset;
+        let newStartTime = originalPosition.startTime + timeOffset;
+        
+        // Clamp to valid grid boundaries
+        newStartDay = Math.max(0, Math.min(6, newStartDay));
+        newStartTime = Math.max(this.config.startHour * 60, Math.min((this.config.endHour * 60) - 30, newStartTime));
+        
+        // Check if the move is valid
+        const canMove = this.blockManager.canMoveToPosition(
+            this.mouseState.movingBlockIds, 
+            newStartDay, 
+            newStartTime
+        );
+
+        // Update cursor to show move state
+        this.canvas.style.cursor = canMove ? 'grabbing' : 'not-allowed';
+
+        // Store preview positions for visual feedback
+        this.createMovingPreviewBlocks(newStartDay, newStartTime);
+        this.render();
+    }
+
+    /**
+     * Create preview blocks for moving blocks at their target positions
+     */
+    private createMovingPreviewBlocks(newStartDay: number, newStartTime: number): void {
+        this.movingPreviewBlocks = [];
+        
+        if (!this.mouseState.originalBlockPositions || this.mouseState.movingBlockIds.length === 0) {
+            return;
+        }
+        
+        // Get the first block to calculate the offset
+        const firstBlockId = this.mouseState.movingBlockIds[0];
+        if (!firstBlockId) return;
+        
+        const originalPosition = this.mouseState.originalBlockPositions.get(firstBlockId);
+        if (!originalPosition) return;
+        
+        // Calculate offset from original position
+        const dayOffset = newStartDay - originalPosition.startDay;
+        const timeOffset = newStartTime - originalPosition.startTime;
+        
+        // Create preview blocks for all moving blocks
+        for (const blockId of this.mouseState.movingBlockIds) {
+            const block = this.blockManager.getBlock(blockId);
+            const originalPos = this.mouseState.originalBlockPositions.get(blockId);
+            
+            if (block && originalPos) {
+                let previewStartDay = originalPos.startDay + dayOffset;
+                let previewStartTime = originalPos.startTime + timeOffset;
+                
+                // Clamp to valid grid boundaries
+                previewStartDay = Math.max(0, Math.min(6, previewStartDay));
+                previewStartTime = Math.max(this.config.startHour * 60, Math.min((this.config.endHour * 60) - 30, previewStartTime));
+                
+                // Calculate pixel positions for preview
+                const { x, y, width, height } = GridUtils.calculateBlockPixelProperties(
+                    previewStartDay,
+                    previewStartTime,
+                    block.duration,
+                    block.daySpan,
+                    this.config
+                );
+                
+                // Create preview block with transparency
+                const previewBlock: RenderedTimeBlock = {
+                    ...block,
+                    startDay: previewStartDay,
+                    startTime: previewStartTime,
+                    x,
+                    y,
+                    width,
+                    height
+                };
+                
+                this.movingPreviewBlocks.push(previewBlock);
+            }
+        }
+    }
+
+    /**
      * Reset mouse state
      */
     private resetMouseState(): void {
@@ -822,11 +1053,15 @@ export class WeekPlanner {
             currentPoint: null,
             isDragging: false,
             resizing: false,
+            moving: false,
+            movingBlockIds: [],
+            originalBlockPositions: null,
             resizeHandle: null,
             resizeBlockId: null,
             originalBlock: null
         };
         this.previewBlock = null;
+        this.movingPreviewBlocks = [];
     }
 
     /**
@@ -912,7 +1147,24 @@ export class WeekPlanner {
      * Main render method
      */
     public render(): void {
-        this.renderer.render(this.blockManager.getBlocks());
+        // Get all blocks, but exclude ones that are currently being moved
+        let blocksToRender = this.blockManager.getBlocks();
+        
+        if (this.mouseState.moving && this.mouseState.movingBlockIds.length > 0) {
+            // Filter out blocks that are being moved so they don't show in original position
+            blocksToRender = blocksToRender.filter(block => 
+                !this.mouseState.movingBlockIds.includes(block.id)
+            );
+        }
+        
+        this.renderer.render(blocksToRender);
+        
+        // Draw moving preview blocks during drag operations
+        if (this.mouseState.moving && this.movingPreviewBlocks.length > 0) {
+            for (const previewBlock of this.movingPreviewBlocks) {
+                this.renderer.drawPreviewBlock(previewBlock);
+            }
+        }
     }
 
     /**

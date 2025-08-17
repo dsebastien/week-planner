@@ -5,7 +5,6 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ## MAIN RULES
 - NEVER read or modify the TODO.md file
 - I'm an expert, consult me for everything you're not certain about
-- In doubt, ask me questions about the desired behavior
 - Always run `npm run serve` in the background
 - Use Puppeteer via the Dockmaster MCP server to check the results, see if everything works correctly, understand issues, bugs, etc
 - Read @./PROJECT_KNOWLEDGE.md to refresh your memory about the project

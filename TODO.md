@@ -1,6 +1,6 @@
 BUSY:
 
-- Add support for moving selected time blocks with drag drop. The move operation should only be allowed if the target time slots are all unoccupied
+- The block style overlay MUST ALWAYS BE displayed IN the grid, not outside or partly outside like this: /c/Users/trankill/Pictures/Screenshots/Capture d'\''écran 2025-08-17 172150.png
 
 - When right clicking on a time block, a menu should be shown with the following options: copy style, paste style (if one was copied previously), copy. When right clicking on an empty cell, the menu should show the following options: paste (if a time block was copied previously), Add time block here
 - The code of this app is on GitHub and I want to build it and deploy it from there. I own dsebastien.net and want to deploy this at weekplanner.tools.dsebastien.net. My GitHub account has already two custom domains (dsebastien.net and stats.notes.dsebastien.net), so I suppose I could add one more. Generate the GitHub actions workflow I need to (release/build/deploy...). The release creation should also generate a changelog. Finally, explain how I should setup everything step by step
@@ -15,4 +15,5 @@ BUSY:
 - The block styling view seems to prevent the resizing of blocks. For example, if a block is selected and the block styling panel is below it, then resizing down can only get next to the block styling panel
 - When releasing the mouse after click + drag over existing time blocks, it should select those that are completely in the selected area
 - Bug: time block text vertical alignment is buggy. When the text size is not the default, the text doesn't render where it should
-- 
+- When text is too big, it wraps, but displays incorrectly. Fix that: /c/Users/trankill/Pictures/Screenshots/Capture d'\''écran 2025-08-17 171050.png
+- Implement import from Markdown (assuming the Markdown template is used)

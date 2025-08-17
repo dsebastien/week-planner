@@ -311,9 +311,26 @@ this.blocks.set(blockId, updatedBlock);
 6. **Clean Architecture**: Modular design makes code maintainable and testable
 7. **Canvas Rendering Order**: Drawing order matters - lines can hide text if drawn later
 
-## Recent Fixes & Improvements (Session August 16, 2025)
+## Recent Fixes & Improvements
 
-### **Latest Session Accomplishments**
+### **Session August 17, 2025: Enhanced Drag & Drop**
+- **🎯 Complete Drag & Drop Implementation**: Full visual feedback system for moving selected blocks
+  - **Smart Drag Detection**: Prevents block creation overlay when moving existing blocks
+  - **Visual Ghost Blocks**: Moving blocks show transparent previews at target positions
+  - **Multi-Block Movement**: Maintains relative positioning when moving multiple selected blocks
+  - **Overlap Prevention**: Only allows moves to valid, unoccupied time slots
+  - **Dynamic Cursors**: Shows "grabbing" cursor during successful moves, "not-allowed" for invalid positions
+  - **Clean State Management**: Proper cleanup of preview blocks after drag operations
+- **Enhanced User Experience**: Intuitive drag behavior with immediate visual feedback
+- **Robust Error Handling**: Comprehensive validation prevents invalid move operations  
+- **Performance Optimized**: Efficient rendering of moving preview blocks during drag operations
+- **✅ Fixed Visual Issues**: Original blocks properly hidden during drag, ghost blocks show correctly
+- **✅ Grid Bounds Enforcement**: Blocks cannot be moved outside valid grid area (days 0-6, times 05:00-23:30)
+- **Smart Position Clamping**: Drag positions automatically clamped to valid boundaries
+
+### **Session August 16, 2025: Foundation Features**
+
+### **Previous Session Accomplishments**
 - **Fixed SVG Export**: Added missing time labels and grid lines to SVG exports
 - **Fixed Text Input Visibility**: Black text on white background with inline styles  
 - **Implemented Complete Block Resizing**: 8 resize handles with smooth drag behavior
@@ -519,8 +536,7 @@ This represents a complete evolution from a functional tool to a professional, b
   - **Result**: Perfect responsive design without unnecessary viewport filling
 
 ## Future Enhancement Ideas
-- Drag and drop for moving existing blocks
-- Block resizing handles
+- Multiple color themes
 - Multiple color themes
 - Recurring time blocks
 - Calendar integration
@@ -555,7 +571,8 @@ The week planner is now in a **production-ready state** with all major issues re
 ### ✅ **User Experience**
 - **Intuitive Interaction**: Click/drag to create blocks, double-click to edit text
 - **Block Resizing**: Drag blue resize handles to resize blocks smoothly
-- **Smart Cursors**: Dynamic cursor changes (↔, ↕, ↖, ↗) for resize operations
+- **🎯 Drag & Drop Moving**: Select blocks and drag them to new positions with visual feedback
+- **Smart Cursors**: Dynamic cursor changes (↔, ↕, ↖, ↗) for resize operations, grabbing cursor during moves
 - **Clean Interface**: No unwanted cells below 00:00, precise grid boundaries  
 - **Error Prevention**: No more "end time cannot be after 24:00" messages
 - **Visual Feedback**: Clear time labels, selection highlighting, preview blocks

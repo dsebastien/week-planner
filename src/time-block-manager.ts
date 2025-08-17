@@ -32,16 +32,9 @@ export class TimeBlockManager {
             return validation;
         }
 
-        const overlap = this.checkOverlap(block);
-        if (overlap.length > 0) {
-            return {
-                success: false,
-                error: {
-                    code: 'OVERLAP_ERROR',
-                    message: `Block overlaps with existing blocks`,
-                    field: 'overlap'
-                }
-            };
+        const overlapResult = this.checkOverlap(block);
+        if (!overlapResult.success) {
+            return overlapResult;
         }
 
         this.blocks.set(block.id, { ...block });
@@ -200,6 +193,133 @@ export class TimeBlockManager {
 
         // Update the block
         this.blocks.set(blockId, resizedBlock);
+        return { success: true, data: undefined };
+    }
+
+    /**
+     * Moves a block to a new position (startDay and startTime)
+     */
+    moveBlock(blockId: string, newStartDay: number, newStartTime: number): Result<void, ValidationError> {
+        const block = this.blocks.get(blockId);
+        if (!block) {
+            return {
+                success: false,
+                error: { code: 'BLOCK_NOT_FOUND', message: 'Block not found', field: 'id' }
+            };
+        }
+
+        // Create moved block with new position
+        const movedBlock: TimeBlock = {
+            ...block,
+            startDay: newStartDay,
+            startTime: newStartTime
+        };
+
+        // Validate the moved block
+        const validationResult = this.validateBlock(movedBlock);
+        if (!validationResult.success) {
+            return validationResult;
+        }
+
+        // Check for overlaps with other blocks (exclude the block being moved)
+        const overlapResult = this.checkOverlap(movedBlock, blockId);
+        if (!overlapResult.success) {
+            return overlapResult;
+        }
+
+        // Update the block
+        this.blocks.set(blockId, movedBlock);
+        return { success: true, data: undefined };
+    }
+
+    /**
+     * Checks if a position is valid for moving blocks (no overlaps with existing blocks)
+     */
+    canMoveToPosition(blockIds: string[], newStartDay: number, newStartTime: number): boolean {
+        if (blockIds.length === 0) return false;
+
+        // Get the first block to determine the relative positions of other blocks
+        const firstBlockId = blockIds[0];
+        const firstBlock = this.blocks.get(firstBlockId!);
+        if (!firstBlock) return false;
+
+        // Calculate offset from original position
+        const dayOffset = newStartDay - firstBlock.startDay;
+        const timeOffset = newStartTime - firstBlock.startTime;
+
+        // Check if all blocks can be moved to their new positions
+        for (const blockId of blockIds) {
+            const block = this.blocks.get(blockId);
+            if (!block) return false;
+
+            const newBlockStartDay = block.startDay + dayOffset;
+            const newBlockStartTime = block.startTime + timeOffset;
+
+            // Create temporary moved block
+            const movedBlock: TimeBlock = {
+                ...block,
+                startDay: newBlockStartDay,
+                startTime: newBlockStartTime
+            };
+
+            // Validate the moved block
+            const validationResult = this.validateBlock(movedBlock);
+            if (!validationResult.success) return false;
+
+            // Check for overlaps with other blocks (exclude blocks being moved)
+            const overlapResult = this.checkOverlap(movedBlock, blockId, new Set(blockIds));
+            if (!overlapResult.success) return false;
+        }
+
+        return true;
+    }
+
+    /**
+     * Moves multiple blocks maintaining their relative positions
+     */
+    moveBlocks(blockIds: string[], newStartDay: number, newStartTime: number): Result<void, ValidationError> {
+        if (blockIds.length === 0) {
+            return {
+                success: false,
+                error: { code: 'INVALID_SELECTION', message: 'No blocks selected', field: 'blockIds' }
+            };
+        }
+
+        // Check if the move is valid
+        if (!this.canMoveToPosition(blockIds, newStartDay, newStartTime)) {
+            return {
+                success: false,
+                error: { code: 'INVALID_POSITION', message: 'Cannot move blocks to this position', field: 'position' }
+            };
+        }
+
+        // Get the first block to determine the offset
+        const firstBlockId = blockIds[0];
+        const firstBlock = this.blocks.get(firstBlockId!);
+        if (!firstBlock) {
+            return {
+                success: false,
+                error: { code: 'BLOCK_NOT_FOUND', message: 'Block not found', field: 'id' }
+            };
+        }
+
+        // Calculate offset
+        const dayOffset = newStartDay - firstBlock.startDay;
+        const timeOffset = newStartTime - firstBlock.startTime;
+
+        // Move all blocks
+        for (const blockId of blockIds) {
+            const block = this.blocks.get(blockId);
+            if (block) {
+                const movedBlock: TimeBlock = {
+                    ...block,
+                    startDay: block.startDay + dayOffset,
+                    startTime: block.startTime + timeOffset
+                };
+                this.blocks.set(blockId, movedBlock);
+            }
+        }
+
         return { success: true, data: undefined };
     }
 
@@ -462,6 +582,21 @@ export class TimeBlockManager {
                 error: { code: 'INVALID_DAY_SPAN', message: 'Day span must be between 1 and 7', field: 'daySpan' }
             };
         }
+        
+        // Validate day boundaries (startDay must be 0-6, and startDay + daySpan must not exceed grid)
+        if (block.startDay < 0 || block.startDay > 6) {
+            return {
+                success: false,
+                error: { code: 'DAY_OUT_OF_BOUNDS', message: 'Start day must be between 0 (Monday) and 6 (Sunday)', field: 'startDay' }
+            };
+        }
+        
+        if (block.startDay + block.daySpan > 7) {
+            return {
+                success: false,
+                error: { code: 'DAY_OUT_OF_BOUNDS', message: 'Block extends beyond Sunday', field: 'daySpan' }
+            };
+        }
 
         // Validate time boundaries
         const startHourMinutes = this.config.startHour * 60;
@@ -495,7 +630,36 @@ export class TimeBlockManager {
     /**
      * Checks for overlaps with existing blocks
      */
-    private checkOverlap(newBlock: TimeBlock): TimeBlock[] {
+    private checkOverlap(newBlock: TimeBlock, excludeId?: string, excludeIds?: Set<string>): Result<void, ValidationError> {
+        const allBlocks = Array.from(this.blocks.values());
+        
+        // Filter out excluded blocks
+        const blocksToCheck = allBlocks.filter(block => {
+            if (excludeId && block.id === excludeId) return false;
+            if (excludeIds && excludeIds.has(block.id)) return false;
+            return true;
+        });
+        
+        const overlappingBlocks = this.findOverlappingBlocks(newBlock, blocksToCheck);
+        
+        if (overlappingBlocks.length > 0) {
+            return {
+                success: false,
+                error: {
+                    code: 'OVERLAP_ERROR',
+                    message: `Block overlaps with existing blocks`,
+                    field: 'overlap'
+                }
+            };
+        }
+        
+        return { success: true, data: undefined };
+    }
+
+    /**
+     * Legacy method for checking overlaps (returns array)
+     */
+    private checkOverlapLegacy(newBlock: TimeBlock): TimeBlock[] {
         return this.findOverlappingBlocks(newBlock, Array.from(this.blocks.values()));
     }
 

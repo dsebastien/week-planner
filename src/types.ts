@@ -137,6 +137,9 @@ export interface MouseState {
     readonly resizeHandle: ResizeHandle | null;
     readonly resizeBlockId: string | null;
     readonly originalBlock: RenderedTimeBlock | null;
+    readonly moving: boolean;
+    readonly movingBlockIds: string[];
+    readonly originalBlockPositions: Map<string, { startDay: number; startTime: number }> | null;
 }
 
 /**

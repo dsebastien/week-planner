@@ -506,7 +506,7 @@ export class CanvasRenderer {
         // Build font string from block properties
         const fontWeight = block.fontStyle.bold ? '700' : '500';
         const fontStyle = block.fontStyle.italic ? 'italic' : 'normal';
-        const fontSize = Math.max(8, Math.min(24, block.fontSize)); // Clamp between 8-24px
+        const fontSize = Math.max(8, Math.min(48, block.fontSize)); // Clamp between 8-48px
         this.ctx.font = `${fontStyle} ${fontWeight} ${fontSize}px Inter, "Segoe UI", system-ui, sans-serif`;
         
         // Set text alignment
@@ -1007,7 +1007,7 @@ export class CanvasRenderer {
         if (block.text.trim()) {
             const fontWeight = block.fontStyle.bold ? '700' : '500';
             const fontStyle = block.fontStyle.italic ? 'italic' : 'normal';
-            const fontSize = Math.max(8, Math.min(24, block.fontSize));
+            const fontSize = Math.max(8, Math.min(48, block.fontSize));
             const textAnchor = this.getSVGTextAnchor(block.textAlignment);
             
             let textX: number;

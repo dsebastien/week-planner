@@ -37,7 +37,7 @@ export interface TimeBlock {
     text: string;
     readonly color: string; // background color
     readonly textColor: HexColor; // text color
-    readonly fontSize: number; // 8-24 pixels
+    readonly fontSize: number; // 8-48 pixels
     readonly fontStyle: FontStyle;
     readonly textAlignment: TextAlignment;
     readonly verticalAlignment: VerticalAlignment;

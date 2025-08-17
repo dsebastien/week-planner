@@ -296,6 +296,12 @@ export class WeekPlanner {
                     resizeBlockId: clickedBlock.id,
                     originalBlock: { ...clickedBlock }
                 };
+                
+                // Hide styling panel during resize to prevent interference
+                if ((window as any).editToolbar) {
+                    (window as any).editToolbar.hide();
+                }
+                
                 this.render();
                 return;
             }
@@ -936,6 +942,11 @@ export class WeekPlanner {
                 moving: true,
                 isDragging: true
             };
+            
+            // Hide styling panel during move to prevent interference
+            if ((window as any).editToolbar) {
+                (window as any).editToolbar.hide();
+            }
         }
 
         this.mouseState = {
@@ -1047,6 +1058,10 @@ export class WeekPlanner {
      * Reset mouse state
      */
     private resetMouseState(): void {
+        // Check if we were resizing or moving to show toolbar again
+        const wasResizing = this.mouseState.resizing;
+        const wasMoving = this.mouseState.moving;
+        
         this.mouseState = {
             isDown: false,
             startPoint: null,
@@ -1062,6 +1077,16 @@ export class WeekPlanner {
         };
         this.previewBlock = null;
         this.movingPreviewBlocks = [];
+        
+        // Show styling panel again if we were resizing or moving and there's a selected block
+        if ((wasResizing || wasMoving) && (window as any).editToolbar) {
+            const selectedBlocks = this.blockManager.getSelectedBlocks();
+            if (selectedBlocks.length === 1) {
+                (window as any).editToolbar.show(selectedBlocks[0]);
+            } else if (selectedBlocks.length > 1) {
+                (window as any).editToolbar.showMultiple(selectedBlocks);
+            }
+        }
     }
 
     /**

@@ -338,7 +338,7 @@
             >
 
             <!-- Edit Toolbar -->
-            <div id="editToolbar" class="absolute hidden bg-gray-800 border border-gray-600 rounded-lg shadow-xl p-3 min-w-[320px]" style="backdrop-filter: blur(16px); z-index: 100; pointer-events: none;">
+            <div id="editToolbar" class="absolute hidden bg-gray-800 border border-gray-600 rounded-lg shadow-xl p-3 min-w-[320px]" style="backdrop-filter: blur(16px); z-index: 50; pointer-events: none;">
                 <!-- Toolbar Header -->
                 <div id="toolbarHeader" class="toolbar-header flex items-center justify-between mb-3 pb-2 border-b border-gray-600 cursor-move transition-colors duration-200" style="pointer-events: auto;">
                     <div class="flex items-center gap-2">
@@ -656,7 +656,7 @@
             const isTopEdge = blockGridY < gridHeight / 3;
             const isBottomEdge = blockGridY > gridHeight * 2 / 3;
             
-            const margin = 40; // Increased margin between block and panel
+            const margin = 60; // Extra margin to avoid resize handle interference (8px handles + buffer)
             
             let finalLeft, finalTop;
             
@@ -686,9 +686,21 @@
                 finalLeft = blockLeft;
                 finalTop = blockTop + block.height + margin;
             } else {
-                // Block in middle → place below block (default)
-                finalLeft = blockLeft;
-                finalTop = blockTop + block.height + margin;
+                // Block in middle → prefer side placement to avoid resize interference
+                // Try right side first, then left, then below as last resort
+                if (blockLeft + block.width + margin + toolbarWidth <= gridRight) {
+                    // Place to the right
+                    finalLeft = blockLeft + block.width + margin;
+                    finalTop = blockTop;
+                } else if (blockLeft - toolbarWidth - margin >= gridLeft) {
+                    // Place to the left
+                    finalLeft = blockLeft - toolbarWidth - margin;
+                    finalTop = blockTop;
+                } else {
+                    // Last resort: place below (might interfere with resize)
+                    finalLeft = blockLeft;
+                    finalTop = blockTop + block.height + margin;
+                }
             }
             
             // Ensure panel stays within grid bounds

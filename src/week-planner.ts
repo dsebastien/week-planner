@@ -47,6 +47,7 @@ export class WeekPlanner {
     private movingPreviewBlocks: RenderedTimeBlock[] = [];
     private editingBlock: RenderedTimeBlock | null = null;
     private resizeTimeout: ReturnType<typeof setTimeout> | null = null;
+    private highlightedCell: { day: number; timeMinutes: number } | null = null;
 
     constructor() {
         // Initialize DOM elements
@@ -148,6 +149,7 @@ export class WeekPlanner {
         this.canvas.addEventListener('mouseup', this.onMouseUp.bind(this));
         this.canvas.addEventListener('dblclick', this.onDoubleClick.bind(this));
         this.canvas.addEventListener('mouseleave', this.onMouseLeave.bind(this));
+        this.canvas.addEventListener('contextmenu', this.onContextMenu.bind(this));
 
         // Document-level events for tracking mouse outside window during drag
         document.addEventListener('mousemove', this.onDocumentMouseMove.bind(this));
@@ -478,6 +480,97 @@ export class WeekPlanner {
         } else {
             // Create new block in the cell
             this.createBlockInCell(point);
+        }
+    }
+
+    /**
+     * Handle right-click context menu events
+     */
+    private onContextMenu(event: MouseEvent): void {
+        event.preventDefault(); // Prevent default browser context menu
+        
+        const point = this.getMousePosition(event);
+        
+        // Only handle right clicks in the grid area
+        if (!GridUtils.isInGridArea(point.x, point.y, this.config)) {
+            return;
+        }
+        
+        const clickedBlock = this.blockManager.getBlockAt(point.x, point.y);
+        const contextMenuSystem = (window as any).contextMenuSystem;
+        
+        if (!contextMenuSystem) {
+            console.warn('Context menu system not available');
+            return;
+        }
+        
+        if (clickedBlock) {
+            // Right-clicked on a block - show block context menu
+            const menuItems = [
+                {
+                    label: 'Copy Style',
+                    disabled: false,
+                    action: () => contextMenuSystem.copyBlockStyle(clickedBlock)
+                },
+                {
+                    label: 'Paste Style',
+                    disabled: !contextMenuSystem.hasCopiedStyle(),
+                    action: () => {
+                        this.blockManager.selectBlock(clickedBlock.id);
+                        contextMenuSystem.pasteBlockStyle(clickedBlock);
+                    }
+                },
+                {
+                    label: 'Copy',
+                    disabled: false,
+                    action: () => contextMenuSystem.copyBlock(clickedBlock)
+                }
+            ];
+            
+            contextMenuSystem.showContextMenu(event.clientX, event.clientY, menuItems);
+        } else {
+            // Right-clicked on empty cell - show cell context menu
+            const day = GridUtils.getDayFromX(point.x, this.config);
+            const timeMinutes = GridUtils.getTimeFromY(point.y, this.config);
+            
+            if (day < 0 || day > 6 || !GridUtils.isValidTime(timeMinutes, this.config)) {
+                return;
+            }
+            
+            // Highlight the target cell
+            this.highlightedCell = { day, timeMinutes };
+            this.render(); // Re-render to show highlight
+            
+            const menuItems = [
+                {
+                    label: 'Paste',
+                    disabled: !contextMenuSystem.hasCopiedBlock(),
+                    action: () => {
+                        contextMenuSystem.pasteBlock(day, timeMinutes);
+                        this.clearCellHighlight();
+                    }
+                },
+                {
+                    label: 'Create time block',
+                    disabled: false,
+                    action: () => {
+                        this.createBlockInCell(point);
+                        this.clearCellHighlight();
+                    }
+                }
+            ];
+            
+            contextMenuSystem.showContextMenu(event.clientX, event.clientY, menuItems);
+        }
+    }
+
+    /**
+     * Clear cell highlighting
+     */
+    public clearCellHighlight(): void {
+        if (this.highlightedCell) {
+            this.highlightedCell = null;
+            this.render(); // Re-render to remove highlight
         }
     }
 
@@ -1189,6 +1282,11 @@ export class WeekPlanner {
             for (const previewBlock of this.movingPreviewBlocks) {
                 this.renderer.drawPreviewBlock(previewBlock);
             }
+        }
+        
+        // Draw highlighted cell for context menu
+        if (this.highlightedCell) {
+            this.renderer.drawHighlightedCell(this.highlightedCell.day, this.highlightedCell.timeMinutes);
         }
     }
 

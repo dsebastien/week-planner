@@ -96,6 +96,32 @@ export class CanvasRenderer {
     }
 
     /**
+     * Draws a highlighted cell for context menu targeting
+     */
+    drawHighlightedCell(day: number, timeMinutes: number): void {
+        this.ctx.save();
+        
+        // Calculate cell position
+        const x = this.config.timeColumnWidth + day * this.config.dayWidth;
+        const y = this.config.headerHeight + ((timeMinutes - this.config.startHour * 60) / 30) * this.config.timeSlotHeight;
+        const width = this.config.dayWidth;
+        const height = this.config.timeSlotHeight;
+        
+        // Draw highlight with subtle glow effect
+        this.ctx.fillStyle = 'rgba(229, 0, 125, 0.15)'; // Light pink highlight
+        this.ctx.fillRect(x, y, width, height);
+        
+        // Draw border
+        this.ctx.strokeStyle = CanvasRenderer.THEME.selectionHighlight;
+        this.ctx.lineWidth = 2;
+        this.ctx.setLineDash([4, 4]);
+        this.ctx.strokeRect(x, y, width, height);
+        this.ctx.setLineDash([]);
+        
+        this.ctx.restore();
+    }
+
+    /**
      * Updates the configuration and triggers re-setup if needed
      */
     updateConfig(newConfig: GridConfig): void {
@@ -518,10 +544,11 @@ export class CanvasRenderer {
         const textArea = this.getTextArea(block);
         
         if (isSmallBlock) {
-            // For small blocks, use simple vertical positioning
+            // For small blocks, use simple vertical positioning with ellipsis
             const textY = this.getVerticalTextY(block, block.text, true);
             const textX = this.getTextX(block, textArea.x);
-            this.ctx.fillText(block.text, textX, textY);
+            const truncatedText = this.truncateTextWithEllipsis(block.text, textArea.maxWidth);
+            this.ctx.fillText(truncatedText, textX, textY);
         } else {
             // For larger blocks, use wrapped text with vertical alignment
             const textX = this.getTextX(block, textArea.x);
@@ -646,32 +673,60 @@ export class CanvasRenderer {
         
         if (isSmallBlock) {
             // For small blocks, use simple positioning within available area
+            // Note: textBaseline is set to 'middle' for small blocks in drawBlockText
             switch (block.verticalAlignment) {
                 case 'top':
-                    return textArea.y;
+                    return textArea.y + block.fontSize / 2; // Account for middle baseline
                 case 'bottom':
-                    return textArea.y + textArea.maxHeight;
+                    return textArea.y + textArea.maxHeight - block.fontSize / 2; // Account for middle baseline
                 case 'middle':
                 default:
                     return block.y + block.height / 2;
             }
         } else {
-            // For larger blocks, calculate based on text content
-            const fontSize = Math.max(8, Math.min(48, block.fontSize));
-            const lineHeight = fontSize * 1.3;
-            const lines = this.getTextLines(text, textArea.maxWidth);
-            const totalTextHeight = lines.length * lineHeight;
+            // For larger blocks, the wrapped text method handles positioning
+            // This is only used for baseline positioning in legacy contexts
+            return textArea.y;
+        }
+    }
+
+    /**
+     * Truncate text with ellipsis to fit within max width
+     */
+    private truncateTextWithEllipsis(text: string, maxWidth: number): string {
+        if (maxWidth <= 0) return '';
+        
+        // Check if full text fits
+        const fullTextMetrics = this.ctx.measureText(text);
+        if (fullTextMetrics.width <= maxWidth) {
+            return text;
+        }
+        
+        // Check if ellipsis alone fits
+        const ellipsisMetrics = this.ctx.measureText('...');
+        if (ellipsisMetrics.width > maxWidth) {
+            return ''; // Not enough space even for ellipsis
+        }
+        
+        // Binary search for the longest text that fits with ellipsis
+        let left = 0;
+        let right = text.length;
+        let bestFit = '';
+        
+        while (left <= right) {
+            const mid = Math.floor((left + right) / 2);
+            const testText = text.substring(0, mid) + '...';
+            const testMetrics = this.ctx.measureText(testText);
             
-            switch (block.verticalAlignment) {
-                case 'top':
-                    return textArea.y;
-                case 'bottom':
-                    return textArea.y + textArea.maxHeight - totalTextHeight;
-                case 'middle':
-                default:
-                    return textArea.y + (textArea.maxHeight - totalTextHeight) / 2;
+            if (testMetrics.width <= maxWidth) {
+                bestFit = testText;
+                left = mid + 1;
+            } else {
+                right = mid - 1;
             }
         }
+        
+        return bestFit || '...';
     }
 
     /**
@@ -694,10 +749,10 @@ export class CanvasRenderer {
                 // Check if the word itself fits on a line
                 const wordMetrics = this.ctx.measureText(word);
                 if (wordMetrics.width > maxWidth) {
-                    // Word is too long for a single line, break it with hyphen
-                    const brokenLines = this.breakLongWord(word, maxWidth);
-                    lines.push(...brokenLines.slice(0, -1)); // Add all but the last line
-                    line = brokenLines[brokenLines.length - 1]! + ' '; // Start new line with remainder
+                    // Word is too long for a single line, truncate with ellipsis
+                    const truncatedWord = this.truncateTextWithEllipsis(word, maxWidth);
+                    lines.push(truncatedWord);
+                    line = ''; // Start fresh line since we handled the word
                 } else {
                     // Word fits on its own line
                     line = word + ' ';
@@ -709,7 +764,15 @@ export class CanvasRenderer {
         }
         
         if (line.trim()) {
-            lines.push(line.trim());
+            // Ensure the final line also respects width constraints
+            const finalLine = line.trim();
+            const finalLineMetrics = this.ctx.measureText(finalLine);
+            if (finalLineMetrics.width > maxWidth) {
+                const truncatedFinalLine = this.truncateTextWithEllipsis(finalLine, maxWidth);
+                lines.push(truncatedFinalLine);
+            } else {
+                lines.push(finalLine);
+            }
         }
         
         return lines;
@@ -759,25 +822,65 @@ export class CanvasRenderer {
         // Calculate line height based on font size (1.3x font size for good readability)
         const fontSize = Math.max(8, Math.min(48, block.fontSize));
         const lineHeight = fontSize * 1.3;
-        const lines = this.getTextLines(text, maxWidth);
-        const totalTextHeight = lines.length * lineHeight;
+        const textArea = this.getTextArea(block);
         
-        // Calculate starting Y position based on vertical alignment
-        const startY = this.getVerticalTextY(block, text, false);
+        // Calculate how many lines can actually fit in the available height
+        const maxLinesAvailable = Math.floor(maxHeight / lineHeight);
+        if (maxLinesAvailable <= 0) {
+            return; // No space for any text
+        }
         
-        // Draw each line
+        // Get all potential lines
+        const allLines = this.getTextLines(text, maxWidth);
+        
+        // Determine which lines to actually render based on available space
+        let linesToRender: string[];
+        if (allLines.length <= maxLinesAvailable) {
+            // All lines fit
+            linesToRender = allLines;
+        } else {
+            // Need to truncate and add ellipsis
+            if (maxLinesAvailable === 1) {
+                // Only one line fits, combine all text with ellipsis
+                const allText = allLines.join(' ');
+                const truncatedText = this.truncateTextWithEllipsis(allText, maxWidth);
+                linesToRender = [truncatedText];
+            } else {
+                // Multiple lines fit, use all but last for content, last for ellipsis
+                const contentLines = allLines.slice(0, maxLinesAvailable - 1);
+                const remainingText = allLines.slice(maxLinesAvailable - 1).join(' ');
+                const truncatedLastLine = this.truncateTextWithEllipsis(remainingText, maxWidth);
+                linesToRender = [...contentLines, truncatedLastLine];
+            }
+        }
+        
+        // Calculate starting Y position for the actual lines we'll render
+        const actualTextHeight = linesToRender.length * lineHeight;
+        let startY: number;
+        
+        switch (block.verticalAlignment) {
+            case 'top':
+                startY = textArea.y;
+                break;
+            case 'bottom':
+                startY = textArea.y + maxHeight - actualTextHeight;
+                break;
+            case 'middle':
+            default:
+                startY = textArea.y + (maxHeight - actualTextHeight) / 2;
+                break;
+        }
+        
+        // Draw each line within bounds
         let currentY = startY;
-        for (let i = 0; i < lines.length; i++) {
-            if (currentY + lineHeight > this.getTextArea(block).y + maxHeight) {
-                // Truncate with ellipsis if we exceed bounds
-                if (i > 0) {
-                    const truncated = lines[i] + '...';
-                    this.ctx.fillText(truncated, x, currentY);
-                }
+        for (let i = 0; i < linesToRender.length; i++) {
+            // Double-check bounds (shouldn't be needed but safety first)
+            if (currentY + lineHeight > textArea.y + maxHeight) {
                 break;
             }
             
-            this.ctx.fillText(lines[i]!, x, currentY);
+            const lineText = this.truncateTextWithEllipsis(linesToRender[i]!, maxWidth);
+            this.ctx.fillText(lineText, x, currentY);
             currentY += lineHeight;
         }
     }
@@ -1093,7 +1196,10 @@ export class CanvasRenderer {
                 font-style="${fontStyle}"`;
             
             
-            svg += `>${this.escapeXml(block.text)}</text>`;
+            // Calculate available width for text
+            const textArea = this.getTextArea(block);
+            const truncatedText = this.truncateTextForSVG(block.text, textArea.maxWidth, fontSize);
+            svg += `>${this.escapeXml(truncatedText)}</text>`;
         }
         
         return svg;
@@ -1138,6 +1244,30 @@ export class CanvasRenderer {
             default:
                 return 'none';
         }
+    }
+
+    /**
+     * Truncate text for SVG export with ellipsis approximation
+     */
+    private truncateTextForSVG(text: string, maxWidth: number, fontSize: number): string {
+        if (maxWidth <= 0) return '';
+        
+        // Approximate character width (this is a rough estimate for Inter font)
+        const avgCharWidth = fontSize * 0.6; // Approximation for Inter font
+        const ellipsisWidth = avgCharWidth * 3; // "..." is roughly 3 characters
+        
+        if (ellipsisWidth > maxWidth) {
+            return ''; // Not enough space even for ellipsis
+        }
+        
+        const availableWidth = maxWidth - ellipsisWidth;
+        const maxChars = Math.floor(availableWidth / avgCharWidth);
+        
+        if (text.length <= maxChars) {
+            return text; // Text fits without truncation
+        }
+        
+        return text.substring(0, Math.max(0, maxChars)) + '...';
     }
 
     /**

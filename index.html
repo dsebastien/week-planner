@@ -337,6 +337,11 @@
                 style="color: #000000 !important; background-color: #ffffff !important; border: 2px solid #3b82f6 !important;"
             >
 
+            <!-- Context Menu -->
+            <div id="contextMenu" class="absolute hidden bg-gray-800 border border-gray-600 rounded-lg shadow-xl py-2 min-w-[200px]" style="backdrop-filter: blur(16px); z-index: 200;">
+                <div id="contextMenuItems"></div>
+            </div>
+
             <!-- Edit Toolbar -->
             <div id="editToolbar" class="absolute hidden bg-gray-800 border border-gray-600 rounded-lg shadow-xl p-3 min-w-[320px]" style="backdrop-filter: blur(16px); z-index: 50; pointer-events: none;">
                 <!-- Toolbar Header -->
@@ -1050,6 +1055,145 @@
             show: showToolbar,
             showMultiple: showMultipleToolbar,
             hide: hideToolbar
+        };
+
+        // Context Menu System
+        let copiedStyle = null;
+        let copiedBlock = null;
+        const contextMenu = document.getElementById('contextMenu');
+        const contextMenuItems = document.getElementById('contextMenuItems');
+
+        // Hide context menu when clicking elsewhere
+        document.addEventListener('click', (e) => {
+            if (!contextMenu.contains(e.target)) {
+                hideContextMenu();
+            }
+        });
+
+        // Hide context menu on scroll
+        document.addEventListener('scroll', hideContextMenu);
+
+        function hideContextMenu() {
+            contextMenu.classList.add('hidden');
+            // Clear cell highlight when context menu is hidden
+            if (window.weekPlanner) {
+                window.weekPlanner.clearCellHighlight();
+            }
+        }
+
+        function showContextMenu(x, y, items) {
+            // Clear existing items
+            contextMenuItems.innerHTML = '';
+            
+            // Add items
+            items.forEach(item => {
+                const menuItem = document.createElement('div');
+                menuItem.className = `px-4 py-2 text-sm cursor-pointer transition-colors ${
+                    item.disabled ? 
+                    'text-gray-500 cursor-not-allowed' : 
+                    'text-white hover:bg-gray-700'
+                }`;
+                menuItem.textContent = item.label;
+                
+                if (!item.disabled && item.action) {
+                    menuItem.addEventListener('click', () => {
+                        hideContextMenu();
+                        item.action();
+                    });
+                }
+                
+                contextMenuItems.appendChild(menuItem);
+            });
+            
+            // Position and show menu
+            contextMenu.style.left = `${x}px`;
+            contextMenu.style.top = `${y}px`;
+            contextMenu.classList.remove('hidden');
+            
+            // Adjust position if menu goes off screen
+            const rect = contextMenu.getBoundingClientRect();
+            if (rect.right > window.innerWidth) {
+                contextMenu.style.left = `${x - rect.width}px`;
+            }
+            if (rect.bottom > window.innerHeight) {
+                contextMenu.style.top = `${y - rect.height}px`;
+            }
+        }
+
+        function copyBlockStyle(block) {
+            if (!block) return;
+            
+            copiedStyle = {
+                color: block.color,
+                textColor: block.textColor,
+                fontSize: block.fontSize,
+                fontStyle: { ...block.fontStyle },
+                textAlignment: block.textAlignment,
+                verticalAlignment: block.verticalAlignment,
+                borderStyle: { ...block.borderStyle },
+                cornerRadius: block.cornerRadius,
+                opacity: block.opacity
+            };
+        }
+
+        function pasteBlockStyle(targetBlock) {
+            if (!copiedStyle || !targetBlock || !window.weekPlanner) return;
+            
+            // Apply all copied style properties
+            Object.keys(copiedStyle).forEach(property => {
+                window.weekPlanner.updateSelectedBlockStyle(property, copiedStyle[property]);
+            });
+        }
+
+        function copyBlock(block) {
+            if (!block) return;
+            
+            copiedBlock = {
+                startDay: block.startDay,
+                startTime: block.startTime,
+                duration: block.duration,
+                daySpan: block.daySpan,
+                text: block.text,
+                color: block.color,
+                textColor: block.textColor,
+                fontSize: block.fontSize,
+                fontStyle: { ...block.fontStyle },
+                textAlignment: block.textAlignment,
+                verticalAlignment: block.verticalAlignment,
+                borderStyle: { ...block.borderStyle },
+                cornerRadius: block.cornerRadius,
+                opacity: block.opacity
+            };
+        }
+
+        function pasteBlock(targetDay, targetTime) {
+            if (!copiedBlock || !window.weekPlanner) return;
+            
+            // Create new block at target position with copied properties
+            const newBlock = {
+                ...copiedBlock,
+                startDay: targetDay,
+                startTime: targetTime,
+                id: `block-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`
+            };
+            
+            // Add the block through WeekPlanner
+            const result = window.weekPlanner.blockManager.addBlock(newBlock);
+            if (result.success) {
+                window.weekPlanner.renderer.draw();
+            }
+        }
+
+        // Expose context menu functions for WeekPlanner
+        window.contextMenuSystem = {
+            showContextMenu,
+            hideContextMenu,
+            copyBlockStyle,
+            pasteBlockStyle,
+            copyBlock,
+            pasteBlock,
+            hasCopiedStyle: () => copiedStyle !== null,
+            hasCopiedBlock: () => copiedBlock !== null
         };
     </script>
 </body>

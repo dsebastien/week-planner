@@ -313,6 +313,39 @@ this.blocks.set(blockId, updatedBlock);
 
 ## Recent Fixes & Improvements
 
+### **Session August 17, 2025: Text Overflow Protection & Ellipsis System**
+- **🎯 Complete Text Overflow Prevention**: Bulletproof text rendering with ellipsis handling
+  - **Smart Text Truncation**: Binary search algorithm for optimal text fitting with ellipsis
+  - **Width Constraint Enforcement**: Text never overflows block boundaries horizontally
+  - **Height Constraint Enforcement**: Text never overflows block boundaries vertically (FIXED)
+  - **Line-Based Overflow Control**: Pre-calculates how many lines fit before rendering any text
+  - **Small Block Handling**: Single-line ellipsis truncation for blocks under 40px height with proper baseline positioning
+  - **Multi-line Support**: Intelligent line wrapping with overflow protection for larger blocks
+  - **Long Word Handling**: Words too long for single lines are truncated with ellipsis instead of breaking
+  - **Last Line Optimization**: When vertical space runs out, combines remaining text with ellipsis on final visible line
+  - **Vertical Alignment Respect**: Proper positioning for top/middle/bottom alignment within available space
+  - **Canvas Integration**: Precise text measurement using Canvas APIs for accurate fitting
+  - **SVG Export Support**: Approximation-based ellipsis for vector export compatibility
+  - **Performance Optimized**: Efficient binary search prevents expensive text measurement loops
+  - **Type Safety**: Full TypeScript integration with comprehensive error handling
+  - **✅ Bulletproof Bounds**: Text is guaranteed to never exceed block boundaries in any direction
+
+### **Session August 17, 2025: Context Menu System Implementation**
+- **🎯 Complete Right-Click Context Menu System**: Professional context menu with copy/paste functionality
+  - **Context-Aware Menus**: Different options based on click target (block vs empty cell)
+  - **Block Context Menu**: "Copy Style", "Paste Style", "Copy" options for time blocks
+  - **Cell Context Menu**: "Paste", "Create time block" options for empty cells
+  - **Smart Menu States**: Options automatically disabled when no data is copied
+  - **Style Copy/Paste**: Copy all styling properties (colors, fonts, borders, etc.) between blocks
+  - **Block Copy/Paste**: Complete block duplication with all properties at new positions
+  - **Professional Styling**: Dark theme with blur effects and proper positioning
+  - **Viewport-Aware Positioning**: Menu automatically repositions to stay within screen bounds
+  - **Clean State Management**: Proper menu hiding on clicks outside or scroll events
+  - **TypeScript Integration**: Full type safety with proper event handling in WeekPlanner class
+  - **Grid-Aware Operations**: Copy/paste operations respect grid boundaries and validation rules
+  - **Memory Management**: Efficient storage of copied styles and blocks in browser memory
+  - **User Experience**: Intuitive right-click workflow matching standard desktop applications
+
 ### **Session August 17, 2025: Final UI Polish & Licensing**
 - **🎯 Donation Block Implementation**: Added professional donation section to main menu
   - **Buy Me a Coffee Integration**: Clean integration with proper external link handling

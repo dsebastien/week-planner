@@ -477,15 +477,11 @@
                                     Style
                                 </label>
                                 <div class="flex gap-2">
-                                    <button id="boldBtn" class="flex-1 h-10 rounded-lg border border-gray-600/50 bg-gray-700/30 text-white hover:bg-gray-600/50 transition-all duration-200 text-sm font-bold flex items-center justify-center">
-                                        <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                                            <path fill-rule="evenodd" d="M5 4v3H4a1 1 0 000 2h1v2H4a1 1 0 000 2h1v3h2V4H5zM9 4a1 1 0 000 2h1v8H9a1 1 0 100 2h4a3 3 0 000-6 3 3 0 000-6H9zm3 2h-1v4h1a1 1 0 000-2 1 1 0 000-2zm0 6h-1v2h1a1 1 0 000-2z" clip-rule="evenodd" />
-                                        </svg>
+                                    <button id="boldBtn" class="flex-1 h-10 rounded-lg border border-gray-600/50 bg-gray-700/30 text-white hover:bg-gray-600/50 transition-all duration-200 text-lg font-bold flex items-center justify-center" title="Bold">
+                                        B
                                     </button>
-                                    <button id="italicBtn" class="flex-1 h-10 rounded-lg border border-gray-600/50 bg-gray-700/30 text-white hover:bg-gray-600/50 transition-all duration-200 text-sm italic flex items-center justify-center">
-                                        <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8 7a1 1 0 011-1h2a1 1 0 110 2h-.25l-.5 4H11a1 1 0 110 2H9a1 1 0 01-1-1 1 1 0 011-1h.25l.5-4H9a1 1 0 01-1-1z" clip-rule="evenodd" />
-                                        </svg>
+                                    <button id="italicBtn" class="flex-1 h-10 rounded-lg border border-gray-600/50 bg-gray-700/30 text-white hover:bg-gray-600/50 transition-all duration-200 text-lg italic flex items-center justify-center" title="Italic">
+                                        I
                                     </button>
                                 </div>
                             </div>
@@ -714,46 +710,68 @@
 
     <script type="module" src="dist/main.js"></script>
     <style>
-        /* Custom slider styles */
+        /* Custom slider styles with visible tracks */
         .slider {
             -webkit-appearance: none;
             appearance: none;
-            background: transparent;
+            background: linear-gradient(to right, #374151 0%, #374151 100%);
+            height: 8px;
+            border-radius: 4px;
+            outline: none;
             cursor: pointer;
+            border: 1px solid #4b5563;
+            box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.3);
         }
 
         .slider::-webkit-slider-track {
-            background: #374151;
+            background: linear-gradient(to right, #374151 0%, #374151 100%);
             height: 8px;
             border-radius: 4px;
+            border: 1px solid #4b5563;
+            box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.3);
         }
 
         .slider::-webkit-slider-thumb {
             -webkit-appearance: none;
             appearance: none;
             background: linear-gradient(135deg, #3b82f6, #8b5cf6);
-            height: 20px;
-            width: 20px;
+            height: 22px;
+            width: 22px;
             border-radius: 50%;
-            border: 2px solid #ffffff;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+            border: 3px solid #ffffff;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(59, 130, 246, 0.3);
+            cursor: pointer;
+            position: relative;
+            top: -8px;
+        }
+
+        .slider::-webkit-slider-thumb:hover {
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5), 0 0 0 2px rgba(59, 130, 246, 0.5);
+            transform: scale(1.1);
         }
 
         .slider::-moz-range-track {
-            background: #374151;
+            background: linear-gradient(to right, #374151 0%, #374151 100%);
             height: 8px;
             border-radius: 4px;
-            border: none;
+            border: 1px solid #4b5563;
+            box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.3);
         }
 
         .slider::-moz-range-thumb {
             background: linear-gradient(135deg, #3b82f6, #8b5cf6);
-            height: 20px;
-            width: 20px;
+            height: 22px;
+            width: 22px;
             border-radius: 50%;
-            border: 2px solid #ffffff;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+            border: 3px solid #ffffff;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(59, 130, 246, 0.3);
             cursor: pointer;
+            -moz-appearance: none;
+        }
+
+        .slider::-moz-range-thumb:hover {
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5), 0 0 0 2px rgba(59, 130, 246, 0.5);
+            transform: scale(1.1);
         }
 
         /* Active state styling for buttons */
@@ -772,6 +790,26 @@
         
         .focus\:border-transparent:focus {
             border-color: transparent;
+        }
+
+        /* Button active states for bold/italic */
+        .font-bold {
+            font-weight: 700 !important;
+        }
+        
+        .italic {
+            font-style: italic !important;
+        }
+
+        /* Enhanced button feedback */
+        #boldBtn:hover, #italicBtn:hover {
+            background-color: rgba(59, 130, 246, 0.2) !important;
+            border-color: rgba(59, 130, 246, 0.5) !important;
+        }
+
+        #boldBtn:active, #italicBtn:active {
+            background-color: rgba(59, 130, 246, 0.4) !important;
+            transform: scale(0.98);
         }
     </style>
     <script>

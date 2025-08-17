@@ -316,9 +316,19 @@
                                 <button class="w-6 h-6 rounded border border-gray-600 cursor-pointer hover:scale-110 transition-transform" style="background-color: #60a5fa" data-color="#60a5fa" title="Light Blue"></button>
                             </div>
                         </div>
+                        <!-- Border Color -->
                         <div class="flex items-center gap-2">
-                            <label class="text-xs text-gray-300 w-8">Border:</label>
+                            <label class="text-xs text-gray-300 w-12">Border:</label>
                             <input type="color" id="borderColor" class="w-8 h-8 rounded border border-gray-600 cursor-pointer">
+                            <div class="flex gap-1" id="borderColorSwatches">
+                                <button class="w-6 h-6 rounded border border-gray-600 cursor-pointer hover:scale-110 transition-transform" style="background-color: #ffffff" data-color="#ffffff" title="White"></button>
+                                <button class="w-6 h-6 rounded border border-gray-600 cursor-pointer hover:scale-110 transition-transform" style="background-color: #000000" data-color="#000000" title="Black"></button>
+                                <button class="w-6 h-6 rounded border border-gray-600 cursor-pointer hover:scale-110 transition-transform" style="background-color: #6b7280" data-color="#6b7280" title="Gray"></button>
+                                <button class="w-6 h-6 rounded border border-gray-600 cursor-pointer hover:scale-110 transition-transform" style="background-color: #e5007d" data-color="#e5007d" title="Pink"></button>
+                                <button class="w-6 h-6 rounded border border-gray-600 cursor-pointer hover:scale-110 transition-transform" style="background-color: #3b82f6" data-color="#3b82f6" title="Blue"></button>
+                                <button class="w-6 h-6 rounded border border-gray-600 cursor-pointer hover:scale-110 transition-transform" style="background-color: #ef4444" data-color="#ef4444" title="Red"></button>
+                                <button class="w-6 h-6 rounded border border-gray-600 cursor-pointer hover:scale-110 transition-transform" style="background-color: #10b981" data-color="#10b981" title="Green"></button>
+                            </div>
                         </div>
                     </div>
 
@@ -633,6 +643,17 @@
             const currentBlock = window.weekPlanner.blockManager?.getSelectedBlock();
             if (!currentBlock) return;
             updateBlockStyling('borderStyle', { ...currentBlock.borderStyle, color: e.target.value });
+        });
+
+        // Border color swatch handler
+        document.getElementById('borderColorSwatches')?.addEventListener('click', (e) => {
+            if (e.target.dataset.color && window.weekPlanner) {
+                const currentBlock = window.weekPlanner.blockManager?.getSelectedBlock();
+                if (!currentBlock) return;
+                const color = e.target.dataset.color;
+                borderColor.value = color;
+                updateBlockStyling('borderStyle', { ...currentBlock.borderStyle, color: color });
+            }
         });
 
         // Font style buttons

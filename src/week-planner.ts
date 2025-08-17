@@ -1189,17 +1189,7 @@ export class WeekPlanner {
         const result = this.blockManager.updateSelectedBlocksStyle(updates);
         if (result.success) {
             this.render();
-            // Update toolbar position in case block size changed
-            if ((window as any).editToolbar) {
-                const selectedBlocks = this.blockManager.getSelectedBlocks();
-                if (selectedBlocks.length === 1) {
-                    (window as any).editToolbar.position(selectedBlocks[0]);
-                } else if (selectedBlocks.length > 1) {
-                    // For multiple blocks, calculate optimal position
-                    const optimalPosition = this.calculateOptimalToolbarPosition(selectedBlocks);
-                    (window as any).editToolbar.position(optimalPosition);
-                }
-            }
+            // Toolbar stays in user-positioned location
         }
     }
 
@@ -1208,13 +1198,7 @@ export class WeekPlanner {
      */
     private handleSelectionChange(blockId: string | null): void {
         this.blockManager.selectBlock(blockId);
-        
-        const selectedBlock = this.blockManager.getSelectedBlock();
-        if (selectedBlock && (window as any).editToolbar) {
-            (window as any).editToolbar.show(selectedBlock);
-        } else if ((window as any).editToolbar) {
-            (window as any).editToolbar.hide();
-        }
+        this.updateToolbarForMultiSelection();
     }
 
     /**
@@ -1225,18 +1209,12 @@ export class WeekPlanner {
         const selectedCount = this.blockManager.getSelectedBlockCount();
         
         if (selectedCount > 1 && (window as any).editToolbar) {
-            // For multi-selection, calculate optimal toolbar position
-            const optimalPosition = this.calculateOptimalToolbarPosition(selectedBlocks);
-            
-            // Check if editToolbar has showMultiple method, otherwise fall back to show
+            // For multi-selection, show toolbar with first block as reference
             if (typeof (window as any).editToolbar.showMultiple === 'function') {
-                (window as any).editToolbar.showMultiple(selectedBlocks, optimalPosition);
+                (window as any).editToolbar.showMultiple(selectedBlocks);
             } else {
-                // Fallback: show toolbar with first block but position optimally
+                // Fallback: show toolbar with first block
                 (window as any).editToolbar.show(selectedBlocks[0]);
-                if (typeof (window as any).editToolbar.position === 'function') {
-                    (window as any).editToolbar.position(optimalPosition);
-                }
             }
         } else if (selectedCount === 1 && (window as any).editToolbar) {
             // Single selection - show normal toolbar
@@ -1247,53 +1225,6 @@ export class WeekPlanner {
         }
     }
 
-    /**
-     * Calculates optimal toolbar position for multiple selected blocks
-     */
-    private calculateOptimalToolbarPosition(selectedBlocks: readonly RenderedTimeBlock[]): RenderedTimeBlock {
-        if (selectedBlocks.length === 0) {
-            throw new Error('Cannot calculate position for empty selection');
-        }
-
-        if (selectedBlocks.length === 1) {
-            return selectedBlocks[0]!;
-        }
-
-        // Calculate the bounding box of all selected blocks
-        let minX = Infinity;
-        let minY = Infinity;
-        let maxX = -Infinity;
-        let maxY = -Infinity;
-
-        for (const block of selectedBlocks) {
-            minX = Math.min(minX, block.x);
-            minY = Math.min(minY, block.y);
-            maxX = Math.max(maxX, block.x + block.width);
-            maxY = Math.max(maxY, block.y + block.height);
-        }
-
-        // Calculate center point of the bounding box
-        const centerX = (minX + maxX) / 2;
-        const centerY = (minY + maxY) / 2;
-        const width = maxX - minX;
-        const height = maxY - minY;
-
-        // Create a virtual block representing the center of the selection
-        // Use properties from the first block for styling reference
-        const firstBlock = selectedBlocks[0]!;
-        
-        const virtualBlock: RenderedTimeBlock = {
-            ...firstBlock,
-            id: 'multi-selection-center',
-            x: centerX - width / 4, // Offset slightly to avoid overlapping
-            y: centerY - height / 4,
-            width: width / 2,
-            height: height / 2,
-            selected: true
-        };
-        
-        return virtualBlock;
-    }
 
     /**
      * Generate filename with current date

@@ -313,6 +313,23 @@ this.blocks.set(blockId, updatedBlock);
 
 ## Recent Fixes & Improvements
 
+### **Session August 17, 2025: Block Styling Panel Positioning Fix**
+- **🎯 Simplified Positioning Algorithm**: Replaced complex collision detection with simple edge-based logic
+  - **Edge Detection**: Uses grid thirds to detect if block is near left, right, top, or bottom edges
+  - **Adjacent Placement**: Panel positioned directly next to blocks with 40px margin
+  - **Corner Handling**: Special cases for bottom corners (bottom-left → top-right, bottom-right → top-left)
+  - **Priority System**: Bottom edge blocks always get panel placed above to prevent going outside grid
+  - **No Calculations**: Eliminated complex space calculations and collision detection algorithms
+  - **Positioning Logic**:
+    - Bottom left corner → Panel top-right of block
+    - Bottom right corner → Panel top-left of block  
+    - Bottom edge → Panel above block
+    - Right edge → Panel left of block
+    - Left edge → Panel right of block
+    - Top edge → Panel below block
+    - Middle → Panel below block (default)
+  - **Guaranteed Results**: Panel always stays within grid bounds and never overlaps blocks
+
 ### **Session August 17, 2025: Enhanced Drag & Drop**
 - **🎯 Complete Drag & Drop Implementation**: Full visual feedback system for moving selected blocks
   - **Smart Drag Detection**: Prevents block creation overlay when moving existing blocks
@@ -367,6 +384,10 @@ this.blocks.set(blockId, updatedBlock);
   - **Advanced Text Layout**: Intelligent word wrapping with hyphenation for overflow text
   - **Dynamic Typography**: Font-size aware line height calculation (1.3x font size)
   - **Compact Block Display**: Optimized time display for 30-minute blocks (shows range without duration)
+  - **🎯 Draggable Styling Panel**: Users can manually reposition toolbar within grid boundaries
+  - **Grid-Constrained Movement**: Drag operations limited to grid area (excludes time column/header)
+  - **Visual Drag Feedback**: Professional animations and shadows during drag operations
+  - **Persistent Positioning**: Toolbar stays where user places it, no automatic repositioning
 
 ## Previous Fixes & Improvements
 
@@ -576,14 +597,17 @@ The week planner is now in a **production-ready state** with all major issues re
 - **Intuitive Interaction**: Click/drag to create blocks, double-click to edit text
 - **Block Resizing**: Drag blue resize handles to resize blocks smoothly
 - **🎯 Drag & Drop Moving**: Select blocks and drag them to new positions with visual feedback
-- **Smart Cursors**: Dynamic cursor changes (↔, ↕, ↖, ↗) for resize operations, grabbing cursor during moves
+- **🎯 Draggable Styling Panel**: Manually reposition toolbar within grid boundaries using drag handle
+- **Smart Cursors**: Dynamic cursor changes (↔, ↕, ↖, ↗) for resize operations, grabbing cursor during drags
+- **Persistent Positioning**: Toolbar maintains user-chosen position across selection changes
 - **Clean Interface**: No unwanted cells below 00:00, precise grid boundaries  
 - **Error Prevention**: No more "end time cannot be after 24:00" messages
-- **Visual Feedback**: Clear time labels, selection highlighting, preview blocks
+- **Visual Feedback**: Clear time labels, selection highlighting, preview blocks, drag animations
 - **Text Input Fix**: Black text on white background for editing (no more invisible text)
 - **Comprehensive Export Options**: PNG, SVG, JSON, and Markdown export formats
 - **Professional UI**: Tailwind CSS v4 with modern dark theme and glass morphism effects
 - **Modal Menu System**: Beautiful centered modal with organized action categories
+- **Grid Boundary Enforcement**: All operations constrained to valid grid area
 - **Keyboard Shortcuts**: 
   - Ctrl+M opens/closes menu
   - Ctrl+I imports JSON files
@@ -622,6 +646,17 @@ The week planner is now in a **production-ready state** with all major issues re
 - **Advanced Text Rendering**: Intelligent line wrapping with word breaking for long words, dynamic line height calculation
 - **Improved Typography**: Better font rendering with Inter font family, expanded font size range (8-48px)
 - **30-Minute Block Optimization**: Enhanced time display showing start-end times without duration for compact blocks
+- **🎯 Draggable Styling Panel**: Manual toolbar repositioning with drag and drop functionality
+- **Grid-Constrained Movement**: Drag operations limited to grid area (excludes time column/header)  
+- **Professional Drag Experience**: Visual drag handle with smooth animations and feedback
+- **Simplified Positioning**: Toolbar stays where user positions it, no automatic repositioning
+- **🎯 Simplified Toolbar Positioning**: Dead-simple positioning system based on block location
+  - **Edge-Based Placement**: Panel positioned adjacent to blocks based on their grid location
+  - **Corner Detection**: Special handling for corner positions (bottom-left/bottom-right)
+  - **Priority Logic**: Bottom edge blocks get priority placement above the block
+  - **Increased Margin**: 40px spacing between toolbar and blocks for clear separation
+  - **No Overlap Guarantee**: Positioning ensures panel never overlaps with selected blocks
+  - **Grid Boundary Safety**: Final bounds checking keeps panel within grid at all times
 - **Mobile-Responsive**: Touch-friendly interface optimizations
 - **Performance Optimizations**: Efficient rendering pipeline and memory management
 

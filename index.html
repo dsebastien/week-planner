@@ -558,67 +558,115 @@
         const cornerRadius = document.getElementById('cornerRadius');
         const cornerValue = document.getElementById('cornerValue');
 
-        // Position toolbar near selected block
-        function positionToolbar(block) {
-            if (!block || !editToolbar) return;
+        // Check if two rectangles overlap
+        function rectanglesOverlap(rect1, rect2) {
+            return !(rect1.left >= rect2.right || 
+                    rect2.left >= rect1.right || 
+                    rect1.top >= rect2.bottom || 
+                    rect2.top >= rect1.bottom);
+        }
+
+        // Dead simple positioning: opposite side of where block is located
+        function positionToolbarNearBlock(block, allSelectedBlocks = []) {
+            if (!editToolbar || !block) return;
 
             const canvas = document.getElementById('weekCanvas');
             const canvasRect = canvas.getBoundingClientRect();
             
-            // Define the GRID AREA boundaries (not full canvas)
-            // Grid starts after time column and header
-            const timeColumnWidth = 120; // from config
-            const headerHeight = 60; // from config
-            
+            // Grid boundaries
+            const timeColumnWidth = 120;
+            const headerHeight = 60;
             const gridLeft = canvasRect.left + timeColumnWidth;
             const gridRight = canvasRect.right;
             const gridTop = canvasRect.top + headerHeight;
             const gridBottom = canvasRect.bottom;
             
-            // Calculate block position relative to viewport
-            const blockCenterX = canvasRect.left + block.x + block.width / 2;
-            const blockBottom = canvasRect.top + block.y + block.height;
+            // Grid dimensions
+            const gridWidth = gridRight - gridLeft;
+            const gridHeight = gridBottom - gridTop;
+            
+            // Block position relative to grid
+            const blockGridX = block.x - timeColumnWidth;
+            const blockGridY = block.y - headerHeight;
+            
+            // Toolbar dimensions
+            const toolbarWidth = 320;
+            const toolbarHeight = 300;
+            
+            // Block position in viewport
+            const blockLeft = canvasRect.left + block.x;
             const blockTop = canvasRect.top + block.y;
             
-            // Get toolbar dimensions
-            const toolbarRect = editToolbar.getBoundingClientRect();
-            const toolbarWidth = toolbarRect.width || 320; // fallback to min-width
-            const toolbarHeight = toolbarRect.height || 300; // estimated height
+            // Detect which edge the block is near (simple thirds)
+            const isLeftEdge = blockGridX < gridWidth / 3;
+            const isRightEdge = blockGridX > gridWidth * 2 / 3;
+            const isTopEdge = blockGridY < gridHeight / 3;
+            const isBottomEdge = blockGridY > gridHeight * 2 / 3;
             
-            // Position toolbar below block by default, or above if too close to bottom
-            let top = blockBottom + 10;
-            if (top + toolbarHeight > gridBottom - 10) {
-                top = blockTop - toolbarHeight - 10;
-                // If still too high, position at top of grid area
-                if (top < gridTop + 10) {
-                    top = gridTop + 10;
-                }
+            const margin = 40; // Increased margin between block and panel
+            
+            let finalLeft, finalTop;
+            
+            // Handle corner cases first
+            if (isBottomEdge && isLeftEdge) {
+                // Bottom left corner → place panel top right of block (clear separation)
+                finalLeft = blockLeft + block.width + margin;
+                finalTop = blockTop - toolbarHeight - margin;
+            } else if (isBottomEdge && isRightEdge) {
+                // Bottom right corner → place panel top left of block (clear separation)
+                finalLeft = blockLeft - toolbarWidth - margin;
+                finalTop = blockTop - toolbarHeight - margin;
+            } else if (isBottomEdge) {
+                // Block on bottom edge (but not corner) → place panel well above block
+                finalLeft = blockLeft;
+                finalTop = blockTop - toolbarHeight - margin;
+            } else if (isRightEdge) {
+                // Block on right edge → place panel to the left of block
+                finalLeft = blockLeft - toolbarWidth - margin;
+                finalTop = blockTop;
+            } else if (isLeftEdge) {
+                // Block on left edge → place panel to the right of block
+                finalLeft = blockLeft + block.width + margin;
+                finalTop = blockTop;
+            } else if (isTopEdge) {
+                // Block on top edge → place panel below block
+                finalLeft = blockLeft;
+                finalTop = blockTop + block.height + margin;
+            } else {
+                // Block in middle → place below block (default)
+                finalLeft = blockLeft;
+                finalTop = blockTop + block.height + margin;
             }
             
-            // Position horizontally centered on block, but ALWAYS keep within grid bounds
-            let left = blockCenterX - toolbarWidth / 2;
+            // Ensure panel stays within grid bounds
+            finalLeft = Math.max(gridLeft + 10, Math.min(finalLeft, gridRight - toolbarWidth - 10));
+            finalTop = Math.max(gridTop + 10, Math.min(finalTop, gridBottom - toolbarHeight - 10));
             
-            // Force toolbar to stay within grid area (not canvas area)
-            if (left < gridLeft + 10) {
-                left = gridLeft + 10;
-            } else if (left + toolbarWidth > gridRight - 10) {
-                left = gridRight - toolbarWidth - 10;
+            editToolbar.style.left = `${finalLeft}px`;
+            editToolbar.style.top = `${finalTop}px`;
+        }
+        
+        // Calculate center point for multiple blocks
+        function calculateMultiBlockCenter(blocks) {
+            if (blocks.length === 1) return blocks[0];
+            
+            let minX = Infinity, minY = Infinity;
+            let maxX = -Infinity, maxY = -Infinity;
+            
+            for (const block of blocks) {
+                minX = Math.min(minX, block.x);
+                minY = Math.min(minY, block.y);
+                maxX = Math.max(maxX, block.x + block.width);
+                maxY = Math.max(maxY, block.y + block.height);
             }
             
-            // Final clamp to ensure we NEVER go outside grid boundaries
-            left = Math.max(gridLeft + 10, Math.min(left, gridRight - toolbarWidth - 10));
-            top = Math.max(gridTop + 10, Math.min(top, gridBottom - toolbarHeight - 10));
-            
-            // Additional safety: if toolbar is still too wide/tall for grid, position at grid origin
-            if (toolbarWidth > (gridRight - gridLeft - 20)) {
-                left = gridLeft + 10;
-            }
-            if (toolbarHeight > (gridBottom - gridTop - 20)) {
-                top = gridTop + 10;
-            }
-            
-            editToolbar.style.left = `${left}px`;
-            editToolbar.style.top = `${top}px`;
+            // Create virtual block representing the center
+            return {
+                x: minX,
+                y: minY,
+                width: maxX - minX,
+                height: maxY - minY
+            };
         }
 
         // Show toolbar for selected block
@@ -652,15 +700,17 @@
             alignMiddle.classList.toggle('bg-blue-600', block.verticalAlignment === 'middle');
             alignBottom.classList.toggle('bg-blue-600', block.verticalAlignment === 'bottom');
             
+            // Position toolbar near the selected block
+            positionToolbarNearBlock(block, [block]);
+            
             editToolbar.classList.remove('hidden');
-            positionToolbar(block);
         }
 
         // Show toolbar for multiple selected blocks
-        function showMultipleToolbar(blocks, optimalPosition) {
+        function showMultipleToolbar(blocks) {
             if (!blocks || blocks.length === 0 || !editToolbar) return;
             
-            // Use the first block for values, but position optimally
+            // Use the first block for values
             const firstBlock = blocks[0];
             currentSelectedBlock = firstBlock;
             
@@ -687,14 +737,11 @@
             alignMiddle.classList.toggle('bg-blue-600', firstBlock.verticalAlignment === 'middle');
             alignBottom.classList.toggle('bg-blue-600', firstBlock.verticalAlignment === 'bottom');
             
-            editToolbar.classList.remove('hidden');
+            // Position toolbar near the center of selected blocks
+            const centerBlock = calculateMultiBlockCenter(blocks);
+            positionToolbarNearBlock(centerBlock, blocks);
             
-            // Use optimal position if provided, otherwise position based on first block
-            if (optimalPosition) {
-                positionToolbar(optimalPosition);
-            } else {
-                positionToolbar(firstBlock);
-            }
+            editToolbar.classList.remove('hidden');
         }
 
         // Hide toolbar
@@ -937,8 +984,7 @@
         window.editToolbar = {
             show: showToolbar,
             showMultiple: showMultipleToolbar,
-            hide: hideToolbar,
-            position: positionToolbar
+            hide: hideToolbar
         };
     </script>
 </body>

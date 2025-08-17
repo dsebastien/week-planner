@@ -564,13 +564,11 @@ export class WeekPlanner {
             verticalAlignment: this.previewBlock.verticalAlignment,
             borderStyle: this.previewBlock.borderStyle,
             cornerRadius: this.previewBlock.cornerRadius,
-            selected: true
+            selected: false
         };
 
         const result = this.blockManager.addBlock(block);
-        if (result.success) {
-            this.handleSelectionChange(block.id);
-        } else {
+        if (!result.success) {
             this.showError(result.error.message);
         }
 
@@ -621,12 +619,11 @@ export class WeekPlanner {
             verticalAlignment: defaultStyling.verticalAlignment,
             borderStyle: defaultStyling.borderStyle,
             cornerRadius: defaultStyling.cornerRadius,
-            selected: true
+            selected: false
         };
         
         const result = this.blockManager.addBlock(block);
         if (result.success) {
-            this.handleSelectionChange(block.id);
             this.render();
         } else {
             this.showError(result.error.message);

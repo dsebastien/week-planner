@@ -81,9 +81,11 @@ Time blocks:
 
 ### Time Block Management
 - Create blocks by clicking and dragging
+- Newly created blocks are not auto-selected (cleaner UI state)
 - Automatic overlap prevention
 - Duration validation (minimum 30 minutes, multiples of 30)
 - Text editing via double-click
+- Manual selection required for block operations
 - Keyboard shortcuts (Delete/Backspace to remove, Escape to cancel editing)
 
 ### Export/Import System

@@ -1,4 +1,3 @@
-- Drastically improve the button that shows the main menu. Also add the same gradient background effect on the main menu as on the block styling pane
 - Drastically improve the main UI to use a similar design to that of the block styling panel
 - Cleanup Typescript imports. Import the normal typescript way, not from .js files!
 - Move as much logic from the index.html to TypeScript
@@ -11,3 +10,4 @@
 - When exporting to PNG, the image should have the perfect size for being printed on an horizontal A4 page
 - Add gradients to time blocks based on their background color
 - Make this work great on mobile
+- UI quality should remain great even when zooming in/out

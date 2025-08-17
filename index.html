@@ -86,7 +86,7 @@
             <div class="flex items-center gap-3">
                 <!-- Buy Me A Coffee Button -->
                 <a href="https://www.buymeacoffee.com/dsebastien" target="_blank" rel="noopener noreferrer" 
-                   class="inline-flex items-center px-3 py-2 bg-gradient-to-r from-orange-500 to-pink-500 hover:from-orange-600 hover:to-pink-600 text-white text-sm font-medium rounded-lg transition-all duration-200 shadow-lg hover:shadow-xl transform hover:scale-105"
+                   class="inline-flex items-center px-4 py-2.5 bg-gradient-to-r from-orange-500 to-pink-500 hover:from-orange-600 hover:to-pink-600 text-white text-sm font-medium rounded-xl transition-all duration-200 shadow-lg hover:shadow-xl transform hover:scale-105"
                    title="Support Week Planner development">
                     <svg class="w-4 h-4 mr-1.5" fill="currentColor" viewBox="0 0 24 24">
                         <path d="M2 21h18v-2H2v2zM20 8H4V6c0-1.1.9-2 2-2h12c1.1 0 2 .9 2 2v2zM21.5 8.5c-.83 0-1.5.67-1.5 1.5v3c0 .83.67 1.5 1.5 1.5s1.5-.67 1.5-1.5v-3c0-.83-.67-1.5-1.5-1.5zM20 16H4v-6h16v6z"/>
@@ -95,10 +95,20 @@
                 </a>
                 
                 <!-- Menu Toggle -->
-                <button id="toolbarToggle" class="btn-ghost p-2 relative group">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z"></path>
-                    </svg>
+                <button id="toolbarToggle" class="relative inline-flex items-center justify-center px-4 py-2.5 bg-gradient-to-br from-gray-800 via-gray-700 to-gray-800 border border-gray-600/50 rounded-xl shadow-lg backdrop-blur-xl hover:from-gray-700 hover:via-gray-600 hover:to-gray-700 hover:shadow-xl transform hover:scale-105 transition-all duration-200 group cursor-pointer">
+                    <!-- Glass effect overlay -->
+                    <div class="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent rounded-xl pointer-events-none"></div>
+                    
+                    <!-- Menu icon with gradient -->
+                    <div class="relative flex items-center gap-2">
+                        <svg class="w-5 h-5 text-gray-300 group-hover:text-white transition-colors duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+                        </svg>
+                        <span class="text-sm font-medium text-gray-300 group-hover:text-white transition-colors duration-200">Menu</span>
+                    </div>
+                    
+                    <!-- Subtle glow effect on hover -->
+                    <div class="absolute inset-0 rounded-xl bg-gradient-to-br from-blue-500/0 to-purple-500/0 group-hover:from-blue-500/20 group-hover:to-purple-500/20 transition-all duration-300 pointer-events-none"></div>
                 </button>
             </div>
         </div>
@@ -111,12 +121,14 @@
         
         <!-- Modal Container -->
         <div class="absolute inset-0 flex items-center justify-center p-4">
-            <div class="bg-gray-900 rounded-3xl shadow-2xl border border-gray-700 w-full max-w-2xl transform scale-95 opacity-0 transition-all duration-300 ease-out modal-exit" id="modalContent">
+            <div class="bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 border border-gray-600/50 rounded-3xl shadow-2xl backdrop-blur-xl w-full max-w-2xl transform scale-95 opacity-0 transition-all duration-300 ease-out modal-exit relative overflow-hidden" id="modalContent">
+                <!-- Glass effect overlay -->
+                <div class="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent rounded-3xl pointer-events-none"></div>
                 <!-- Modal Header -->
                 <div class="relative p-8 pb-6">
                     <!-- Close Button -->
-                    <button id="closeSidebar" class="absolute top-6 right-6 w-10 h-10 rounded-full bg-dark-600/50 hover:bg-dark-500/50 transition-colors duration-200 flex items-center justify-center group">
-                        <svg class="w-5 h-5 text-dark-300 group-hover:text-white transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <button id="closeSidebar" class="absolute top-6 right-6 w-10 h-10 rounded-full bg-gradient-to-br from-gray-700/60 to-gray-800/60 border border-gray-600/30 backdrop-blur-sm hover:from-gray-600/70 hover:to-gray-700/70 hover:border-gray-500/50 transition-all duration-200 flex items-center justify-center group shadow-lg transform hover:scale-110">
+                        <svg class="w-5 h-5 text-gray-300 group-hover:text-white transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
                         </svg>
                     </button>

@@ -287,14 +287,36 @@
                 <!-- Toolbar Content -->
                 <div class="space-y-3">
                     <!-- Colors Row -->
-                    <div class="flex items-center gap-3">
+                    <div class="space-y-2">
+                        <!-- Background Color -->
                         <div class="flex items-center gap-2">
-                            <label class="text-xs text-gray-300 w-8">BG:</label>
+                            <label class="text-xs text-gray-300 w-12">BG:</label>
                             <input type="color" id="backgroundColor" class="w-8 h-8 rounded border border-gray-600 cursor-pointer">
+                            <div class="flex gap-1" id="bgColorSwatches">
+                                <button class="w-6 h-6 rounded border border-gray-600 cursor-pointer hover:scale-110 transition-transform" style="background-color: #e5007d" data-color="#e5007d" title="Pink"></button>
+                                <button class="w-6 h-6 rounded border border-gray-600 cursor-pointer hover:scale-110 transition-transform" style="background-color: #3b82f6" data-color="#3b82f6" title="Blue"></button>
+                                <button class="w-6 h-6 rounded border border-gray-600 cursor-pointer hover:scale-110 transition-transform" style="background-color: #10b981" data-color="#10b981" title="Green"></button>
+                                <button class="w-6 h-6 rounded border border-gray-600 cursor-pointer hover:scale-110 transition-transform" style="background-color: #f59e0b" data-color="#f59e0b" title="Amber"></button>
+                                <button class="w-6 h-6 rounded border border-gray-600 cursor-pointer hover:scale-110 transition-transform" style="background-color: #ef4444" data-color="#ef4444" title="Red"></button>
+                                <button class="w-6 h-6 rounded border border-gray-600 cursor-pointer hover:scale-110 transition-transform" style="background-color: #8b5cf6" data-color="#8b5cf6" title="Purple"></button>
+                                <button class="w-6 h-6 rounded border border-gray-600 cursor-pointer hover:scale-110 transition-transform" style="background-color: #06b6d4" data-color="#06b6d4" title="Cyan"></button>
+                                <button class="w-6 h-6 rounded border border-gray-600 cursor-pointer hover:scale-110 transition-transform" style="background-color: #84cc16" data-color="#84cc16" title="Lime"></button>
+                            </div>
                         </div>
+                        <!-- Text Color -->
                         <div class="flex items-center gap-2">
-                            <label class="text-xs text-gray-300 w-8">Text:</label>
+                            <label class="text-xs text-gray-300 w-12">Text:</label>
                             <input type="color" id="textColor" class="w-8 h-8 rounded border border-gray-600 cursor-pointer">
+                            <div class="flex gap-1" id="textColorSwatches">
+                                <button class="w-6 h-6 rounded border border-gray-600 cursor-pointer hover:scale-110 transition-transform" style="background-color: #ffffff" data-color="#ffffff" title="White"></button>
+                                <button class="w-6 h-6 rounded border border-gray-600 cursor-pointer hover:scale-110 transition-transform" style="background-color: #000000" data-color="#000000" title="Black"></button>
+                                <button class="w-6 h-6 rounded border border-gray-600 cursor-pointer hover:scale-110 transition-transform" style="background-color: #6b7280" data-color="#6b7280" title="Gray"></button>
+                                <button class="w-6 h-6 rounded border border-gray-600 cursor-pointer hover:scale-110 transition-transform" style="background-color: #374151" data-color="#374151" title="Dark Gray"></button>
+                                <button class="w-6 h-6 rounded border border-gray-600 cursor-pointer hover:scale-110 transition-transform" style="background-color: #fbbf24" data-color="#fbbf24" title="Yellow"></button>
+                                <button class="w-6 h-6 rounded border border-gray-600 cursor-pointer hover:scale-110 transition-transform" style="background-color: #34d399" data-color="#34d399" title="Emerald"></button>
+                                <button class="w-6 h-6 rounded border border-gray-600 cursor-pointer hover:scale-110 transition-transform" style="background-color: #60a5fa" data-color="#60a5fa" title="Light Blue"></button>
+                                <button class="w-6 h-6 rounded border border-gray-600 cursor-pointer hover:scale-110 transition-transform" style="background-color: #a78bfa" data-color="#a78bfa" title="Light Purple"></button>
+                            </div>
                         </div>
                         <div class="flex items-center gap-2">
                             <label class="text-xs text-gray-300 w-8">Border:</label>
@@ -589,6 +611,23 @@
 
         textColor?.addEventListener('input', (e) => {
             updateBlockStyling('textColor', e.target.value);
+        });
+
+        // Color swatch handlers
+        document.getElementById('bgColorSwatches')?.addEventListener('click', (e) => {
+            if (e.target.dataset.color) {
+                const color = e.target.dataset.color;
+                backgroundColor.value = color;
+                updateBlockStyling('color', color);
+            }
+        });
+
+        document.getElementById('textColorSwatches')?.addEventListener('click', (e) => {
+            if (e.target.dataset.color) {
+                const color = e.target.dataset.color;
+                textColor.value = color;
+                updateBlockStyling('textColor', color);
+            }
         });
 
         borderColor?.addEventListener('input', (e) => {

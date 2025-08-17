@@ -324,6 +324,16 @@ this.blocks.set(blockId, updatedBlock);
   - **Proper Mouse Button Handling**: Clean separation between left-click (creation) and right-click (context) actions
 
 ### **Session August 17, 2025: Enhanced Resize Handles & Usability**
+- **🎯 Custom Color Picker with Integrated Predefined Colors**: Professional color picker with dropdown interface
+  - **Custom Dropdown Interface**: Replaced HTML color inputs with custom dropdown color pickers
+  - **Integrated Predefined Colors**: 12 predefined color swatches displayed prominently in dropdown
+  - **Native Color Picker Access**: HTML color input available at bottom for unlimited color selection
+  - **Smart Visual Feedback**: Color buttons show current selection with dropdown arrow indicator
+  - **Automatic Contrast**: Arrow colors automatically adjust (black/white) based on button background for optimal visibility
+  - **Professional Layout**: Each color picker opens as an overlay with title, predefined colors grid, and custom color section
+  - **Improved User Experience**: Click to open/close, click outside to dismiss, one picker open at a time
+  - **Consistent Interface**: All three color types (background, text, border) use identical custom picker design
+  - **Better Organization**: Predefined colors prominently displayed, custom color clearly separated below
 - **🎯 Complete Undo/Redo System**: Full undo support with 100 operation history
   - **Ctrl+Z Undo**: Reverses the last operation (create, delete, move, resize, edit text)
   - **Ctrl+Y / Ctrl+Shift+Z Redo**: Re-applies the last undone operation  

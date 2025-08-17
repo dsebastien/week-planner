@@ -1,11 +1,11 @@
 BUSY:
 
 
-The block style overlay MUST ALWAYS BE displayed IN the grid, not outside or partly outside like this: /c/Users/trankill/Pictures/Screenshots/Capture d'\''écran 2025-08-17 172150.png
+
 
 When multiple blocks are selected/deselected, the block styling panel does not always move as it should. It should behave consistently and always reposition if the selected blocks change
 
-- When right clicking on a time block, a menu should be shown with the following options: copy style, paste style (if one was copied previously), copy. When right clicking on an empty cell, the menu should show the following options: paste (if a time block was copied previously), Add time block here
+- When right clicking on a time block, a menu should be shown with the following options: "Copy Style" (copy all the block styling options), "Paste Style" (grayed out if no style was copied previously), "Copy" (create an in memory copy of the block, ready to be pasted elsewhere). When right clicking on an empty cell, the menu should show the following options: "Paste" (grayed out if no block was copied), "Create time block"
 - The code of this app is on GitHub and I want to build it and deploy it from there. I own dsebastien.net and want to deploy this at weekplanner.tools.dsebastien.net. My GitHub account has already two custom domains (dsebastien.net and stats.notes.dsebastien.net), so I suppose I could add one more. Generate the GitHub actions workflow I need to (release/build/deploy...). The release creation should also generate a changelog. Finally, explain how I should setup everything step by step
 - Remove the wasted blank space at the bottom of the page. The grid should probably go all the way down
 - Fix block resizing: NOTHING should be calculated through the width/height/x/y positions. Instead, the data model properties should be used to derive all that (ie use start time, duration & day span to know where what belongs, ...)

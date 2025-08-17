@@ -44,6 +44,18 @@
             opacity: 0;
             transform: scale(0.95);
         }
+        
+        /* Toolbar drag styles */
+        .toolbar-dragging {
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5) !important;
+            transform: rotate(0.5deg) scale(1.01);
+            transform-origin: center center;
+        }
+        
+        .toolbar-header:hover {
+            background-color: rgba(55, 65, 81, 0.5);
+            border-radius: 6px;
+        }
     </style>
 </head>
 <body class="bg-dark-900 text-white overflow-hidden">
@@ -275,8 +287,13 @@
             <!-- Edit Toolbar -->
             <div id="editToolbar" class="absolute hidden bg-gray-800 border border-gray-600 rounded-lg shadow-xl p-3 min-w-[320px]" style="backdrop-filter: blur(16px); z-index: 100; pointer-events: none;">
                 <!-- Toolbar Header -->
-                <div class="flex items-center justify-between mb-3 pb-2 border-b border-gray-600" style="pointer-events: auto;">
-                    <span class="text-sm font-medium text-white">Block Styling</span>
+                <div id="toolbarHeader" class="toolbar-header flex items-center justify-between mb-3 pb-2 border-b border-gray-600 cursor-move transition-colors duration-200" style="pointer-events: auto;">
+                    <div class="flex items-center gap-2">
+                        <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 10h16M4 14h16M4 18h16"></path>
+                        </svg>
+                        <span class="text-sm font-medium text-white">Block Styling</span>
+                    </div>
                     <button id="closeToolbar" class="text-gray-400 hover:text-white transition-colors">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
@@ -548,7 +565,17 @@
             const canvas = document.getElementById('weekCanvas');
             const canvasRect = canvas.getBoundingClientRect();
             
-            // Calculate position relative to viewport
+            // Define the GRID AREA boundaries (not full canvas)
+            // Grid starts after time column and header
+            const timeColumnWidth = 120; // from config
+            const headerHeight = 60; // from config
+            
+            const gridLeft = canvasRect.left + timeColumnWidth;
+            const gridRight = canvasRect.right;
+            const gridTop = canvasRect.top + headerHeight;
+            const gridBottom = canvasRect.bottom;
+            
+            // Calculate block position relative to viewport
             const blockCenterX = canvasRect.left + block.x + block.width / 2;
             const blockBottom = canvasRect.top + block.y + block.height;
             const blockTop = canvasRect.top + block.y;
@@ -556,35 +583,39 @@
             // Get toolbar dimensions
             const toolbarRect = editToolbar.getBoundingClientRect();
             const toolbarWidth = toolbarRect.width || 320; // fallback to min-width
-            const toolbarHeight = toolbarRect.height || 200; // estimated height
-            
-            // Calculate position within canvas bounds
-            const canvasLeft = canvasRect.left;
-            const canvasRight = canvasRect.right;
-            const canvasTop = canvasRect.top;
-            const canvasBottom = canvasRect.bottom;
+            const toolbarHeight = toolbarRect.height || 300; // estimated height
             
             // Position toolbar below block by default, or above if too close to bottom
             let top = blockBottom + 10;
-            if (top + toolbarHeight > canvasBottom - 20) {
+            if (top + toolbarHeight > gridBottom - 10) {
                 top = blockTop - toolbarHeight - 10;
-                // If still too high, position at top of canvas
-                if (top < canvasTop + 20) {
-                    top = canvasTop + 20;
+                // If still too high, position at top of grid area
+                if (top < gridTop + 10) {
+                    top = gridTop + 10;
                 }
             }
             
-            // Position horizontally centered on block, but keep within canvas bounds
+            // Position horizontally centered on block, but ALWAYS keep within grid bounds
             let left = blockCenterX - toolbarWidth / 2;
-            if (left < canvasLeft + 20) {
-                left = canvasLeft + 20;
-            } else if (left + toolbarWidth > canvasRight - 20) {
-                left = canvasRight - toolbarWidth - 20;
+            
+            // Force toolbar to stay within grid area (not canvas area)
+            if (left < gridLeft + 10) {
+                left = gridLeft + 10;
+            } else if (left + toolbarWidth > gridRight - 10) {
+                left = gridRight - toolbarWidth - 10;
             }
             
-            // Ensure we stay within canvas boundaries
-            left = Math.max(canvasLeft + 10, Math.min(left, canvasRight - toolbarWidth - 10));
-            top = Math.max(canvasTop + 10, Math.min(top, canvasBottom - toolbarHeight - 10));
+            // Final clamp to ensure we NEVER go outside grid boundaries
+            left = Math.max(gridLeft + 10, Math.min(left, gridRight - toolbarWidth - 10));
+            top = Math.max(gridTop + 10, Math.min(top, gridBottom - toolbarHeight - 10));
+            
+            // Additional safety: if toolbar is still too wide/tall for grid, position at grid origin
+            if (toolbarWidth > (gridRight - gridLeft - 20)) {
+                left = gridLeft + 10;
+            }
+            if (toolbarHeight > (gridBottom - gridTop - 20)) {
+                top = gridTop + 10;
+            }
             
             editToolbar.style.left = `${left}px`;
             editToolbar.style.top = `${top}px`;
@@ -625,6 +656,47 @@
             positionToolbar(block);
         }
 
+        // Show toolbar for multiple selected blocks
+        function showMultipleToolbar(blocks, optimalPosition) {
+            if (!blocks || blocks.length === 0 || !editToolbar) return;
+            
+            // Use the first block for values, but position optimally
+            const firstBlock = blocks[0];
+            currentSelectedBlock = firstBlock;
+            
+            // Update toolbar values from first block
+            backgroundColor.value = firstBlock.color;
+            textColor.value = firstBlock.textColor;
+            borderColor.value = firstBlock.borderStyle.color;
+            fontSize.value = firstBlock.fontSize;
+            fontSizeValue.textContent = firstBlock.fontSize;
+            borderStyle.value = firstBlock.borderStyle.style;
+            borderWidth.value = firstBlock.borderStyle.width;
+            cornerRadius.value = firstBlock.cornerRadius;
+            cornerValue.textContent = firstBlock.cornerRadius;
+            
+            // Update button states
+            boldBtn.classList.toggle('bg-blue-600', firstBlock.fontStyle.bold);
+            italicBtn.classList.toggle('bg-blue-600', firstBlock.fontStyle.italic);
+            
+            // Update alignment buttons
+            alignLeft.classList.toggle('bg-blue-600', firstBlock.textAlignment === 'left');
+            alignCenter.classList.toggle('bg-blue-600', firstBlock.textAlignment === 'center');
+            alignRight.classList.toggle('bg-blue-600', firstBlock.textAlignment === 'right');
+            alignTop.classList.toggle('bg-blue-600', firstBlock.verticalAlignment === 'top');
+            alignMiddle.classList.toggle('bg-blue-600', firstBlock.verticalAlignment === 'middle');
+            alignBottom.classList.toggle('bg-blue-600', firstBlock.verticalAlignment === 'bottom');
+            
+            editToolbar.classList.remove('hidden');
+            
+            // Use optimal position if provided, otherwise position based on first block
+            if (optimalPosition) {
+                positionToolbar(optimalPosition);
+            } else {
+                positionToolbar(firstBlock);
+            }
+        }
+
         // Hide toolbar
         function hideToolbar() {
             if (editToolbar) {
@@ -635,6 +707,86 @@
 
         // Close toolbar button
         closeToolbar?.addEventListener('click', hideToolbar);
+
+        // Drag and drop functionality for toolbar
+        let isDragging = false;
+        let dragOffset = { x: 0, y: 0 };
+        
+        const toolbarHeader = document.getElementById('toolbarHeader');
+        
+        toolbarHeader?.addEventListener('mousedown', (e) => {
+            if (e.target === closeToolbar || e.target.closest('#closeToolbar')) {
+                return; // Don't start drag on close button
+            }
+            
+            isDragging = true;
+            
+            // Get initial position BEFORE applying transform effects
+            const toolbarRect = editToolbar.getBoundingClientRect();
+            const initialLeft = parseFloat(editToolbar.style.left) || toolbarRect.left;
+            const initialTop = parseFloat(editToolbar.style.top) || toolbarRect.top;
+            
+            // Calculate offset from mouse to toolbar's current position
+            dragOffset.x = e.clientX - initialLeft;
+            dragOffset.y = e.clientY - initialTop;
+            
+            // Add visual feedback without transitions to prevent jumping
+            editToolbar.style.transition = 'none';
+            document.body.style.userSelect = 'none';
+            
+            // Immediately set position to prevent jump from transform
+            editToolbar.style.left = `${initialLeft}px`;
+            editToolbar.style.top = `${initialTop}px`;
+            
+            // Apply dragging class after a tiny delay to prevent initial jump
+            requestAnimationFrame(() => {
+                editToolbar.classList.add('toolbar-dragging');
+            });
+            
+            e.preventDefault();
+        });
+        
+        document.addEventListener('mousemove', (e) => {
+            if (!isDragging || !editToolbar) return;
+            
+            const canvas = document.getElementById('weekCanvas');
+            const canvasRect = canvas.getBoundingClientRect();
+            
+            // Calculate new position
+            let newLeft = e.clientX - dragOffset.x;
+            let newTop = e.clientY - dragOffset.y;
+            
+            // Get toolbar dimensions
+            const toolbarRect = editToolbar.getBoundingClientRect();
+            const toolbarWidth = toolbarRect.width;
+            const toolbarHeight = toolbarRect.height;
+            
+            // Define grid boundaries (same as positionToolbar function)
+            const timeColumnWidth = 120;
+            const headerHeight = 60;
+            const gridLeft = canvasRect.left + timeColumnWidth;
+            const gridRight = canvasRect.right;
+            const gridTop = canvasRect.top + headerHeight;
+            const gridBottom = canvasRect.bottom;
+            
+            // Constrain to grid boundaries
+            newLeft = Math.max(gridLeft + 10, Math.min(newLeft, gridRight - toolbarWidth - 10));
+            newTop = Math.max(gridTop + 10, Math.min(newTop, gridBottom - toolbarHeight - 10));
+            
+            editToolbar.style.left = `${newLeft}px`;
+            editToolbar.style.top = `${newTop}px`;
+        });
+        
+        document.addEventListener('mouseup', () => {
+            if (isDragging) {
+                isDragging = false;
+                
+                // Remove visual feedback
+                editToolbar.style.transition = '';
+                editToolbar.classList.remove('toolbar-dragging');
+                document.body.style.userSelect = '';
+            }
+        });
 
         // Font size slider
         fontSize?.addEventListener('input', (e) => {
@@ -784,6 +936,7 @@
         // Expose functions for WeekPlanner to use
         window.editToolbar = {
             show: showToolbar,
+            showMultiple: showMultipleToolbar,
             hide: hideToolbar,
             position: positionToolbar
         };

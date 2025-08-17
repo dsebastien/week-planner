@@ -418,6 +418,20 @@ export class WeekPlanner {
      * Handle keyboard events
      */
     private onKeyDown(event: KeyboardEvent): void {
+        // Handle Ctrl+I for JSON import
+        if (event.ctrlKey && event.key === 'i') {
+            event.preventDefault();
+            this.importJSON();
+            return;
+        }
+        
+        // Handle Ctrl+O for JSON export
+        if (event.ctrlKey && event.key === 'o') {
+            event.preventDefault();
+            this.exportJSON();
+            return;
+        }
+        
         if (event.key === 'Delete' || event.key === 'Backspace') {
             const selectedBlock = this.blockManager.getSelectedBlock();
             if (selectedBlock && !this.editingBlock) {

@@ -533,7 +533,12 @@ The week planner is now in a **production-ready state** with all major issues re
 - **Error Prevention**: No more "end time cannot be after 24:00" messages
 - **Visual Feedback**: Clear time labels, selection highlighting, preview blocks
 - **Text Input Fix**: Black text on white background for editing (no more invisible text)
-- **Keyboard Shortcuts**: Ctrl+M opens menu, Delete removes blocks, Escape cancels editing
+- **Keyboard Shortcuts**: 
+  - Ctrl+M opens menu
+  - Ctrl+I imports JSON files
+  - Ctrl+O exports JSON files 
+  - Delete/Backspace removes blocks
+  - Escape cancels editing
 
 ### ✅ **Technical Excellence**
 - **Strict TypeScript**: Zero `any` types, comprehensive type safety

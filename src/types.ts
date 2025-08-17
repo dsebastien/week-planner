@@ -9,8 +9,6 @@ export type TextAlignment = 'left' | 'center' | 'right';
 export interface FontStyle {
     readonly bold: boolean;
     readonly italic: boolean;
-    readonly underline: boolean;
-    readonly strikethrough: boolean;
 }
 
 /**

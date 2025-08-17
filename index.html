@@ -287,8 +287,6 @@
                         <div class="flex items-center gap-1">
                             <button id="boldBtn" class="w-7 h-7 rounded border border-gray-600 text-white hover:bg-gray-700 transition-colors text-xs font-bold">B</button>
                             <button id="italicBtn" class="w-7 h-7 rounded border border-gray-600 text-white hover:bg-gray-700 transition-colors text-xs italic">I</button>
-                            <button id="underlineBtn" class="w-7 h-7 rounded border border-gray-600 text-white hover:bg-gray-700 transition-colors text-xs underline">U</button>
-                            <button id="strikeBtn" class="w-7 h-7 rounded border border-gray-600 text-white hover:bg-gray-700 transition-colors text-xs line-through">S</button>
                         </div>
                     </div>
 
@@ -442,8 +440,6 @@
         const fontSizeValue = document.getElementById('fontSizeValue');
         const boldBtn = document.getElementById('boldBtn');
         const italicBtn = document.getElementById('italicBtn');
-        const underlineBtn = document.getElementById('underlineBtn');
-        const strikeBtn = document.getElementById('strikeBtn');
         const alignLeft = document.getElementById('alignLeft');
         const alignCenter = document.getElementById('alignCenter');
         const alignRight = document.getElementById('alignRight');
@@ -500,8 +496,6 @@
             // Update button states
             boldBtn.classList.toggle('bg-blue-600', block.fontStyle.bold);
             italicBtn.classList.toggle('bg-blue-600', block.fontStyle.italic);
-            underlineBtn.classList.toggle('bg-blue-600', block.fontStyle.underline);
-            strikeBtn.classList.toggle('bg-blue-600', block.fontStyle.strikethrough);
             
             // Update alignment buttons
             alignLeft.classList.toggle('bg-blue-600', block.textAlignment === 'left');
@@ -572,25 +566,6 @@
             updateBlockStyling('fontStyle', { ...currentBlock.fontStyle, italic: newItalic });
         });
 
-        underlineBtn?.addEventListener('click', () => {
-            if (!window.weekPlanner) return;
-            const currentBlock = window.weekPlanner.blockManager?.getSelectedBlock();
-            if (!currentBlock) return;
-            
-            const newUnderline = !currentBlock.fontStyle.underline;
-            underlineBtn.classList.toggle('bg-blue-600', newUnderline);
-            updateBlockStyling('fontStyle', { ...currentBlock.fontStyle, underline: newUnderline });
-        });
-
-        strikeBtn?.addEventListener('click', () => {
-            if (!window.weekPlanner) return;
-            const currentBlock = window.weekPlanner.blockManager?.getSelectedBlock();
-            if (!currentBlock) return;
-            
-            const newStrike = !currentBlock.fontStyle.strikethrough;
-            strikeBtn.classList.toggle('bg-blue-600', newStrike);
-            updateBlockStyling('fontStyle', { ...currentBlock.fontStyle, strikethrough: newStrike });
-        });
 
         // Alignment buttons
         alignLeft?.addEventListener('click', () => {

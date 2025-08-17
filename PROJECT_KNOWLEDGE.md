@@ -250,6 +250,7 @@ this.blocks.set(blockId, updatedBlock);
 - **Implemented Complete Block Resizing**: 8 resize handles with smooth drag behavior
 - **Fixed Resize Logic**: Proper state tracking prevents buggy/jumping resize behavior
 - **Enhanced User Experience**: Smart cursors, visual feedback, overlap prevention
+- **Simplified Font Styling**: Removed underline and strikethrough options for cleaner UI - only bold and italic remain
 - **Increased Font Sizes**: Made time block text elements significantly larger for better readability
   - Block text: 13px → 16px 
   - Time info: 10px → 13px

@@ -29,6 +29,19 @@ describe('TimeBlockManager', () => {
         daySpan: 1,
         text: 'Test Block',
         color: '#4CAF50',
+        textColor: '#ffffff',
+        fontSize: 16,
+        fontStyle: {
+            bold: false,
+            italic: false
+        },
+        textAlignment: 'center',
+        borderStyle: {
+            width: 2,
+            style: 'solid',
+            color: '#4CAF50'
+        },
+        cornerRadius: 5,
         selected: false,
         ...overrides
     });

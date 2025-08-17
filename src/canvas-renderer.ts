@@ -528,8 +528,6 @@ export class CanvasRenderer {
             this.drawWrappedText(block.text, textX, textArea.y, textArea.maxWidth, textArea.maxHeight);
         }
         
-        // Draw text decorations if needed
-        this.drawTextDecorations(block);
         
         this.ctx.restore();
     }
@@ -615,53 +613,6 @@ export class CanvasRenderer {
         }
     }
 
-    /**
-     * Draws text decorations (underline, strikethrough)
-     */
-    private drawTextDecorations(block: TimeBlock): void {
-        if (!block.text.trim()) return;
-        
-        const { fontStyle } = block;
-        if (!fontStyle.underline && !fontStyle.strikethrough) return;
-
-        this.ctx.strokeStyle = block.textColor;
-        this.ctx.lineWidth = 1;
-
-        const textMetrics = this.ctx.measureText(block.text);
-        const textWidth = textMetrics.width;
-        const textX = this.getTextX(block, block.x + block.width / 2);
-        
-        // Adjust X position based on alignment for decorations
-        let startX: number;
-        switch (block.textAlignment) {
-            case 'left':
-                startX = textX;
-                break;
-            case 'right':
-                startX = textX - textWidth;
-                break;
-            case 'center':
-            default:
-                startX = textX - textWidth / 2;
-                break;
-        }
-
-        if (fontStyle.underline) {
-            const underlineY = block.y + block.height * 0.7;
-            this.ctx.beginPath();
-            this.ctx.moveTo(startX, underlineY);
-            this.ctx.lineTo(startX + textWidth, underlineY);
-            this.ctx.stroke();
-        }
-
-        if (fontStyle.strikethrough) {
-            const strikeY = block.y + block.height * 0.5;
-            this.ctx.beginPath();
-            this.ctx.moveTo(startX, strikeY);
-            this.ctx.lineTo(startX + textWidth, strikeY);
-            this.ctx.stroke();
-        }
-    }
 
     private getTextArea(block: TimeBlock): { x: number; y: number; maxWidth: number; maxHeight: number } {
         // Adaptive layout based on block height
@@ -987,13 +938,6 @@ export class CanvasRenderer {
                 font-weight="${fontWeight}"
                 font-style="${fontStyle}"`;
             
-            // Add text decorations
-            const decorations = [];
-            if (block.fontStyle.underline) decorations.push('underline');
-            if (block.fontStyle.strikethrough) decorations.push('line-through');
-            if (decorations.length > 0) {
-                svg += ` text-decoration="${decorations.join(' ')}"`;
-            }
             
             svg += `>${this.escapeXml(block.text)}</text>`;
         }

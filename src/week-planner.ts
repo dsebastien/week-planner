@@ -845,9 +845,7 @@ export class WeekPlanner {
             fontSize: 16,
             fontStyle: {
                 bold: false,
-                italic: false,
-                underline: false,
-                strikethrough: false
+                italic: false
             },
             textAlignment: 'center',
             borderStyle: {

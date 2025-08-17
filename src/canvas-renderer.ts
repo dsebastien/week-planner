@@ -537,7 +537,10 @@ export class CanvasRenderer {
      */
     private drawWrappedText(text: string, x: number, y: number, maxWidth: number, maxHeight: number): void {
         const words = text.split(' ');
-        const lineHeight = 16;
+        // Use current font metrics to calculate line height
+        const metrics = this.ctx.measureText('M'); // Measure a typical character
+        const fontSize = parseFloat(this.ctx.font) || 16; // Extract font size from current font
+        const lineHeight = fontSize * 1.3;
         let line = '';
         let currentY = y;
 
@@ -654,7 +657,8 @@ export class CanvasRenderer {
             }
         } else {
             // For larger blocks, calculate based on text content
-            const lineHeight = 16;
+            const fontSize = Math.max(8, Math.min(48, block.fontSize));
+            const lineHeight = fontSize * 1.3;
             const lines = this.getTextLines(text, textArea.maxWidth);
             const totalTextHeight = lines.length * lineHeight;
             
@@ -671,7 +675,7 @@ export class CanvasRenderer {
     }
 
     /**
-     * Get text lines for wrapping calculation
+     * Get text lines for wrapping calculation with proper word handling
      */
     private getTextLines(text: string, maxWidth: number): string[] {
         const words = text.split(' ');
@@ -679,13 +683,27 @@ export class CanvasRenderer {
         let line = '';
 
         for (let i = 0; i < words.length; i++) {
-            const testLine = line + words[i] + ' ';
+            const word = words[i]!;
+            const testLine = line + word + ' ';
             const metrics = this.ctx.measureText(testLine);
             
-            if (metrics.width > maxWidth && i > 0) {
+            if (metrics.width > maxWidth && line.trim() !== '') {
+                // Current line + word exceeds width, and we have content in current line
                 lines.push(line.trim());
-                line = words[i] + ' ';
+                
+                // Check if the word itself fits on a line
+                const wordMetrics = this.ctx.measureText(word);
+                if (wordMetrics.width > maxWidth) {
+                    // Word is too long for a single line, break it with hyphen
+                    const brokenLines = this.breakLongWord(word, maxWidth);
+                    lines.push(...brokenLines.slice(0, -1)); // Add all but the last line
+                    line = brokenLines[brokenLines.length - 1]! + ' '; // Start new line with remainder
+                } else {
+                    // Word fits on its own line
+                    line = word + ' ';
+                }
             } else {
+                // Add word to current line
                 line = testLine;
             }
         }
@@ -696,12 +714,51 @@ export class CanvasRenderer {
         
         return lines;
     }
+    
+    /**
+     * Break a long word into multiple lines with hyphens
+     */
+    private breakLongWord(word: string, maxWidth: number): string[] {
+        const lines: string[] = [];
+        let remainingWord = word;
+        
+        while (remainingWord.length > 0) {
+            let breakPoint = remainingWord.length;
+            
+            // Find the longest substring that fits with a hyphen
+            for (let i = remainingWord.length; i > 0; i--) {
+                const testSubstring = remainingWord.substring(0, i) + (i < remainingWord.length ? '-' : '');
+                const metrics = this.ctx.measureText(testSubstring);
+                
+                if (metrics.width <= maxWidth) {
+                    breakPoint = i;
+                    break;
+                }
+            }
+            
+            // Ensure we make progress (at least 1 character)
+            if (breakPoint === 0) breakPoint = 1;
+            
+            const chunk = remainingWord.substring(0, breakPoint);
+            if (breakPoint < remainingWord.length) {
+                lines.push(chunk + '-');
+            } else {
+                lines.push(chunk);
+            }
+            
+            remainingWord = remainingWord.substring(breakPoint);
+        }
+        
+        return lines;
+    }
 
     /**
      * Draw wrapped text with vertical alignment support
      */
     private drawWrappedTextWithVerticalAlignment(block: RenderedTimeBlock, text: string, x: number, maxWidth: number, maxHeight: number): void {
-        const lineHeight = 16;
+        // Calculate line height based on font size (1.3x font size for good readability)
+        const fontSize = Math.max(8, Math.min(48, block.fontSize));
+        const lineHeight = fontSize * 1.3;
         const lines = this.getTextLines(text, maxWidth);
         const totalTextHeight = lines.length * lineHeight;
         

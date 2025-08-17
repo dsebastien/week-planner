@@ -1,4 +1,4 @@
-import { GridConfig, TimeBlock, HexColor, Point, ResizeHandle, TextAlignment } from './types.js';
+import { GridConfig, TimeBlock, RenderedTimeBlock, HexColor, Point, ResizeHandle, TextAlignment } from './types.js';
 import { GridUtils } from './grid-utils.js';
 
 /**
@@ -47,7 +47,7 @@ export class CanvasRenderer {
     /**
      * Main render method - draws the complete week planner
      */
-    render(blocks: readonly TimeBlock[]): void {
+    render(blocks: readonly RenderedTimeBlock[]): void {
         this.clear();
         this.drawGrid();
         this.drawBlocks(blocks);
@@ -56,7 +56,7 @@ export class CanvasRenderer {
     /**
      * Draws a preview block with transparency (used during drag operations)
      */
-    drawPreviewBlock(block: TimeBlock): void {
+    drawPreviewBlock(block: RenderedTimeBlock): void {
         this.ctx.save();
         this.ctx.globalAlpha = 0.7;
         
@@ -105,7 +105,7 @@ export class CanvasRenderer {
     /**
      * Exports the current canvas as SVG
      */
-    exportSVG(blocks: readonly TimeBlock[]): string {
+    exportSVG(blocks: readonly RenderedTimeBlock[]): string {
         const svgElements = [
             this.createSVGRoot(),
             this.generateBackgroundSVG(),
@@ -308,7 +308,7 @@ export class CanvasRenderer {
     /**
      * Draws all time blocks
      */
-    private drawBlocks(blocks: readonly TimeBlock[]): void {
+    private drawBlocks(blocks: readonly RenderedTimeBlock[]): void {
         // Sort blocks by position for consistent rendering order
         const sortedBlocks = [...blocks].sort((a, b) => {
             if (a.y !== b.y) return a.y - b.y;
@@ -323,7 +323,7 @@ export class CanvasRenderer {
     /**
      * Draws a single time block
      */
-    private drawBlock(block: TimeBlock): void {
+    private drawBlock(block: RenderedTimeBlock): void {
         this.drawBlockBackground(block);
         this.drawBlockBorder(block);
         this.drawBlockSelection(block);
@@ -335,7 +335,7 @@ export class CanvasRenderer {
     /**
      * Draws block background with modern gradient effect
      */
-    private drawBlockBackground(block: TimeBlock): void {
+    private drawBlockBackground(block: RenderedTimeBlock): void {
         this.ctx.save();
         
         // Create path for rounded rectangle if corner radius is set
@@ -389,7 +389,7 @@ export class CanvasRenderer {
     /**
      * Draws block border (inner border)
      */
-    private drawBlockBorder(block: TimeBlock): void {
+    private drawBlockBorder(block: RenderedTimeBlock): void {
         this.ctx.save();
         
         const borderStyle = block.borderStyle;
@@ -451,7 +451,7 @@ export class CanvasRenderer {
     /**
      * Draws selection highlight if block is selected
      */
-    private drawBlockSelection(block: TimeBlock): void {
+    private drawBlockSelection(block: RenderedTimeBlock): void {
         if (!block.selected) return;
 
         this.ctx.strokeStyle = CanvasRenderer.THEME.selectionHighlight;
@@ -469,7 +469,7 @@ export class CanvasRenderer {
     /**
      * Draws time information in the top-left corner of the block
      */
-    private drawBlockTimeInfo(block: TimeBlock): void {
+    private drawBlockTimeInfo(block: RenderedTimeBlock): void {
         this.ctx.save();
         this.ctx.fillStyle = block.textColor;
         this.ctx.textAlign = 'left';
@@ -495,7 +495,7 @@ export class CanvasRenderer {
     /**
      * Draws block text with automatic wrapping
      */
-    private drawBlockText(block: TimeBlock): void {
+    private drawBlockText(block: RenderedTimeBlock): void {
         if (!block.text.trim()) return;
 
         this.ctx.save();
@@ -591,7 +591,7 @@ export class CanvasRenderer {
     /**
      * Helper methods for block content layout
      */
-    private getBlockTimeInfo(block: TimeBlock): string {
+    private getBlockTimeInfo(block: RenderedTimeBlock): string {
         const startTime = GridUtils.formatTime(block.startTime);
         const endTime = GridUtils.formatTime(block.startTime + block.duration);
         const duration = GridUtils.formatDuration(block.duration);
@@ -601,7 +601,7 @@ export class CanvasRenderer {
     /**
      * Gets X position for text based on alignment
      */
-    private getTextX(block: TimeBlock, defaultX: number): number {
+    private getTextX(block: RenderedTimeBlock, defaultX: number): number {
         switch (block.textAlignment) {
             case 'left':
                 return block.x + 8;
@@ -614,7 +614,7 @@ export class CanvasRenderer {
     }
 
 
-    private getTextArea(block: TimeBlock): { x: number; y: number; maxWidth: number; maxHeight: number } {
+    private getTextArea(block: RenderedTimeBlock): { x: number; y: number; maxWidth: number; maxHeight: number } {
         // Adaptive layout based on block height
         const isSmallBlock = block.height < 40;
         const padding = isSmallBlock ? 3 : 8;
@@ -631,7 +631,7 @@ export class CanvasRenderer {
     /**
      * Calculate vertical position for text based on alignment
      */
-    private getVerticalTextY(block: TimeBlock, text: string, isSmallBlock: boolean): number {
+    private getVerticalTextY(block: RenderedTimeBlock, text: string, isSmallBlock: boolean): number {
         const textArea = this.getTextArea(block);
         
         if (isSmallBlock) {
@@ -693,7 +693,7 @@ export class CanvasRenderer {
     /**
      * Draw wrapped text with vertical alignment support
      */
-    private drawWrappedTextWithVerticalAlignment(block: TimeBlock, text: string, x: number, maxWidth: number, maxHeight: number): void {
+    private drawWrappedTextWithVerticalAlignment(block: RenderedTimeBlock, text: string, x: number, maxWidth: number, maxHeight: number): void {
         const lineHeight = 16;
         const lines = this.getTextLines(text, maxWidth);
         const totalTextHeight = lines.length * lineHeight;
@@ -753,7 +753,7 @@ export class CanvasRenderer {
     /**
      * Draws resize handles on selected blocks
      */
-    private drawResizeHandles(block: TimeBlock): void {
+    private drawResizeHandles(block: RenderedTimeBlock): void {
         if (!block.selected) return;
 
         const handleSize = 8;
@@ -777,7 +777,7 @@ export class CanvasRenderer {
     /**
      * Gets resize handle positions for a block
      */
-    private getResizeHandlePositions(block: TimeBlock, handleSize: number): Map<ResizeHandle, Point> {
+    private getResizeHandlePositions(block: RenderedTimeBlock, handleSize: number): Map<ResizeHandle, Point> {
         const handles = new Map<ResizeHandle, Point>();
         const half = handleSize / 2;
 
@@ -804,7 +804,7 @@ export class CanvasRenderer {
     /**
      * Checks if a point is over a resize handle
      */
-    getResizeHandleAt(point: Point, block: TimeBlock): ResizeHandle | null {
+    getResizeHandleAt(point: Point, block: RenderedTimeBlock): ResizeHandle | null {
         if (!block.selected) return null;
 
         const handleSize = 8;
@@ -938,7 +938,7 @@ export class CanvasRenderer {
         return svg;
     }
 
-    private generateBlockSVG(block: TimeBlock): string {
+    private generateBlockSVG(block: RenderedTimeBlock): string {
         const timeInfo = this.getBlockTimeInfo(block);
         let svg = '';
         
@@ -1038,7 +1038,7 @@ export class CanvasRenderer {
     /**
      * Calculate SVG vertical alignment properties
      */
-    private getSVGVerticalAlignment(block: TimeBlock): { textY: number; dominantBaseline: string } {
+    private getSVGVerticalAlignment(block: RenderedTimeBlock): { textY: number; dominantBaseline: string } {
         const textArea = this.getTextArea(block);
         
         switch (block.verticalAlignment) {

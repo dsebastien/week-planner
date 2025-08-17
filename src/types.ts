@@ -30,10 +30,6 @@ export interface BorderStyle {
  */
 export interface TimeBlock {
     readonly id: string;
-    readonly x: number;
-    readonly y: number;
-    readonly width: number;
-    readonly height: number;
     readonly startTime: number; // minutes from 00:00 (absolute time)
     readonly duration: number; // minutes (minimum 30, multiple of 30)
     readonly startDay: number; // starting day index (0 = Monday, 6 = Sunday)
@@ -48,6 +44,16 @@ export interface TimeBlock {
     readonly borderStyle: BorderStyle;
     readonly cornerRadius: number; // 0-20 pixels
     selected: boolean;
+}
+
+/**
+ * Rendered time block with calculated pixel positions for display
+ */
+export interface RenderedTimeBlock extends TimeBlock {
+    readonly x: number;
+    readonly y: number;
+    readonly width: number;
+    readonly height: number;
 }
 
 /**
@@ -130,7 +136,7 @@ export interface MouseState {
     readonly resizing: boolean;
     readonly resizeHandle: ResizeHandle | null;
     readonly resizeBlockId: string | null;
-    readonly originalBlock: TimeBlock | null;
+    readonly originalBlock: RenderedTimeBlock | null;
 }
 
 /**
@@ -144,6 +150,6 @@ export type ResizeHandle = 'top' | 'bottom' | 'left' | 'right' | 'top-left' | 't
 export interface ResizeOperation {
     readonly blockId: string;
     readonly handle: ResizeHandle;
-    readonly originalBlock: TimeBlock;
+    readonly originalBlock: RenderedTimeBlock;
     readonly startPoint: Point;
 }

@@ -21,10 +21,6 @@ describe('TimeBlockManager', () => {
 
     const createTestBlock = (overrides: Partial<TimeBlock> = {}): TimeBlock => ({
         id: 'test-block',
-        x: 120,
-        y: 60,
-        width: 140,
-        height: 48,
         startTime: 6 * 60, // 6:00 AM
         duration: 60, // 1 hour
         startDay: 0, // Monday

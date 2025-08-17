@@ -1,5 +1,6 @@
 import { 
     TimeBlock, 
+    RenderedTimeBlock,
     GridConfig, 
     Point, 
     MouseState, 
@@ -39,8 +40,8 @@ export class WeekPlanner {
         originalBlock: null
     };
     
-    private previewBlock: TimeBlock | null = null;
-    private editingBlock: TimeBlock | null = null;
+    private previewBlock: RenderedTimeBlock | null = null;
+    private editingBlock: RenderedTimeBlock | null = null;
     private resizeTimeout: ReturnType<typeof setTimeout> | null = null;
 
     constructor() {
@@ -486,20 +487,11 @@ export class WeekPlanner {
             Math.max(30, maxValidTime - startTime) : // Minimum 30 minutes, but don't exceed valid range
             duration;
         
-        // Calculate pixel properties from logical coordinates
-        const { x, y, width, height } = GridUtils.calculateBlockPixelProperties(
-            startDay, startTime, clampedDuration, daySpan, this.config
-        );
-
         const defaultStyling = this.getDefaultStyling();
         
-        // Create preview block with logical coordinates as source of truth
-        this.previewBlock = {
+        // Create domain TimeBlock (without pixel coordinates)
+        const domainBlock: TimeBlock = {
             id: 'preview',
-            x,
-            y,
-            width,
-            height,
             startTime,
             duration: clampedDuration,
             startDay,
@@ -516,6 +508,20 @@ export class WeekPlanner {
             selected: false
         };
 
+        // Calculate pixel properties for rendering
+        const { x, y, width, height } = GridUtils.calculateBlockPixelProperties(
+            startDay, startTime, clampedDuration, daySpan, this.config
+        );
+        
+        // Create preview block with calculated pixel positions
+        this.previewBlock = {
+            ...domainBlock,
+            x,
+            y,
+            width,
+            height
+        };
+
         this.render();
         if (this.previewBlock) {
             this.renderer.drawPreviewBlock(this.previewBlock);
@@ -528,9 +534,22 @@ export class WeekPlanner {
     private finishBlockCreation(): void {
         if (!this.previewBlock) return;
 
+        // Create domain TimeBlock (without pixel coordinates)
         const block: TimeBlock = {
-            ...this.previewBlock,
             id: this.generateBlockId(),
+            startTime: this.previewBlock.startTime,
+            duration: this.previewBlock.duration,
+            startDay: this.previewBlock.startDay,
+            daySpan: this.previewBlock.daySpan,
+            text: this.previewBlock.text,
+            color: this.previewBlock.color,
+            textColor: this.previewBlock.textColor,
+            fontSize: this.previewBlock.fontSize,
+            fontStyle: this.previewBlock.fontStyle,
+            textAlignment: this.previewBlock.textAlignment,
+            verticalAlignment: this.previewBlock.verticalAlignment,
+            borderStyle: this.previewBlock.borderStyle,
+            cornerRadius: this.previewBlock.cornerRadius,
             selected: true
         };
 
@@ -570,20 +589,11 @@ export class WeekPlanner {
             return;
         }
         
-        // Calculate pixel properties from logical coordinates
-        const { x, y, width, height } = GridUtils.calculateBlockPixelProperties(
-            startDay, startTime, duration, daySpan, this.config
-        );
-        
         const defaultStyling = this.getDefaultStyling();
         
-        // Create the block with logical coordinates as source of truth
+        // Create the domain TimeBlock (without pixel coordinates)
         const block: TimeBlock = {
             id: this.generateBlockId(),
-            x,
-            y,
-            width,
-            height,
             startTime,
             duration,
             startDay,
@@ -781,7 +791,7 @@ export class WeekPlanner {
     /**
      * Start editing a block's text
      */
-    private startEditingBlock(block: TimeBlock): void {
+    private startEditingBlock(block: RenderedTimeBlock): void {
         this.editingBlock = block;
         this.textInput.value = block.text;
         this.textInput.style.display = 'block';

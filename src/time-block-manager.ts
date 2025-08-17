@@ -1,5 +1,6 @@
 import { 
     TimeBlock, 
+    RenderedTimeBlock,
     GridConfig, 
     ValidationError, 
     Result, 
@@ -135,10 +136,6 @@ export class TimeBlockManager {
         // Create the resized block with logical coordinates as source of truth
         const resizedBlock: TimeBlock = {
             ...originalBlock,
-            x: newX,
-            y: newY,
-            width: newWidth,
-            height: newHeight,
             startDay,
             startTime: startTimeMinutes,
             duration,
@@ -174,14 +171,14 @@ export class TimeBlockManager {
     /**
      * Gets all blocks as a readonly array with dynamically calculated pixel positions
      */
-    getBlocks(): readonly TimeBlock[] {
+    getBlocks(): readonly RenderedTimeBlock[] {
         return Array.from(this.blocks.values()).map(block => this.getBlockWithCalculatedPosition(block));
     }
 
     /**
      * Returns a block with pixel positions calculated from logical properties
      */
-    private getBlockWithCalculatedPosition(block: TimeBlock): TimeBlock {
+    private getBlockWithCalculatedPosition(block: TimeBlock): RenderedTimeBlock {
         const { x, y, width, height } = GridUtils.calculateBlockPixelProperties(
             block.startDay, 
             block.startTime, 
@@ -202,7 +199,7 @@ export class TimeBlockManager {
     /**
      * Gets a specific block by ID with calculated pixel positions
      */
-    getBlock(blockId: string): TimeBlock | null {
+    getBlock(blockId: string): RenderedTimeBlock | null {
         const block = this.blocks.get(blockId);
         return block ? this.getBlockWithCalculatedPosition(block) : null;
     }
@@ -222,7 +219,7 @@ export class TimeBlockManager {
     /**
      * Gets the currently selected block with calculated pixel positions
      */
-    getSelectedBlock(): TimeBlock | null {
+    getSelectedBlock(): RenderedTimeBlock | null {
         if (!this.selectedBlockId) return null;
         const block = this.blocks.get(this.selectedBlockId);
         return block ? this.getBlockWithCalculatedPosition(block) : null;
@@ -231,7 +228,7 @@ export class TimeBlockManager {
     /**
      * Finds the topmost block at given coordinates with calculated pixel positions
      */
-    getBlockAt(x: number, y: number): TimeBlock | null {
+    getBlockAt(x: number, y: number): RenderedTimeBlock | null {
         const blocksAtPoint = Array.from(this.blocks.values())
             .map(block => this.getBlockWithCalculatedPosition(block))
             .filter(block => this.isPointInBlock(x, y, block))
@@ -424,7 +421,7 @@ export class TimeBlockManager {
     /**
      * Checks if a point is within a block's boundaries
      */
-    private isPointInBlock(x: number, y: number, block: TimeBlock): boolean {
+    private isPointInBlock(x: number, y: number, block: RenderedTimeBlock): boolean {
         return x >= block.x && 
                x <= block.x + block.width &&
                y >= block.y && 

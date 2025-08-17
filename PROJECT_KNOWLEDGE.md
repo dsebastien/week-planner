@@ -140,16 +140,27 @@ tests/
 ```typescript
 interface TimeBlock {
   readonly id: string;
-  readonly x: number;
-  readonly y: number;
-  readonly width: number;
-  readonly height: number;
   readonly startTime: number; // minutes from 00:00
   readonly duration: number;  // minutes (multiple of 30)
+  readonly startDay: number;  // starting day index (0 = Monday, 6 = Sunday)
   readonly daySpan: number;   // 1-7 days
   text: string;
   readonly color: string;     // hex format
+  readonly textColor: HexColor;
+  readonly fontSize: number;
+  readonly fontStyle: FontStyle;
+  readonly textAlignment: TextAlignment;
+  readonly verticalAlignment: VerticalAlignment;
+  readonly borderStyle: BorderStyle;
+  readonly cornerRadius: number;
   selected: boolean;
+}
+
+interface RenderedTimeBlock extends TimeBlock {
+  readonly x: number;      // calculated pixel position
+  readonly y: number;      // calculated pixel position
+  readonly width: number;  // calculated pixel width
+  readonly height: number; // calculated pixel height
 }
 
 interface GridConfig {
@@ -202,6 +213,36 @@ type Result<T, E = Error> =
 - Runs on port 8080 by default
 
 ## Key Implementation Patterns
+
+### Logical Coordinate Architecture
+```typescript
+// Domain model stores logical coordinates only
+interface TimeBlock {
+  startDay: number;     // 0-6 (Monday-Sunday)
+  startTime: number;    // minutes from 00:00
+  duration: number;     // minutes (multiple of 30)
+  daySpan: number;      // 1-7 days
+  // ... styling properties
+}
+
+// Rendering extends domain model with pixel coordinates
+interface RenderedTimeBlock extends TimeBlock {
+  x: number;           // calculated from startDay + config
+  y: number;           // calculated from startTime + config  
+  width: number;       // calculated from daySpan + config
+  height: number;      // calculated from duration + config
+}
+
+// Dynamic position calculation (zoom-resistant)
+const calculatePixelProperties = (startDay, startTime, duration, daySpan, config) => {
+  return {
+    x: config.timeColumnWidth + startDay * config.dayWidth,
+    y: config.headerHeight + ((startTime - config.startHour * 60) / 30) * config.timeSlotHeight,
+    width: daySpan * config.dayWidth,
+    height: (duration / 30) * config.timeSlotHeight
+  };
+};
+```
 
 ### Error Handling
 ```typescript
@@ -490,6 +531,10 @@ The week planner is now in a **production-ready state** with all major issues re
 
 ### ✅ **Technical Excellence**
 - **Strict TypeScript**: Zero `any` types, comprehensive type safety
+- **Clean Domain Model**: Pure domain types without rendering concerns
+- **Logical Coordinate System**: Time blocks store logical position (startDay, startTime) as source of truth
+- **Dynamic Position Calculation**: Pixel positions calculated on-demand for rendering
+- **Zoom-Resistant Architecture**: No position loss during browser zoom or window resize
 - **Clean Architecture**: Separated concerns with dedicated classes
 - **Comprehensive Testing**: 35 passing unit tests covering all functionality
 - **Export Compatibility**: PNG, SVG, JSON with proper formatting (SVG export fixed with grid lines)

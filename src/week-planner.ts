@@ -867,6 +867,15 @@ export class WeekPlanner {
     }
 
     /**
+     * Closes the main menu
+     */
+    private closeMenu(): void {
+        // Trigger the closeModal function from the HTML
+        const event = new CustomEvent('closeMenu');
+        document.dispatchEvent(event);
+    }
+
+    /**
      * Updates the styling of the currently selected block
      */
     updateSelectedBlockStyle(property: string, value: any): void {
@@ -938,6 +947,8 @@ export class WeekPlanner {
                         const result = this.blockManager.importData(data);
                         if (result.success) {
                             this.render();
+                            // Close the menu after successful import
+                            this.closeMenu();
                         } else {
                             this.showError(result.error.message);
                         }

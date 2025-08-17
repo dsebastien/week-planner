@@ -634,6 +634,11 @@
             }
         }
 
+        // Listen for closeMenu event from WeekPlanner
+        document.addEventListener('closeMenu', () => {
+            closeModal();
+        });
+
         // Expose functions for WeekPlanner to use
         window.editToolbar = {
             show: showToolbar,

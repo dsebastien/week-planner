@@ -7,9 +7,11 @@ import {
     DayIndex, 
     TimeMinutes, 
     DurationMinutes,
-    WeekPlannerData
+    WeekPlannerData,
+    Operation
 } from './types.js';
 import { GridUtils } from './grid-utils.js';
+import { UndoManager } from './undo-manager.js';
 
 /**
  * Manages time blocks in the week planner with validation and overlap detection
@@ -18,9 +20,11 @@ export class TimeBlockManager {
     private readonly blocks: Map<string, TimeBlock> = new Map();
     private selectedBlockIds: Set<string> = new Set();
     private config: GridConfig;
+    public readonly undoManager: UndoManager;
 
     constructor(config: GridConfig) {
         this.config = config;
+        this.undoManager = new UndoManager();
     }
 
     /**
@@ -42,11 +46,58 @@ export class TimeBlockManager {
     }
 
     /**
+     * Adds a new time block with undo support
+     */
+    addBlockWithUndo(block: TimeBlock): Result<void, ValidationError> {
+        const result = this.addBlock(block);
+        if (result.success) {
+            const operation = UndoManager.createOperation(
+                'create',
+                `Create block: ${block.text || 'Untitled'}`,
+                () => this.removeBlock(block.id),
+                () => this.addBlock(block)
+            );
+            this.undoManager.addOperation(operation);
+        }
+        return result;
+    }
+
+    /**
      * Removes a block by ID
      */
     removeBlock(blockId: string): boolean {
         this.selectedBlockIds.delete(blockId);
         return this.blocks.delete(blockId);
+    }
+
+    /**
+     * Removes a block by ID with undo support
+     */
+    removeBlockWithUndo(blockId: string): boolean {
+        const block = this.blocks.get(blockId);
+        if (!block) {
+            return false;
+        }
+
+        const blockCopy = { ...block };
+        const wasSelected = this.selectedBlockIds.has(blockId);
+        
+        const success = this.removeBlock(blockId);
+        if (success) {
+            const operation = UndoManager.createOperation(
+                'delete',
+                `Delete block: ${block.text || 'Untitled'}`,
+                () => {
+                    this.addBlock(blockCopy);
+                    if (wasSelected) {
+                        this.selectedBlockIds.add(blockId);
+                    }
+                },
+                () => this.removeBlock(blockId)
+            );
+            this.undoManager.addOperation(operation);
+        }
+        return success;
     }
 
     /**
@@ -89,6 +140,37 @@ export class TimeBlockManager {
     }
 
     /**
+     * Updates an existing block with undo support
+     */
+    updateBlockWithUndo(blockId: string, updates: Partial<TimeBlock>): Result<void, ValidationError> {
+        const originalBlock = this.blocks.get(blockId);
+        if (!originalBlock) {
+            return {
+                success: false,
+                error: {
+                    code: 'NOT_FOUND',
+                    message: `Block with ID ${blockId} not found`
+                }
+            };
+        }
+
+        const originalCopy = { ...originalBlock };
+        const result = this.updateBlock(blockId, updates);
+        
+        if (result.success) {
+            const operation = UndoManager.createOperation(
+                'style',
+                `Update block: ${originalBlock.text || 'Untitled'}`,
+                () => this.updateBlock(blockId, originalCopy),
+                () => this.updateBlock(blockId, { ...originalCopy, ...updates })
+            );
+            this.undoManager.addOperation(operation);
+        }
+        
+        return result;
+    }
+
+    /**
      * Updates block text (special case for editing)
      */
     updateBlockText(blockId: string, text: string): boolean {
@@ -98,6 +180,34 @@ export class TimeBlockManager {
         const updatedBlock: TimeBlock = { ...block, text: text.trim() };
         this.blocks.set(blockId, updatedBlock);
         return true;
+    }
+
+    /**
+     * Updates block text with undo support
+     */
+    updateBlockTextWithUndo(blockId: string, text: string): boolean {
+        const block = this.blocks.get(blockId);
+        if (!block) return false;
+
+        const originalText = block.text;
+        const newText = text.trim();
+        
+        // Don't create undo operation if text hasn't changed
+        if (originalText === newText) {
+            return true;
+        }
+
+        const success = this.updateBlockText(blockId, newText);
+        if (success) {
+            const operation = UndoManager.createOperation(
+                'text',
+                `Edit text: "${newText || 'Empty'}"`,
+                () => this.updateBlockText(blockId, originalText),
+                () => this.updateBlockText(blockId, newText)
+            );
+            this.undoManager.addOperation(operation);
+        }
+        return success;
     }
 
     /**
@@ -462,6 +572,55 @@ export class TimeBlockManager {
     }
 
     /**
+     * Clears all blocks and clears undo history
+     */
+    clearAllWithUndo(): void {
+        this.clearAll();
+        this.undoManager.clearHistory();
+    }
+
+    /**
+     * Removes selected blocks with undo support
+     */
+    removeSelectedBlocksWithUndo(): number {
+        const selectedIds = Array.from(this.selectedBlockIds);
+        if (selectedIds.length === 0) {
+            return 0;
+        }
+
+        const blocksToRemove = selectedIds.map(id => ({
+            id,
+            block: { ...this.blocks.get(id)! },
+            wasSelected: true
+        }));
+
+        // Remove all blocks
+        selectedIds.forEach(id => this.removeBlock(id));
+
+        // Create undo operation
+        const operation = UndoManager.createOperation(
+            'bulk_delete',
+            `Delete ${selectedIds.length} blocks`,
+            () => {
+                // Restore all blocks
+                blocksToRemove.forEach(({ id, block, wasSelected }) => {
+                    this.addBlock(block);
+                    if (wasSelected) {
+                        this.selectedBlockIds.add(id);
+                    }
+                });
+            },
+            () => {
+                // Re-delete all blocks
+                selectedIds.forEach(id => this.removeBlock(id));
+            }
+        );
+        this.undoManager.addOperation(operation);
+
+        return selectedIds.length;
+    }
+
+    /**
      * Updates the grid configuration
      * No position recalculation needed - positions are calculated dynamically during rendering
      */
@@ -546,6 +705,36 @@ export class TimeBlockManager {
         }
 
         return { success: true, data: undefined };
+    }
+
+    /**
+     * Imports data from export with undo support and clears history
+     */
+    importDataWithUndo(data: WeekPlannerData): Result<void, ValidationError> {
+        // Store current state for undo
+        const currentData = this.exportData();
+        
+        const result = this.importData(data);
+        if (result.success) {
+            // Clear undo history as specified in requirements
+            this.undoManager.clearHistory();
+            
+            // Create a single import operation (though history was just cleared)
+            const operation = UndoManager.createOperation(
+                'import',
+                `Import ${data.blocks.length} blocks`,
+                () => {
+                    this.importData(currentData);
+                    this.undoManager.clearHistory(); // Clear again after undo
+                },
+                () => {
+                    this.importData(data);
+                    this.undoManager.clearHistory(); // Clear again after redo
+                }
+            );
+            this.undoManager.addOperation(operation);
+        }
+        return result;
     }
 
     /**

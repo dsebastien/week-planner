@@ -156,3 +156,30 @@ export interface ResizeOperation {
     readonly originalBlock: RenderedTimeBlock;
     readonly startPoint: Point;
 }
+
+/**
+ * Operation types for undo/redo system
+ */
+export type OperationType = 
+    | 'create'
+    | 'delete' 
+    | 'move'
+    | 'resize'
+    | 'style'
+    | 'text'
+    | 'select'
+    | 'bulk_delete'
+    | 'bulk_style'
+    | 'import'
+    | 'clear_all';
+
+/**
+ * Represents an undoable operation
+ */
+export interface Operation {
+    readonly type: OperationType;
+    readonly timestamp: number;
+    readonly description: string;
+    readonly undo: () => void;
+    readonly redo: () => void;
+}

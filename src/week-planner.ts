@@ -584,6 +584,24 @@ export class WeekPlanner {
      * Handle keyboard events
      */
     private onKeyDown(event: KeyboardEvent): void {
+        // Handle Ctrl+Z for undo
+        if (event.ctrlKey && event.key === 'z' && !event.shiftKey) {
+            event.preventDefault();
+            if (this.blockManager.undoManager.undo()) {
+                this.render();
+            }
+            return;
+        }
+        
+        // Handle Ctrl+Y for redo (or Ctrl+Shift+Z)
+        if ((event.ctrlKey && event.key === 'y') || (event.ctrlKey && event.shiftKey && event.key === 'Z')) {
+            event.preventDefault();
+            if (this.blockManager.undoManager.redo()) {
+                this.render();
+            }
+            return;
+        }
+        
         // Handle Ctrl+I for JSON import
         if (event.ctrlKey && event.key === 'i') {
             event.preventDefault();
@@ -620,7 +638,7 @@ export class WeekPlanner {
             if (!this.editingBlock) {
                 const selectedCount = this.blockManager.getSelectedBlockCount();
                 if (selectedCount > 0) {
-                    this.blockManager.removeSelectedBlocks();
+                    this.blockManager.removeSelectedBlocksWithUndo();
                     // Hide toolbar when blocks are deleted
                     if ((window as any).editToolbar) {
                         (window as any).editToolbar.hide();
@@ -759,7 +777,7 @@ export class WeekPlanner {
             selected: false
         };
 
-        const result = this.blockManager.addBlock(block);
+        const result = this.blockManager.addBlockWithUndo(block);
         if (!result.success) {
             this.showError(result.error.message);
         }
@@ -814,7 +832,7 @@ export class WeekPlanner {
             selected: false
         };
         
-        const result = this.blockManager.addBlock(block);
+        const result = this.blockManager.addBlockWithUndo(block);
         if (result.success) {
             this.render();
         } else {
@@ -1207,7 +1225,7 @@ export class WeekPlanner {
      */
     private stopEditingBlock(): void {
         if (this.editingBlock) {
-            this.blockManager.updateBlockText(this.editingBlock.id, this.textInput.value);
+            this.blockManager.updateBlockTextWithUndo(this.editingBlock.id, this.textInput.value);
             this.editingBlock = null;
             this.textInput.style.display = 'none';
             this.render();
@@ -1315,6 +1333,8 @@ export class WeekPlanner {
         const updates: any = {};
         updates[property] = value;
 
+        // For now, use the non-undo version for style updates to avoid too many undo operations
+        // TODO: Consider implementing batch undo for style changes
         const result = this.blockManager.updateSelectedBlocksStyle(updates);
         if (result.success) {
             this.render();
@@ -1456,7 +1476,7 @@ export class WeekPlanner {
                 reader.onload = (e) => {
                     try {
                         const data = JSON.parse(e.target?.result as string) as WeekPlannerData;
-                        const result = this.blockManager.importData(data);
+                        const result = this.blockManager.importDataWithUndo(data);
                         if (result.success) {
                             this.render();
                             // Close the menu after successful import
@@ -1478,7 +1498,7 @@ export class WeekPlanner {
      * Clear all blocks with confirmation
      */
     private clearAll(): void {
-        this.blockManager.clearAll();
+        this.blockManager.clearAllWithUndo();
         // Hide toolbar since no blocks are selected
         if ((window as any).editToolbar) {
             (window as any).editToolbar.hide();

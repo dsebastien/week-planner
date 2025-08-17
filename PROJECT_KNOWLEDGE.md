@@ -94,6 +94,8 @@ Time blocks:
   - Escape cancels editing or deselects all blocks
   - Ctrl+A selects all blocks
   - Ctrl+click toggles individual block selection
+  - **Ctrl+Z performs undo operation**
+  - **Ctrl+Y / Ctrl+Shift+Z performs redo operation**
 
 ### Export/Import System
 - **PNG Export**: Canvas-based image export
@@ -322,6 +324,15 @@ this.blocks.set(blockId, updatedBlock);
   - **Proper Mouse Button Handling**: Clean separation between left-click (creation) and right-click (context) actions
 
 ### **Session August 17, 2025: Enhanced Resize Handles & Usability**
+- **🎯 Complete Undo/Redo System**: Full undo support with 100 operation history
+  - **Ctrl+Z Undo**: Reverses the last operation (create, delete, move, resize, edit text)
+  - **Ctrl+Y / Ctrl+Shift+Z Redo**: Re-applies the last undone operation  
+  - **Operation Types**: Supports create, delete, move, resize, style, text edit, bulk delete, import, and clear operations
+  - **100 Operation History**: Maintains last 100 operations for comprehensive undo capability
+  - **History Management**: Automatically clears history on import and clear all operations as specified
+  - **Menu Integration**: Keyboard shortcuts displayed in the main menu for user reference
+  - **Type Safety**: Full TypeScript implementation with proper error handling
+  - **Performance Optimized**: Efficient operation storage and execution for smooth user experience
 - **🎯 Improved Resize Handle Experience**: Bigger, more visible, and easier to click resize handles
   - **Increased Handle Size**: Resized from 8px to 12px for better visibility and touch targets
   - **Enhanced Visual Design**: Added subtle shadows, 3D effects, and improved contrast
@@ -690,6 +701,8 @@ The week planner is now in a **production-ready state** with professional featur
   - Ctrl+click toggles individual block selection
   - Delete/Backspace removes all selected blocks
   - Escape cancels editing or deselects all blocks
+  - **Ctrl+Z undoes last operation**
+  - **Ctrl+Y / Ctrl+Shift+Z redoes last undone operation**
 
 ### ✅ **Technical Excellence**
 - **Strict TypeScript**: Zero `any` types, comprehensive type safety

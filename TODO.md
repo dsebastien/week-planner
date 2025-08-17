@@ -1,6 +1,7 @@
 
-- Add the same "buy me a coffee" button as in the menu to the header (top right, before the "...")
-- Drastically improve the UI of the 
+- Add text to the buy me a coffee button to encourage people to support (1-2 words)
+- Drastically improve the button that shows the main menu. Also add the same gradient background effect on the main menu as on the block styling pane
+- Drastically improve the main UI to use a similar design to that of the block styling panel
 - Cleanup Typescript imports. Import the normal typescript way, not from .js files!
 - Move as much logic from the index.html to TypeScript
 
@@ -11,6 +12,6 @@
 - Turn this into an Obsidian plugin
 - When exporting to PNG, the image should have the perfect size for being printed on an horizontal A4 page
 
+- Add gradients to time blocks based on their background color
 
-- Drastically improve the main UI to use a similar design to that of the block styling panel
 - Make this work great on mobile

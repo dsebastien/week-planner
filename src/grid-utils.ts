@@ -234,4 +234,23 @@ export class GridUtils {
         const dy = point2.y - point1.y;
         return Math.sqrt(dx * dx + dy * dy);
     }
+
+    /**
+     * Calculates pixel position and dimensions from logical properties
+     * This is the source of truth for block positioning
+     */
+    static calculateBlockPixelProperties(
+        startDay: number, 
+        startTime: number, 
+        duration: number, 
+        daySpan: number, 
+        config: GridConfig
+    ): { x: number; y: number; width: number; height: number } {
+        const x = this.getXFromDay(startDay, config);
+        const y = this.getYFromTime(startTime, config);
+        const width = this.getWidthFromDaySpan(daySpan, config);
+        const height = this.getHeightFromDuration(duration, config);
+        
+        return { x, y, width, height };
+    }
 }

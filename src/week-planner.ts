@@ -183,15 +183,10 @@ export class WeekPlanner {
     }
 
     /**
-     * Setup window resize and zoom handling
+     * Setup window resize handling
      */
     private setupWindowEvents(): void {
         window.addEventListener('resize', () => this.handleResize());
-        window.addEventListener('wheel', (e) => {
-            if (e.ctrlKey) {
-                this.handleResize();
-            }
-        });
     }
 
     /**
@@ -472,44 +467,42 @@ export class WeekPlanner {
         }
 
         // Calculate block dimensions using cell-based approach
-        const minDay = Math.min(startCell.dayIndex, endCell.dayIndex);
+        // Calculate logical properties first (source of truth)
+        const startDay = Math.min(startCell.dayIndex, endCell.dayIndex);
         const maxDay = Math.max(startCell.dayIndex, endCell.dayIndex);
-        const daySpan = maxDay - minDay + 1;
-
-        const x = GridUtils.getXFromDay(minDay, this.config);
-        const width = GridUtils.getWidthFromDaySpan(daySpan, this.config);
+        const daySpan = maxDay - startDay + 1;
+        const startTime = Math.min(startCell.startTime, endCell.startTime);
         
-        // Use the earlier time slot as the start
+        // Calculate duration based on drag area
         const minY = Math.min(startCell.y, endCell.y);
         const maxY = Math.max(startCell.y, endCell.y);
-        const y = minY;
-        const height = Math.max(this.config.timeSlotHeight, maxY - minY + this.config.timeSlotHeight);
-
-        // Calculate time values using the earlier time
-        const startTime = Math.min(startCell.startTime, endCell.startTime);
-        const duration = GridUtils.getDurationInMinutes(height, this.config);
+        const dragHeight = Math.max(this.config.timeSlotHeight, maxY - minY + this.config.timeSlotHeight);
+        const duration = GridUtils.getDurationInMinutes(dragHeight, this.config);
+        
+        // Clamp duration if it would exceed valid time range
         const endTime = startTime + duration;
         const maxValidTime = this.config.endHour * 60; // 24:00 in minutes
-
-        // Clamp duration if it would exceed valid time range
         const clampedDuration = endTime > maxValidTime ? 
             Math.max(30, maxValidTime - startTime) : // Minimum 30 minutes, but don't exceed valid range
             duration;
         
-        // Recalculate height based on clamped duration
-        const finalHeight = GridUtils.getHeightFromDuration(clampedDuration, this.config);
+        // Calculate pixel properties from logical coordinates
+        const { x, y, width, height } = GridUtils.calculateBlockPixelProperties(
+            startDay, startTime, clampedDuration, daySpan, this.config
+        );
 
         const defaultStyling = this.getDefaultStyling();
         
-        // Create preview block
+        // Create preview block with logical coordinates as source of truth
         this.previewBlock = {
             id: 'preview',
             x,
             y,
             width,
-            height: finalHeight,
+            height,
             startTime,
             duration: clampedDuration,
+            startDay,
             daySpan,
             text: '',
             color: '#3b82f6',
@@ -562,15 +555,11 @@ export class WeekPlanner {
             return;
         }
         
-        // Calculate exact block position for the clicked cell
-        const x = GridUtils.getXFromDay(cellInfo.dayIndex, this.config);
-        const width = this.config.dayWidth;
-        const y = cellInfo.y;
-        const height = this.config.timeSlotHeight;
-        
-        // Calculate time values
+        // Store logical properties (source of truth)
+        const startDay = cellInfo.dayIndex;
         const startTime = cellInfo.startTime;
         const duration = 30; // Fixed 30-minute duration for single cell
+        const daySpan = 1; // Single cell spans one day
         
         // Validate that the block doesn't exceed the time range
         const endTime = startTime + duration;
@@ -581,9 +570,14 @@ export class WeekPlanner {
             return;
         }
         
+        // Calculate pixel properties from logical coordinates
+        const { x, y, width, height } = GridUtils.calculateBlockPixelProperties(
+            startDay, startTime, duration, daySpan, this.config
+        );
+        
         const defaultStyling = this.getDefaultStyling();
         
-        // Create the block
+        // Create the block with logical coordinates as source of truth
         const block: TimeBlock = {
             id: this.generateBlockId(),
             x,
@@ -592,7 +586,8 @@ export class WeekPlanner {
             height,
             startTime,
             duration,
-            daySpan: 1,
+            startDay,
+            daySpan,
             text: '',
             color: '#3b82f6',
             textColor: defaultStyling.textColor,

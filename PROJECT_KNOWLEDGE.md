@@ -252,6 +252,7 @@ this.blocks.set(blockId, updatedBlock);
 - **Enhanced User Experience**: Smart cursors, visual feedback, overlap prevention
 - **Simplified Font Styling**: Removed underline and strikethrough options for cleaner UI - only bold and italic remain
 - **Enhanced Text Alignment**: Added vertical alignment controls (top, middle, bottom) with middle as default for better text positioning
+- **Fixed Zoom Position Issue**: Removed incorrect zoom handling that was causing time blocks to lose position during browser zoom operations
 - **Increased Font Sizes**: Made time block text elements significantly larger for better readability
   - Block text: 13px → 16px 
   - Time info: 10px → 13px

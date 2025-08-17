@@ -109,7 +109,7 @@ export class TimeBlockManager {
     }
 
     /**
-     * Resizes a block with validation
+     * Resizes a block with validation using logical coordinates
      */
     resizeBlock(blockId: string, newX: number, newY: number, newWidth: number, newHeight: number): Result<void, ValidationError> {
         const originalBlock = this.blocks.get(blockId);
@@ -124,20 +124,22 @@ export class TimeBlockManager {
             };
         }
 
-        // Calculate new time properties from position and size
+        // Calculate new logical properties from position and size
+        const startDay = GridUtils.getDayFromX(newX, this.config);
         const startTimeMinutes = this.config.startHour * 60 + 
             Math.round((newY - this.config.headerHeight) / this.config.timeSlotHeight) * 30;
         
         const duration = Math.max(30, Math.round(newHeight / this.config.timeSlotHeight) * 30);
         const daySpan = Math.max(1, Math.round(newWidth / this.config.dayWidth));
 
-        // Create the resized block
+        // Create the resized block with logical coordinates as source of truth
         const resizedBlock: TimeBlock = {
             ...originalBlock,
             x: newX,
             y: newY,
             width: newWidth,
             height: newHeight,
+            startDay,
             startTime: startTimeMinutes,
             duration,
             daySpan
@@ -170,17 +172,39 @@ export class TimeBlockManager {
     }
 
     /**
-     * Gets all blocks as a readonly array
+     * Gets all blocks as a readonly array with dynamically calculated pixel positions
      */
     getBlocks(): readonly TimeBlock[] {
-        return Array.from(this.blocks.values());
+        return Array.from(this.blocks.values()).map(block => this.getBlockWithCalculatedPosition(block));
     }
 
     /**
-     * Gets a specific block by ID
+     * Returns a block with pixel positions calculated from logical properties
+     */
+    private getBlockWithCalculatedPosition(block: TimeBlock): TimeBlock {
+        const { x, y, width, height } = GridUtils.calculateBlockPixelProperties(
+            block.startDay, 
+            block.startTime, 
+            block.duration, 
+            block.daySpan, 
+            this.config
+        );
+        
+        return {
+            ...block,
+            x,
+            y,
+            width,
+            height
+        };
+    }
+
+    /**
+     * Gets a specific block by ID with calculated pixel positions
      */
     getBlock(blockId: string): TimeBlock | null {
-        return this.blocks.get(blockId) || null;
+        const block = this.blocks.get(blockId);
+        return block ? this.getBlockWithCalculatedPosition(block) : null;
     }
 
     /**
@@ -196,17 +220,20 @@ export class TimeBlockManager {
     }
 
     /**
-     * Gets the currently selected block
+     * Gets the currently selected block with calculated pixel positions
      */
     getSelectedBlock(): TimeBlock | null {
-        return this.selectedBlockId ? this.blocks.get(this.selectedBlockId) || null : null;
+        if (!this.selectedBlockId) return null;
+        const block = this.blocks.get(this.selectedBlockId);
+        return block ? this.getBlockWithCalculatedPosition(block) : null;
     }
 
     /**
-     * Finds the topmost block at given coordinates
+     * Finds the topmost block at given coordinates with calculated pixel positions
      */
     getBlockAt(x: number, y: number): TimeBlock | null {
         const blocksAtPoint = Array.from(this.blocks.values())
+            .map(block => this.getBlockWithCalculatedPosition(block))
             .filter(block => this.isPointInBlock(x, y, block))
             .sort((a, b) => b.y - a.y); // Sort by y position (topmost first)
 
@@ -222,30 +249,12 @@ export class TimeBlockManager {
     }
 
     /**
-     * Updates the grid configuration and recalculates block positions
+     * Updates the grid configuration
+     * No position recalculation needed - positions are calculated dynamically during rendering
      */
     updateConfig(newConfig: GridConfig): void {
-        const oldConfig = this.config;
         this.config = newConfig;
-
-        // Recalculate positions for all blocks
-        for (const [id, block] of this.blocks) {
-            const dayIndex = GridUtils.getDayFromX(block.x, oldConfig);
-            const newX = GridUtils.getXFromDay(dayIndex, newConfig);
-            const newY = GridUtils.getYFromTime(block.startTime, newConfig);
-            const newWidth = GridUtils.getWidthFromDaySpan(block.daySpan, newConfig);
-            const newHeight = GridUtils.getHeightFromDuration(block.duration, newConfig);
-
-            const updatedBlock: TimeBlock = {
-                ...block,
-                x: newX,
-                y: newY,
-                width: newWidth,
-                height: newHeight
-            };
-
-            this.blocks.set(id, updatedBlock);
-        }
+        // No block position updates needed - the renderer will calculate positions from logical properties
     }
 
     /**
@@ -394,17 +403,15 @@ export class TimeBlockManager {
     }
 
     /**
-     * Checks if two blocks overlap
+     * Checks if two blocks overlap using logical coordinates
      */
     private blocksOverlap(block1: TimeBlock, block2: TimeBlock): boolean {
-        // Calculate day ranges
-        const block1StartDay = GridUtils.getDayFromX(block1.x, this.config);
-        const block1EndDay = block1StartDay + block1.daySpan - 1;
-        const block2StartDay = GridUtils.getDayFromX(block2.x, this.config);
-        const block2EndDay = block2StartDay + block2.daySpan - 1;
+        // Use logical coordinates (startDay) instead of pixel coordinates
+        const block1EndDay = block1.startDay + block1.daySpan - 1;
+        const block2EndDay = block2.startDay + block2.daySpan - 1;
 
         // Check for day overlap
-        const dayOverlap = !(block1EndDay < block2StartDay || block1StartDay > block2EndDay);
+        const dayOverlap = !(block1EndDay < block2.startDay || block1.startDay > block2EndDay);
         
         // Check for time overlap
         const block1EndTime = block1.startTime + block1.duration;

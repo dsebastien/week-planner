@@ -2,6 +2,7 @@ import { test, describe } from 'node:test';
 import assert from 'node:assert';
 import { TimeBlockManager } from '../src/time-block-manager.js';
 import { GridConfig, TimeBlock, VerticalAlignment } from '../src/types.js';
+import { GridUtils } from '../src/grid-utils.js';
 
 describe('TimeBlockManager', () => {
     const testConfig: GridConfig = {
@@ -26,6 +27,7 @@ describe('TimeBlockManager', () => {
         height: 48,
         startTime: 6 * 60, // 6:00 AM
         duration: 60, // 1 hour
+        startDay: 0, // Monday
         daySpan: 1,
         text: 'Test Block',
         color: '#4CAF50',
@@ -120,7 +122,7 @@ describe('TimeBlockManager', () => {
         test('should select and deselect blocks', () => {
             manager = new TimeBlockManager(testConfig);
             const block1 = createTestBlock({ id: 'block1' });
-            const block2 = createTestBlock({ id: 'block2', x: 260, startTime: 7 * 60 });
+            const block2 = createTestBlock({ id: 'block2', startDay: 1, startTime: 7 * 60 }); // Different day and time
             
             manager.addBlock(block1);
             manager.addBlock(block2);
@@ -159,19 +161,23 @@ describe('TimeBlockManager', () => {
         test('should return topmost block when multiple blocks overlap in coordinates', () => {
             manager = new TimeBlockManager(testConfig);
             
-            // Add blocks in different days but same time to test coordinate overlap
-            const block1 = createTestBlock({ id: 'block1', x: 120, startTime: 6 * 60 });
-            const block2 = createTestBlock({ id: 'block2', x: 260, startTime: 6 * 60 });
+            // Add blocks in different days but same time to test coordinate positioning
+            const block1 = createTestBlock({ id: 'block1', startDay: 0, startTime: 6 * 60 }); // Monday
+            const block2 = createTestBlock({ id: 'block2', startDay: 1, startTime: 6 * 60 }); // Tuesday
             
             manager.addBlock(block1);
             manager.addBlock(block2);
             
-            // Test finding block1
-            const found1 = manager.getBlockAt(150, 80);
+            // Calculate expected positions based on logical coordinates
+            const block1Position = GridUtils.calculateBlockPixelProperties(0, 6 * 60, 60, 1, testConfig);
+            const block2Position = GridUtils.calculateBlockPixelProperties(1, 6 * 60, 60, 1, testConfig);
+            
+            // Test finding block1 at its calculated position
+            const found1 = manager.getBlockAt(block1Position.x + 20, block1Position.y + 20);
             assert.strictEqual(found1?.id, 'block1');
             
-            // Test finding block2
-            const found2 = manager.getBlockAt(300, 80);
+            // Test finding block2 at its calculated position
+            const found2 = manager.getBlockAt(block2Position.x + 20, block2Position.y + 20);
             assert.strictEqual(found2?.id, 'block2');
         });
     });
@@ -322,7 +328,7 @@ describe('TimeBlockManager', () => {
         test('should clear all blocks', () => {
             manager = new TimeBlockManager(testConfig);
             const block1 = createTestBlock({ id: 'block1' });
-            const block2 = createTestBlock({ id: 'block2', x: 260, startTime: 7 * 60 });
+            const block2 = createTestBlock({ id: 'block2', startDay: 1, startTime: 7 * 60 });
             
             manager.addBlock(block1);
             manager.addBlock(block2);

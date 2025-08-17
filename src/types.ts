@@ -36,6 +36,7 @@ export interface TimeBlock {
     readonly height: number;
     readonly startTime: number; // minutes from 00:00 (absolute time)
     readonly duration: number; // minutes (minimum 30, multiple of 30)
+    readonly startDay: number; // starting day index (0 = Monday, 6 = Sunday)
     readonly daySpan: number; // number of days (1-7)
     text: string;
     readonly color: string; // background color

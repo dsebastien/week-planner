@@ -1,8 +1,5 @@
 BUSY:
 
-The default border color should be white
-
-ctrl + a should select all blocks
 when releasing the mouse after click + drag over existing time blocks, it should select those that are completely in the selected area
 
 Add support for moving selected time blocks with click and drag. The move operation should only be allowed if the target time slots are all unoccupied
@@ -19,6 +16,7 @@ Add support for moving selected time blocks with click and drag. The move operat
 - Generate a readme and update memory to remind you about always keeping it up to date
 - Time blocks should support multi-line text
 - Add block styling option to show/hide the start time, end time & duration
+- The block styling view seems to prevent the resizing of blocks. For example, if a block is selected and the block styling panel is below it, then resizing down can only get next to the block styling panel
 
 Add export to Markdown option using the following template
 

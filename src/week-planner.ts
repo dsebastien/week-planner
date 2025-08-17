@@ -901,7 +901,7 @@ export class WeekPlanner {
             borderStyle: {
                 width: 2,
                 style: 'solid',
-                color: '#3b82f6'
+                color: '#ffffff'
             },
             cornerRadius: 5
         };

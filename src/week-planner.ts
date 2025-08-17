@@ -187,6 +187,7 @@ export class WeekPlanner {
         document.getElementById('exportJSON')?.addEventListener('click', () => this.exportJSON());
         document.getElementById('exportMarkdown')?.addEventListener('click', () => this.exportMarkdown());
         document.getElementById('importJSON')?.addEventListener('click', () => this.importJSON());
+        document.getElementById('importMarkdown')?.addEventListener('click', () => this.importMarkdown());
         document.getElementById('clearAll')?.addEventListener('click', () => this.clearAll());
     }
 
@@ -1492,6 +1493,124 @@ export class WeekPlanner {
             }
         };
         input.click();
+    }
+
+    private importMarkdown(): void {
+        const input = document.createElement('input');
+        input.type = 'file';
+        input.accept = '.md,.markdown,.txt';
+        input.onchange = (e) => {
+            const file = (e.target as HTMLInputElement).files?.[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    try {
+                        const markdownContent = e.target?.result as string;
+                        const blocks = this.parseMarkdown(markdownContent);
+                        
+                        if (blocks.length === 0) {
+                            this.showError('No valid time blocks found in Markdown file');
+                            return;
+                        }
+
+                        // Clear existing blocks and import new ones
+                        this.blockManager.clearAll();
+                        
+                        let importedCount = 0;
+                        for (const block of blocks) {
+                            const result = this.blockManager.addBlock(block);
+                            if (result.success) {
+                                importedCount++;
+                            }
+                        }
+                        
+                        if (importedCount > 0) {
+                            this.render();
+                            this.closeMenu();
+                            console.log(`Successfully imported ${importedCount} time blocks from Markdown`);
+                        } else {
+                            this.showError('Failed to import any time blocks from Markdown');
+                        }
+                    } catch (error) {
+                        this.showError('Invalid Markdown file format');
+                    }
+                };
+                reader.readAsText(file);
+            }
+        };
+        input.click();
+    }
+
+    private parseMarkdown(content: string): TimeBlock[] {
+        const blocks: TimeBlock[] = [];
+        const lines = content.split('\n');
+        let currentDay = -1;
+        
+        const dayNames = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+        
+        for (const line of lines) {
+            const trimmedLine = line.trim();
+            
+            // Check if this is a day header (## Monday, ## Tuesday, etc.)
+            const dayMatch = trimmedLine.match(/^##\s+(.+)$/);
+            if (dayMatch) {
+                const dayName = dayMatch[1]?.trim();
+                const dayIndex = dayNames.findIndex(name => 
+                    name.toLowerCase() === dayName?.toLowerCase()
+                );
+                if (dayIndex !== -1) {
+                    currentDay = dayIndex;
+                }
+                continue;
+            }
+            
+            // Check if this is a time block line (- 09:00 - 10:30: Meeting)
+            const timeBlockMatch = trimmedLine.match(/^-\s+(\d{1,2}):(\d{2})\s*-\s*(\d{1,2}):(\d{2}):\s*(.+)$/);
+            if (timeBlockMatch && currentDay !== -1) {
+                const [, startHour, startMin, endHour, endMin, text] = timeBlockMatch;
+                
+                if (!startHour || !startMin || !endHour || !endMin || !text) {
+                    continue;
+                }
+                
+                const startTime = parseInt(startHour) * 60 + parseInt(startMin);
+                const endTime = parseInt(endHour) * 60 + parseInt(endMin);
+                const duration = endTime - startTime;
+                
+                // Validate time values
+                if (startTime < 0 || endTime < 0 || duration <= 0 || startTime >= endTime) {
+                    continue;
+                }
+                
+                // Ensure duration is a multiple of 30 minutes
+                const adjustedDuration = Math.max(30, Math.round(duration / 30) * 30);
+                
+                // Get default styling for imported blocks
+                const defaultStyling = this.getDefaultStyling();
+                
+                const block: TimeBlock = {
+                    id: `imported-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+                    startDay: currentDay,
+                    startTime: startTime,
+                    duration: adjustedDuration,
+                    daySpan: 1,
+                    text: text.trim(),
+                    color: '#e5007d', // Default background color (same as new blocks)
+                    textColor: defaultStyling.textColor,
+                    fontSize: defaultStyling.fontSize,
+                    fontStyle: defaultStyling.fontStyle,
+                    textAlignment: defaultStyling.textAlignment,
+                    verticalAlignment: defaultStyling.verticalAlignment,
+                    borderStyle: defaultStyling.borderStyle,
+                    cornerRadius: defaultStyling.cornerRadius,
+                    selected: false
+                };
+                
+                blocks.push(block);
+            }
+        }
+        
+        return blocks;
     }
 
     /**

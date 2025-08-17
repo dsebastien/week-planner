@@ -862,7 +862,7 @@ export class WeekPlanner {
     /**
      * Main render method
      */
-    private render(): void {
+    public render(): void {
         this.renderer.render(this.blockManager.getBlocks());
     }
 
@@ -956,6 +956,10 @@ export class WeekPlanner {
      */
     private clearAll(): void {
         this.blockManager.clearAll();
+        // Hide toolbar since no blocks are selected
+        if ((window as any).editToolbar) {
+            (window as any).editToolbar.hide();
+        }
         this.render();
     }
 

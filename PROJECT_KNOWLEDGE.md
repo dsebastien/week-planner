@@ -313,6 +313,23 @@ this.blocks.set(blockId, updatedBlock);
 
 ## Recent Fixes & Improvements
 
+### **Session August 17, 2025: Mouse Button Interaction Fix**
+- **🎯 Fixed Right-Click Drag Behavior**: Prevents accidental block creation during right-click operations
+  - **Left-Click Only**: Block creation and dragging now only responds to left mouse button (button 0)
+  - **Right-Click Protection**: Right-click and drag no longer creates blocks accidentally
+  - **Context Menu Priority**: Right-clicks are reserved exclusively for context menu operations
+  - **User Experience**: Eliminates frustrating accidental block creation when trying to access context menus
+  - **Proper Mouse Button Handling**: Clean separation between left-click (creation) and right-click (context) actions
+
+### **Session August 17, 2025: Enhanced Resize Handles & Usability**
+- **🎯 Improved Resize Handle Experience**: Bigger, more visible, and easier to click resize handles
+  - **Increased Handle Size**: Resized from 8px to 12px for better visibility and touch targets
+  - **Enhanced Visual Design**: Added subtle shadows, 3D effects, and improved contrast
+  - **Larger Click Areas**: Added 4px padding around handles for easier clicking (20px effective click area)
+  - **Professional Appearance**: Multi-layer rendering with shadows, borders, and highlights
+  - **Better Accessibility**: Improved for both mouse and touch interactions
+  - **Visual Feedback**: Clear indication of interactive resize points on selected blocks
+
 ### **Session August 17, 2025: Text Overflow Protection & Ellipsis System**
 - **🎯 Complete Text Overflow Prevention**: Bulletproof text rendering with ellipsis handling
   - **Smart Text Truncation**: Binary search algorithm for optimal text fitting with ellipsis

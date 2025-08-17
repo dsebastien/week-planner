@@ -923,21 +923,41 @@ export class CanvasRenderer {
     private drawResizeHandles(block: RenderedTimeBlock): void {
         if (!block.selected) return;
 
-        const handleSize = 8;
+        const handleSize = 12;
         const handleColor = CanvasRenderer.THEME.selectionHighlight;
         const handleBorderColor = '#ffffff';
 
         // Define handle positions
         const handles = this.getResizeHandlePositions(block, handleSize);
 
-        // Draw each handle
+        // Draw each handle with enhanced visibility
         for (const [handle, position] of handles.entries()) {
+            this.ctx.save();
+            
+            // Add subtle shadow for depth
+            this.ctx.shadowColor = 'rgba(0, 0, 0, 0.3)';
+            this.ctx.shadowBlur = 3;
+            this.ctx.shadowOffsetX = 1;
+            this.ctx.shadowOffsetY = 1;
+            
+            // Draw main handle
             this.ctx.fillStyle = handleColor;
             this.ctx.fillRect(position.x, position.y, handleSize, handleSize);
             
+            // Remove shadow for border
+            this.ctx.shadowColor = 'transparent';
+            
+            // Draw white border for contrast
             this.ctx.strokeStyle = handleBorderColor;
-            this.ctx.lineWidth = 1;
+            this.ctx.lineWidth = 2;
             this.ctx.strokeRect(position.x, position.y, handleSize, handleSize);
+            
+            // Add inner highlight for 3D effect
+            this.ctx.strokeStyle = 'rgba(255, 255, 255, 0.5)';
+            this.ctx.lineWidth = 1;
+            this.ctx.strokeRect(position.x + 1, position.y + 1, handleSize - 2, handleSize - 2);
+            
+            this.ctx.restore();
         }
     }
 
@@ -974,14 +994,23 @@ export class CanvasRenderer {
     getResizeHandleAt(point: Point, block: RenderedTimeBlock): ResizeHandle | null {
         if (!block.selected) return null;
 
-        const handleSize = 8;
+        const handleSize = 12;
+        const clickPadding = 4; // Extra padding for easier clicking
+        const effectiveSize = handleSize + clickPadding * 2;
         const handles = this.getResizeHandlePositions(block, handleSize);
 
         for (const [handle, position] of handles.entries()) {
-            if (point.x >= position.x && 
-                point.x <= position.x + handleSize &&
-                point.y >= position.y && 
-                point.y <= position.y + handleSize) {
+            const clickArea = {
+                x: position.x - clickPadding,
+                y: position.y - clickPadding,
+                width: effectiveSize,
+                height: effectiveSize
+            };
+            
+            if (point.x >= clickArea.x && 
+                point.x <= clickArea.x + clickArea.width &&
+                point.y >= clickArea.y && 
+                point.y <= clickArea.y + clickArea.height) {
                 return handle;
             }
         }

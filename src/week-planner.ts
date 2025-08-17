@@ -272,6 +272,12 @@ export class WeekPlanner {
      * Handle mouse down events
      */
     private onMouseDown(event: MouseEvent): void {
+        // Only handle left mouse button for drag operations
+        // Right-clicks should only trigger context menu, not create blocks
+        if (event.button !== 0) {
+            return;
+        }
+        
         const point = this.getMousePosition(event);
         
         // Only handle clicks in the grid area

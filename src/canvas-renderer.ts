@@ -913,19 +913,38 @@ export class CanvasRenderer {
             </linearGradient>
         </defs>`;
         
-        // Create block shape (rectangle or rounded rectangle)
+        // Create block shape (rectangle or rounded rectangle) with inner border
+        const lineWidth = block.selected ? Math.max(block.borderStyle.width, 3) : block.borderStyle.width;
+        const halfLineWidth = lineWidth / 2;
+        const innerX = block.x + halfLineWidth;
+        const innerY = block.y + halfLineWidth;
+        const innerWidth = block.width - lineWidth;
+        const innerHeight = block.height - lineWidth;
+        const innerRadius = Math.max(0, block.cornerRadius - halfLineWidth);
+        
         if (block.cornerRadius > 0) {
+            // Background with full radius
             svg += `<rect x="${block.x}" y="${block.y}" width="${block.width}" height="${block.height}" 
                 rx="${block.cornerRadius}" ry="${block.cornerRadius}" 
-                fill="url(#${gradientId})" 
+                fill="url(#${gradientId})"/>`;
+            
+            // Inner border with adjusted radius
+            svg += `<rect x="${innerX}" y="${innerY}" width="${innerWidth}" height="${innerHeight}" 
+                rx="${innerRadius}" ry="${innerRadius}" 
+                fill="none" 
                 stroke="${block.borderStyle.color}" 
-                stroke-width="${block.selected ? Math.max(block.borderStyle.width, 3) : block.borderStyle.width}"
+                stroke-width="${lineWidth}"
                 stroke-dasharray="${this.getSVGStrokeDashArray(block.borderStyle.style)}"/>`;
         } else {
+            // Background
             svg += `<rect x="${block.x}" y="${block.y}" width="${block.width}" height="${block.height}" 
-                fill="url(#${gradientId})" 
+                fill="url(#${gradientId})"/>`;
+            
+            // Inner border
+            svg += `<rect x="${innerX}" y="${innerY}" width="${innerWidth}" height="${innerHeight}" 
+                fill="none" 
                 stroke="${block.borderStyle.color}" 
-                stroke-width="${block.selected ? Math.max(block.borderStyle.width, 3) : block.borderStyle.width}"
+                stroke-width="${lineWidth}"
                 stroke-dasharray="${this.getSVGStrokeDashArray(block.borderStyle.style)}"/>`;
         }
         

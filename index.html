@@ -351,16 +351,21 @@
             </div>
 
             <!-- Edit Toolbar -->
-            <div id="editToolbar" class="absolute hidden bg-gray-800 border border-gray-600 rounded-lg shadow-xl p-3 min-w-[320px]" style="backdrop-filter: blur(16px); z-index: 50; pointer-events: none;">
+            <div id="editToolbar" class="absolute hidden bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 border border-gray-600/50 rounded-2xl shadow-2xl backdrop-blur-xl min-w-[400px]" style="z-index: 50; pointer-events: none;">
                 <!-- Toolbar Header -->
-                <div id="toolbarHeader" class="toolbar-header flex items-center justify-between mb-3 pb-2 border-b border-gray-600 cursor-move transition-colors duration-200" style="pointer-events: auto;">
-                    <div class="flex items-center gap-2">
-                        <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 10h16M4 14h16M4 18h16"></path>
-                        </svg>
-                        <span class="text-sm font-medium text-white">Block Styling</span>
+                <div id="toolbarHeader" class="toolbar-header flex items-center justify-between p-4 pb-3 border-b border-gray-600/30 cursor-move transition-all duration-200 rounded-t-2xl" style="pointer-events: auto;">
+                    <div class="flex items-center gap-3">
+                        <div class="w-8 h-8 bg-gradient-to-r from-blue-500 to-purple-600 rounded-lg flex items-center justify-center shadow-lg">
+                            <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zM21 5a2 2 0 00-2-2h-4a2 2 0 00-2 2v12a4 4 0 004 4h4a2 2 0 002-2V5z"></path>
+                            </svg>
+                        </div>
+                        <div>
+                            <h3 class="text-sm font-semibold text-white">Block Styling</h3>
+                            <p class="text-xs text-gray-400">Customize your time block</p>
+                        </div>
                     </div>
-                    <button id="closeToolbar" class="text-gray-400 hover:text-white transition-colors">
+                    <button id="closeToolbar" class="w-8 h-8 rounded-lg bg-gray-700/50 hover:bg-gray-600/50 text-gray-400 hover:text-white transition-all duration-200 flex items-center justify-center">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
                         </svg>
@@ -368,122 +373,249 @@
                 </div>
 
                 <!-- Toolbar Content -->
-                <div class="space-y-3" style="pointer-events: auto;">
-                    <!-- Colors Row -->
-                    <div class="space-y-2">
-                        <!-- Background Color -->
-                        <div class="flex items-center gap-2">
-                            <label class="text-xs text-gray-300 w-12">BG:</label>
-                            <div class="relative">
-                                <button id="bgColorButton" class="w-8 h-8 rounded border border-gray-600 cursor-pointer flex items-center justify-center" style="background-color: #e5007d">
-                                    <svg class="w-3 h-3 text-white drop-shadow-lg" fill="currentColor" viewBox="0 0 20 20">
-                                        <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
+                <div class="p-4 pt-3 space-y-6" style="pointer-events: auto;">
+                    
+                    <!-- Colors Section -->
+                    <div class="space-y-4">
+                        <div class="flex items-center gap-2 mb-3">
+                            <svg class="w-4 h-4 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zM21 5a2 2 0 00-2-2h-4a2 2 0 00-2 2v12a4 4 0 004 4h4a2 2 0 002-2V5z"></path>
+                            </svg>
+                            <h4 class="text-sm font-medium text-white">Colors</h4>
+                        </div>
+                        
+                        <div class="grid grid-cols-3 gap-4">
+                            <!-- Background Color -->
+                            <div class="space-y-2">
+                                <label class="text-xs font-medium text-gray-300 flex items-center gap-1">
+                                    <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                                        <path fill-rule="evenodd" d="M4 2a2 2 0 00-2 2v11a3 3 0 106 0V4a2 2 0 00-2-2H4z" clip-rule="evenodd" />
                                     </svg>
-                                </button>
-                                <input type="color" id="backgroundColor" class="hidden">
-                                <!-- Custom Color Picker -->
+                                    Background
+                                </label>
+                                <div class="relative">
+                                    <button id="bgColorButton" class="w-full h-10 rounded-lg border border-gray-600/50 cursor-pointer flex items-center justify-center shadow-lg hover:shadow-xl transition-all duration-200 hover:scale-105" style="background-color: #e5007d">
+                                        <svg class="w-4 h-4 text-white drop-shadow-lg" fill="currentColor" viewBox="0 0 20 20">
+                                            <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
+                                        </svg>
+                                    </button>
+                                    <input type="color" id="backgroundColor" class="hidden">
+                                </div>
+                            </div>
+                            
+                            <!-- Text Color -->
+                            <div class="space-y-2">
+                                <label class="text-xs font-medium text-gray-300 flex items-center gap-1">
+                                    <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM4 13a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H5a1 1 0 01-1-1v-6zM16 13a1 1 0 011-1h2a1 1 0 011 1v6a1 1 0 01-1 1h-2a1 1 0 01-1-1v-6z"></path>
+                                    </svg>
+                                    Text
+                                </label>
+                                <div class="relative">
+                                    <button id="textColorButton" class="w-full h-10 rounded-lg border border-gray-600/50 cursor-pointer flex items-center justify-center shadow-lg hover:shadow-xl transition-all duration-200 hover:scale-105" style="background-color: #ffffff">
+                                        <svg class="w-4 h-4 text-black drop-shadow-lg" fill="currentColor" viewBox="0 0 20 20">
+                                            <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
+                                        </svg>
+                                    </button>
+                                    <input type="color" id="textColor" class="hidden">
+                                </div>
+                            </div>
+                            
+                            <!-- Border Color -->
+                            <div class="space-y-2">
+                                <label class="text-xs font-medium text-gray-300 flex items-center gap-1">
+                                    <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                                    </svg>
+                                    Border
+                                </label>
+                                <div class="relative">
+                                    <button id="borderColorButton" class="w-full h-10 rounded-lg border border-gray-600/50 cursor-pointer flex items-center justify-center shadow-lg hover:shadow-xl transition-all duration-200 hover:scale-105" style="background-color: #e5007d">
+                                        <svg class="w-4 h-4 text-white drop-shadow-lg" fill="currentColor" viewBox="0 0 20 20">
+                                            <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
+                                        </svg>
+                                    </button>
+                                    <input type="color" id="borderColor" class="hidden">
+                                </div>
                             </div>
                         </div>
-                        <!-- Text Color -->
-                        <div class="flex items-center gap-2">
-                            <label class="text-xs text-gray-300 w-12">Text:</label>
-                            <div class="relative">
-                                <button id="textColorButton" class="w-8 h-8 rounded border border-gray-600 cursor-pointer flex items-center justify-center" style="background-color: #ffffff">
-                                    <svg class="w-3 h-3 text-black drop-shadow-lg" fill="currentColor" viewBox="0 0 20 20">
-                                        <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
+                    </div>
+
+                    <!-- Typography Section -->
+                    <div class="space-y-4">
+                        <div class="flex items-center gap-2 mb-3">
+                            <svg class="w-4 h-4 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.746 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path>
+                            </svg>
+                            <h4 class="text-sm font-medium text-white">Typography</h4>
+                        </div>
+                        
+                        <div class="grid grid-cols-2 gap-4">
+                            <!-- Font Size -->
+                            <div class="space-y-2">
+                                <label class="text-xs font-medium text-gray-300 flex items-center gap-1">
+                                    <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4"></path>
                                     </svg>
-                                </button>
-                                <input type="color" id="textColor" class="hidden">
-                                <!-- Custom Color Picker -->
+                                    Size: <span id="fontSizeValue" class="text-blue-400 font-mono">16px</span>
+                                </label>
+                                <div class="relative">
+                                    <input type="range" id="fontSize" min="8" max="48" value="16" class="w-full h-2 bg-gray-700 rounded-lg cursor-pointer slider">
+                                    <div class="flex justify-between text-xs text-gray-500 mt-1">
+                                        <span>8px</span>
+                                        <span>48px</span>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Font Style -->
+                            <div class="space-y-2">
+                                <label class="text-xs font-medium text-gray-300 flex items-center gap-1">
+                                    <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+                                    </svg>
+                                    Style
+                                </label>
+                                <div class="flex gap-2">
+                                    <button id="boldBtn" class="flex-1 h-10 rounded-lg border border-gray-600/50 bg-gray-700/30 text-white hover:bg-gray-600/50 transition-all duration-200 text-sm font-bold flex items-center justify-center">
+                                        <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                                            <path fill-rule="evenodd" d="M5 4v3H4a1 1 0 000 2h1v2H4a1 1 0 000 2h1v3h2V4H5zM9 4a1 1 0 000 2h1v8H9a1 1 0 100 2h4a3 3 0 000-6 3 3 0 000-6H9zm3 2h-1v4h1a1 1 0 000-2 1 1 0 000-2zm0 6h-1v2h1a1 1 0 000-2z" clip-rule="evenodd" />
+                                        </svg>
+                                    </button>
+                                    <button id="italicBtn" class="flex-1 h-10 rounded-lg border border-gray-600/50 bg-gray-700/30 text-white hover:bg-gray-600/50 transition-all duration-200 text-sm italic flex items-center justify-center">
+                                        <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8 7a1 1 0 011-1h2a1 1 0 110 2h-.25l-.5 4H11a1 1 0 110 2H9a1 1 0 01-1-1 1 1 0 011-1h.25l.5-4H9a1 1 0 01-1-1z" clip-rule="evenodd" />
+                                        </svg>
+                                    </button>
+                                </div>
                             </div>
                         </div>
-                        <!-- Border Color -->
-                        <div class="flex items-center gap-2">
-                            <label class="text-xs text-gray-300 w-12">Border:</label>
-                            <div class="relative">
-                                <button id="borderColorButton" class="w-8 h-8 rounded border border-gray-600 cursor-pointer flex items-center justify-center" style="background-color: #e5007d">
-                                    <svg class="w-3 h-3 text-white drop-shadow-lg" fill="currentColor" viewBox="0 0 20 20">
-                                        <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
+                    </div>
+
+                    <!-- Alignment Section -->
+                    <div class="space-y-4">
+                        <div class="flex items-center gap-2 mb-3">
+                            <svg class="w-4 h-4 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM4 13a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H5a1 1 0 01-1-1v-6zM16 13a1 1 0 011-1h2a1 1 0 011 1v6a1 1 0 01-1 1h-2a1 1 0 01-1-1v-6z"></path>
+                            </svg>
+                            <h4 class="text-sm font-medium text-white">Alignment</h4>
+                        </div>
+                        
+                        <div class="grid grid-cols-2 gap-4">
+                            <!-- Horizontal Alignment -->
+                            <div class="space-y-2">
+                                <label class="text-xs font-medium text-gray-300 flex items-center gap-1">
+                                    <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path>
                                     </svg>
-                                </button>
-                                <input type="color" id="borderColor" class="hidden">
-                                <!-- Custom Color Picker -->
+                                    Horizontal
+                                </label>
+                                <div class="flex gap-1 bg-gray-700/30 rounded-lg p-1">
+                                    <button id="alignLeft" class="flex-1 h-8 rounded-md text-white hover:bg-gray-600/50 transition-all duration-200 flex items-center justify-center" title="Align Left">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h8m-8 6h16"></path>
+                                        </svg>
+                                    </button>
+                                    <button id="alignCenter" class="flex-1 h-8 rounded-md text-white hover:bg-gray-600/50 transition-all duration-200 flex items-center justify-center" title="Align Center">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M8 12h8M6 18h12"></path>
+                                        </svg>
+                                    </button>
+                                    <button id="alignRight" class="flex-1 h-8 rounded-md text-white hover:bg-gray-600/50 transition-all duration-200 flex items-center justify-center" title="Align Right">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M12 12h8M6 18h16"></path>
+                                        </svg>
+                                    </button>
+                                </div>
+                            </div>
+                            
+                            <!-- Vertical Alignment -->
+                            <div class="space-y-2">
+                                <label class="text-xs font-medium text-gray-300 flex items-center gap-1">
+                                    <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v.01M12 12v.01M12 16v.01M9 20l3-3 3 3M9 4l3 3 3-3"></path>
+                                    </svg>
+                                    Vertical
+                                </label>
+                                <div class="flex gap-1 bg-gray-700/30 rounded-lg p-1">
+                                    <button id="alignTop" class="flex-1 h-8 rounded-md text-white hover:bg-gray-600/50 transition-all duration-200 flex items-center justify-center" title="Align Top">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4h16M4 8h8m-8 4h16"></path>
+                                        </svg>
+                                    </button>
+                                    <button id="alignMiddle" class="flex-1 h-8 rounded-md text-white hover:bg-gray-600/50 transition-all duration-200 flex items-center justify-center" title="Align Middle">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8h16M4 12h8m-8 4h16"></path>
+                                        </svg>
+                                    </button>
+                                    <button id="alignBottom" class="flex-1 h-8 rounded-md text-white hover:bg-gray-600/50 transition-all duration-200 flex items-center justify-center" title="Align Bottom">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 12h16M4 16h8m-8 4h16"></path>
+                                        </svg>
+                                    </button>
+                                </div>
                             </div>
                         </div>
                     </div>
 
-                    <!-- Font Controls Row -->
-                    <div class="flex items-center gap-2">
-                        <div class="flex items-center gap-1">
-                            <label class="text-xs text-gray-300">Size:</label>
-                            <input type="range" id="fontSize" min="8" max="48" value="16" class="w-16 h-2 bg-gray-600 rounded-lg cursor-pointer">
-                            <span id="fontSizeValue" class="text-xs text-gray-300 w-6">16</span>
+                    <!-- Effects Section -->
+                    <div class="space-y-4">
+                        <div class="flex items-center gap-2 mb-3">
+                            <svg class="w-4 h-4 text-orange-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"></path>
+                            </svg>
+                            <h4 class="text-sm font-medium text-white">Effects</h4>
                         </div>
-                        <div class="flex items-center gap-1">
-                            <button id="boldBtn" class="w-7 h-7 rounded border border-gray-600 text-white hover:bg-gray-700 transition-colors text-xs font-bold">B</button>
-                            <button id="italicBtn" class="w-7 h-7 rounded border border-gray-600 text-white hover:bg-gray-700 transition-colors text-xs italic">I</button>
+                        
+                        <div class="grid grid-cols-2 gap-4">
+                            <!-- Border Style -->
+                            <div class="space-y-2">
+                                <label class="text-xs font-medium text-gray-300 flex items-center gap-1">
+                                    <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                                    </svg>
+                                    Border Style
+                                </label>
+                                <select id="borderStyle" class="w-full h-10 bg-gray-700/50 border border-gray-600/50 rounded-lg px-3 py-2 text-white text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                                    <option value="solid">Solid</option>
+                                    <option value="dashed">Dashed</option>
+                                    <option value="dotted">Dotted</option>
+                                </select>
+                            </div>
+                            
+                            <!-- Border Width -->
+                            <div class="space-y-2">
+                                <label class="text-xs font-medium text-gray-300 flex items-center gap-1">
+                                    <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4"></path>
+                                    </svg>
+                                    Width: <span id="borderWidthValue" class="text-blue-400 font-mono">2px</span>
+                                </label>
+                                <div class="relative">
+                                    <input type="range" id="borderWidth" min="1" max="10" value="2" class="w-full h-2 bg-gray-700 rounded-lg cursor-pointer slider">
+                                    <div class="flex justify-between text-xs text-gray-500 mt-1">
+                                        <span>1px</span>
+                                        <span>10px</span>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
-                    </div>
-
-                    <!-- Horizontal Alignment Row -->
-                    <div class="flex items-center gap-2">
-                        <label class="text-xs text-gray-300">Horizontal:</label>
-                        <button id="alignLeft" class="w-8 h-7 rounded border border-gray-600 text-white hover:bg-gray-700 transition-colors flex items-center justify-center">
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h8m-8 6h16"></path>
-                            </svg>
-                        </button>
-                        <button id="alignCenter" class="w-8 h-7 rounded border border-gray-600 text-white hover:bg-gray-700 transition-colors flex items-center justify-center">
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M8 12h8M6 18h12"></path>
-                            </svg>
-                        </button>
-                        <button id="alignRight" class="w-8 h-7 rounded border border-gray-600 text-white hover:bg-gray-700 transition-colors flex items-center justify-center">
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M12 12h8M6 18h16"></path>
-                            </svg>
-                        </button>
-                    </div>
-
-                    <!-- Vertical Alignment Row -->
-                    <div class="flex items-center gap-2">
-                        <label class="text-xs text-gray-300">Vertical:</label>
-                        <button id="alignTop" class="w-8 h-7 rounded border border-gray-600 text-white hover:bg-gray-700 transition-colors flex items-center justify-center">
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4h16M4 8h8m-8 4h16"></path>
-                            </svg>
-                        </button>
-                        <button id="alignMiddle" class="w-8 h-7 rounded border border-gray-600 text-white hover:bg-gray-700 transition-colors flex items-center justify-center">
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M8 12h8M4 18h16"></path>
-                            </svg>
-                        </button>
-                        <button id="alignBottom" class="w-8 h-7 rounded border border-gray-600 text-white hover:bg-gray-700 transition-colors flex items-center justify-center">
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 10h16M8 12h8M4 20h16"></path>
-                            </svg>
-                        </button>
-                    </div>
-
-                    <!-- Style Controls Row -->
-                    <div class="flex items-center gap-3">
-                        <div class="flex items-center gap-1">
-                            <label class="text-xs text-gray-300">Border:</label>
-                            <select id="borderStyle" class="text-xs bg-gray-700 border border-gray-600 rounded px-2 py-1 text-white">
-                                <option value="solid">Solid</option>
-                                <option value="dashed">Dashed</option>
-                                <option value="dotted">Dotted</option>
-                            </select>
-                            <input type="range" id="borderWidth" min="1" max="10" value="2" class="w-12 h-2 bg-gray-600 rounded-lg cursor-pointer">
-                        </div>
-                    </div>
-
-                    <!-- Sliders Row -->
-                    <div class="flex items-center gap-3">
-                        <div class="flex items-center gap-1">
-                            <label class="text-xs text-gray-300">Corners:</label>
-                            <input type="range" id="cornerRadius" min="0" max="20" value="5" class="w-16 h-2 bg-gray-600 rounded-lg cursor-pointer">
-                            <span id="cornerValue" class="text-xs text-gray-300 w-6">5</span>
+                        
+                        <!-- Corner Radius -->
+                        <div class="space-y-2">
+                            <label class="text-xs font-medium text-gray-300 flex items-center gap-1">
+                                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path>
+                                </svg>
+                                Rounded Corners: <span id="cornerValue" class="text-blue-400 font-mono">5px</span>
+                            </label>
+                            <div class="relative">
+                                <input type="range" id="cornerRadius" min="0" max="20" value="5" class="w-full h-2 bg-gray-700 rounded-lg cursor-pointer slider">
+                                <div class="flex justify-between text-xs text-gray-500 mt-1">
+                                    <span>0px</span>
+                                    <span>20px</span>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -581,6 +713,67 @@
     </div>
 
     <script type="module" src="dist/main.js"></script>
+    <style>
+        /* Custom slider styles */
+        .slider {
+            -webkit-appearance: none;
+            appearance: none;
+            background: transparent;
+            cursor: pointer;
+        }
+
+        .slider::-webkit-slider-track {
+            background: #374151;
+            height: 8px;
+            border-radius: 4px;
+        }
+
+        .slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+            height: 20px;
+            width: 20px;
+            border-radius: 50%;
+            border: 2px solid #ffffff;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        .slider::-moz-range-track {
+            background: #374151;
+            height: 8px;
+            border-radius: 4px;
+            border: none;
+        }
+
+        .slider::-moz-range-thumb {
+            background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+            height: 20px;
+            width: 20px;
+            border-radius: 50%;
+            border: 2px solid #ffffff;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+            cursor: pointer;
+        }
+
+        /* Active state styling for buttons */
+        .bg-gray-600\/50 {
+            background-color: rgba(75, 85, 99, 0.5);
+        }
+        
+        /* Focus states for better accessibility */
+        .focus\:ring-2:focus {
+            ring-width: 2px;
+        }
+        
+        .focus\:ring-blue-500:focus {
+            ring-color: #3b82f6;
+        }
+        
+        .focus\:border-transparent:focus {
+            border-color: transparent;
+        }
+    </style>
     <script>
         // Hide loading screen when page is loaded
         window.addEventListener('load', () => {
@@ -1027,6 +1220,13 @@
             return luminance > 0.5 ? '#000000' : '#ffffff';
         }
 
+        // Function to update block styling (global scope)
+        function updateBlockStyling(property, value) {
+            if (window.weekPlanner && currentSelectedBlock) {
+                window.weekPlanner.updateSelectedBlockStyle(property, value);
+            }
+        }
+
         // Custom color picker functionality
         let bgColorButton, bgColorPicker, bgCustomColor;
         let textColorButton, textColorPicker, textCustomColor;
@@ -1275,15 +1475,13 @@
             if (!window.weekPlanner) return;
             const currentBlock = window.weekPlanner.blockManager?.getSelectedBlock();
             if (!currentBlock) return;
+            const borderWidthValue = document.getElementById('borderWidthValue');
+            if (borderWidthValue) {
+                borderWidthValue.textContent = e.target.value + 'px';
+            }
             updateBlockStyling('borderStyle', { ...currentBlock.borderStyle, width: parseInt(e.target.value) });
         });
 
-        // Function to update block styling (will be called by WeekPlanner)
-        function updateBlockStyling(property, value) {
-            if (window.weekPlanner && currentSelectedBlock) {
-                window.weekPlanner.updateSelectedBlockStyle(property, value);
-            }
-        }
 
         // Listen for closeMenu event from WeekPlanner
         document.addEventListener('closeMenu', () => {

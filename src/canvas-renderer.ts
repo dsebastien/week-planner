@@ -78,11 +78,11 @@ export class CanvasRenderer {
         
         if (block.height < 40) {
             // Compact time display for small preview blocks
-            const startTime = GridUtils.formatTime(block.startTime);
+            const timeInfo = this.getBlockTimeInfo(block);
             this.ctx.font = '500 12px Inter, "Segoe UI", system-ui, sans-serif';
             this.ctx.textAlign = 'center';
             this.ctx.textBaseline = 'middle';
-            this.ctx.fillText(startTime, block.x + block.width / 2, block.y + block.height / 2);
+            this.ctx.fillText(timeInfo, block.x + block.width / 2, block.y + block.height / 2);
         } else {
             // Full time info for larger preview blocks
             const timeInfo = this.getBlockTimeInfo(block);
@@ -478,10 +478,10 @@ export class CanvasRenderer {
         const isSmallBlock = block.height < 40;
         
         if (isSmallBlock) {
-            // Compact format for small blocks: just start time
-            const startTime = GridUtils.formatTime(block.startTime);
+            // Compact format for small blocks: use full time range
+            const timeInfo = this.getBlockTimeInfo(block);
             this.ctx.font = '500 12px Inter, "Segoe UI", system-ui, sans-serif';
-            this.ctx.fillText(startTime, block.x + 3, block.y + 2);
+            this.ctx.fillText(timeInfo, block.x + 3, block.y + 2);
         } else {
             // Full format for larger blocks
             const timeInfo = this.getBlockTimeInfo(block);
@@ -594,9 +594,16 @@ export class CanvasRenderer {
     private getBlockTimeInfo(block: RenderedTimeBlock): string {
         const startTime = GridUtils.formatTime(block.startTime);
         const endTime = GridUtils.formatTime(block.startTime + block.duration);
+        
+        // For 30-minute blocks, don't show duration to save space for text
+        if (block.duration === 30) {
+            return `${startTime}-${endTime}`;
+        }
+        
         const duration = GridUtils.formatDuration(block.duration);
         return `${startTime}-${endTime} (${duration})`;
     }
+
 
     /**
      * Gets X position for text based on alignment

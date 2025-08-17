@@ -238,12 +238,15 @@ export class WeekPlanner {
 
         const block = this.blockManager.getBlockAt(x, y);
         if (block && block.selected) {
-            // Check for resize handles first
-            const resizeHandle = this.renderer.getResizeHandleAt({ x, y }, block);
-            if (resizeHandle) {
-                this.canvas.classList.remove('creating', 'pointer');
-                this.canvas.style.cursor = this.renderer.getResizeCursor(resizeHandle);
-                return;
+            // Check for resize handles first (only show resize handles for single selection)
+            const selectedCount = this.blockManager.getSelectedBlockCount();
+            if (selectedCount === 1) {
+                const resizeHandle = this.renderer.getResizeHandleAt({ x, y }, block);
+                if (resizeHandle) {
+                    this.canvas.classList.remove('creating', 'pointer');
+                    this.canvas.style.cursor = this.renderer.getResizeCursor(resizeHandle);
+                    return;
+                }
             }
         }
 
@@ -271,8 +274,8 @@ export class WeekPlanner {
 
         const clickedBlock = this.blockManager.getBlockAt(point.x, point.y);
         
-        // Check for resize handle on selected block
-        if (clickedBlock && clickedBlock.selected) {
+        // Check for resize handle on selected block (only for single selection)
+        if (clickedBlock && clickedBlock.selected && this.blockManager.getSelectedBlockCount() === 1) {
             const resizeHandle = this.renderer.getResizeHandleAt(point, clickedBlock);
             if (resizeHandle) {
                 this.mouseState = {
@@ -303,7 +306,13 @@ export class WeekPlanner {
         };
 
         if (clickedBlock) {
-            this.handleSelectionChange(clickedBlock.id);
+            // Check if Ctrl is pressed for multi-selection
+            if (event.ctrlKey || event.metaKey) {
+                this.blockManager.toggleBlockSelection(clickedBlock.id);
+                this.updateToolbarForMultiSelection();
+            } else {
+                this.handleSelectionChange(clickedBlock.id);
+            }
         } else {
             this.handleSelectionChange(null);
             this.startBlockCreation(point);
@@ -432,15 +441,35 @@ export class WeekPlanner {
             return;
         }
         
+        // Handle Ctrl+A for select all
+        if (event.ctrlKey && event.key === 'a') {
+            event.preventDefault();
+            const allBlockIds = this.blockManager.getBlocks().map(block => block.id);
+            this.blockManager.selectBlocks(allBlockIds);
+            this.updateToolbarForMultiSelection();
+            this.render();
+            return;
+        }
+        
+        // Handle Escape to deselect all
+        if (event.key === 'Escape' && !this.editingBlock) {
+            this.blockManager.clearSelection();
+            this.updateToolbarForMultiSelection();
+            this.render();
+            return;
+        }
+        
         if (event.key === 'Delete' || event.key === 'Backspace') {
-            const selectedBlock = this.blockManager.getSelectedBlock();
-            if (selectedBlock && !this.editingBlock) {
-                this.blockManager.removeBlock(selectedBlock.id);
-                // Hide toolbar when block is deleted
-                if ((window as any).editToolbar) {
-                    (window as any).editToolbar.hide();
+            if (!this.editingBlock) {
+                const selectedCount = this.blockManager.getSelectedBlockCount();
+                if (selectedCount > 0) {
+                    this.blockManager.removeSelectedBlocks();
+                    // Hide toolbar when blocks are deleted
+                    if ((window as any).editToolbar) {
+                        (window as any).editToolbar.hide();
+                    }
+                    this.render();
                 }
-                this.render();
             }
         } else if (event.key === 'Escape') {
             this.stopEditingBlock();
@@ -895,23 +924,26 @@ export class WeekPlanner {
     }
 
     /**
-     * Updates the styling of the currently selected block
+     * Updates the styling of the currently selected block(s)
      */
     updateSelectedBlockStyle(property: string, value: any): void {
-        const selectedBlock = this.blockManager.getSelectedBlock();
-        if (!selectedBlock) return;
+        const selectedCount = this.blockManager.getSelectedBlockCount();
+        if (selectedCount === 0) return;
 
         const updates: any = {};
         updates[property] = value;
 
-        const result = this.blockManager.updateBlock(selectedBlock.id, updates);
+        const result = this.blockManager.updateSelectedBlocksStyle(updates);
         if (result.success) {
             this.render();
             // Update toolbar position in case block size changed
             if ((window as any).editToolbar) {
-                const updatedBlock = this.blockManager.getSelectedBlock();
-                if (updatedBlock) {
-                    (window as any).editToolbar.position(updatedBlock);
+                const selectedBlocks = this.blockManager.getSelectedBlocks();
+                if (selectedBlocks.length === 1) {
+                    (window as any).editToolbar.position(selectedBlocks[0]);
+                } else if (selectedBlocks.length > 1) {
+                    // For multiple blocks, position toolbar near the first block
+                    (window as any).editToolbar.position(selectedBlocks[0]);
                 }
             }
         }
@@ -927,6 +959,26 @@ export class WeekPlanner {
         if (selectedBlock && (window as any).editToolbar) {
             (window as any).editToolbar.show(selectedBlock);
         } else if ((window as any).editToolbar) {
+            (window as any).editToolbar.hide();
+        }
+    }
+
+    /**
+     * Updates toolbar for multi-selection
+     */
+    private updateToolbarForMultiSelection(): void {
+        const selectedBlocks = this.blockManager.getSelectedBlocks();
+        const selectedCount = this.blockManager.getSelectedBlockCount();
+        
+        if (selectedCount > 1 && (window as any).editToolbar) {
+            // For multi-selection, show toolbar with the first selected block
+            // but indicate it's for multiple blocks
+            (window as any).editToolbar.showMultiple(selectedBlocks);
+        } else if (selectedCount === 1 && (window as any).editToolbar) {
+            // Single selection - show normal toolbar
+            (window as any).editToolbar.show(selectedBlocks[0]);
+        } else if ((window as any).editToolbar) {
+            // No selection - hide toolbar
             (window as any).editToolbar.hide();
         }
     }

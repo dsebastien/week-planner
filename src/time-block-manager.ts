@@ -16,7 +16,7 @@ import { GridUtils } from './grid-utils.js';
  */
 export class TimeBlockManager {
     private readonly blocks: Map<string, TimeBlock> = new Map();
-    private selectedBlockId: string | null = null;
+    private selectedBlockIds: Set<string> = new Set();
     private config: GridConfig;
 
     constructor(config: GridConfig) {
@@ -52,9 +52,7 @@ export class TimeBlockManager {
      * Removes a block by ID
      */
     removeBlock(blockId: string): boolean {
-        if (this.selectedBlockId === blockId) {
-            this.selectedBlockId = null;
-        }
+        this.selectedBlockIds.delete(blockId);
         return this.blocks.delete(blockId);
     }
 
@@ -107,6 +105,43 @@ export class TimeBlockManager {
         const updatedBlock: TimeBlock = { ...block, text: text.trim() };
         this.blocks.set(blockId, updatedBlock);
         return true;
+    }
+
+    /**
+     * Updates styling properties for all selected blocks
+     */
+    updateSelectedBlocksStyle(updates: Partial<TimeBlock>): Result<void, ValidationError> {
+        if (this.selectedBlockIds.size === 0) {
+            return {
+                success: false,
+                error: {
+                    code: 'NO_SELECTION',
+                    message: 'No blocks selected for styling update'
+                }
+            };
+        }
+
+        // Apply updates to all selected blocks
+        for (const blockId of this.selectedBlockIds) {
+            const result = this.updateBlock(blockId, updates);
+            if (!result.success) {
+                return result; // Return first error encountered
+            }
+        }
+
+        return { success: true, data: undefined };
+    }
+
+    /**
+     * Removes all selected blocks
+     */
+    removeSelectedBlocks(): number {
+        const removedCount = this.selectedBlockIds.size;
+        for (const blockId of this.selectedBlockIds) {
+            this.blocks.delete(blockId);
+        }
+        this.selectedBlockIds.clear();
+        return removedCount;
     }
 
     /**
@@ -205,24 +240,85 @@ export class TimeBlockManager {
     }
 
     /**
-     * Selects a block by ID
+     * Selects a single block (clears other selections)
      */
     selectBlock(blockId: string | null): void {
-        // Update selection state for all blocks
-        for (const [id, block] of this.blocks) {
-            const updatedBlock: TimeBlock = { ...block, selected: id === blockId };
-            this.blocks.set(id, updatedBlock);
+        this.selectedBlockIds.clear();
+        if (blockId) {
+            this.selectedBlockIds.add(blockId);
         }
-        this.selectedBlockId = blockId;
+        this.updateBlockSelectionStates();
     }
 
     /**
-     * Gets the currently selected block with calculated pixel positions
+     * Toggles selection of a block (for multi-selection with Ctrl+click)
+     */
+    toggleBlockSelection(blockId: string): void {
+        if (this.selectedBlockIds.has(blockId)) {
+            this.selectedBlockIds.delete(blockId);
+        } else {
+            this.selectedBlockIds.add(blockId);
+        }
+        this.updateBlockSelectionStates();
+    }
+
+    /**
+     * Selects multiple blocks
+     */
+    selectBlocks(blockIds: string[]): void {
+        this.selectedBlockIds.clear();
+        blockIds.forEach(id => this.selectedBlockIds.add(id));
+        this.updateBlockSelectionStates();
+    }
+
+    /**
+     * Clears all selections
+     */
+    clearSelection(): void {
+        this.selectedBlockIds.clear();
+        this.updateBlockSelectionStates();
+    }
+
+    /**
+     * Updates the selected property on all blocks based on selectedBlockIds
+     */
+    private updateBlockSelectionStates(): void {
+        for (const [id, block] of this.blocks) {
+            const updatedBlock: TimeBlock = { ...block, selected: this.selectedBlockIds.has(id) };
+            this.blocks.set(id, updatedBlock);
+        }
+    }
+
+    /**
+     * Gets all currently selected blocks with calculated pixel positions
+     */
+    getSelectedBlocks(): readonly RenderedTimeBlock[] {
+        return Array.from(this.selectedBlockIds)
+            .map(id => this.blocks.get(id))
+            .filter((block): block is TimeBlock => block !== undefined)
+            .map(block => this.getBlockWithCalculatedPosition(block));
+    }
+
+    /**
+     * Gets the first selected block (for backward compatibility)
      */
     getSelectedBlock(): RenderedTimeBlock | null {
-        if (!this.selectedBlockId) return null;
-        const block = this.blocks.get(this.selectedBlockId);
-        return block ? this.getBlockWithCalculatedPosition(block) : null;
+        const selectedBlocks = this.getSelectedBlocks();
+        return selectedBlocks.length > 0 ? selectedBlocks[0]! : null;
+    }
+
+    /**
+     * Gets the number of selected blocks
+     */
+    getSelectedBlockCount(): number {
+        return this.selectedBlockIds.size;
+    }
+
+    /**
+     * Checks if a specific block is selected
+     */
+    isBlockSelected(blockId: string): boolean {
+        return this.selectedBlockIds.has(blockId);
     }
 
     /**
@@ -242,7 +338,7 @@ export class TimeBlockManager {
      */
     clearAll(): void {
         this.blocks.clear();
-        this.selectedBlockId = null;
+        this.selectedBlockIds.clear();
     }
 
     /**

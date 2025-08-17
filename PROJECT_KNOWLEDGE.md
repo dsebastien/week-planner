@@ -82,11 +82,17 @@ Time blocks:
 ### Time Block Management
 - Create blocks by clicking and dragging
 - Newly created blocks are not auto-selected (cleaner UI state)
+- **Multi-Selection Support**: Select multiple blocks using Ctrl+click
+- **Batch Operations**: Apply styling changes to all selected blocks simultaneously
 - Automatic overlap prevention
 - Duration validation (minimum 30 minutes, multiples of 30)
 - Text editing via double-click
 - Manual selection required for block operations
-- Keyboard shortcuts (Delete/Backspace to remove, Escape to cancel editing)
+- Keyboard shortcuts:
+  - Delete/Backspace removes all selected blocks
+  - Escape cancels editing or deselects all blocks
+  - Ctrl+A selects all blocks
+  - Ctrl+click toggles individual block selection
 
 ### Export/Import System
 - **PNG Export**: Canvas-based image export
@@ -162,6 +168,19 @@ interface TimeBlock {
   readonly borderStyle: BorderStyle;
   readonly cornerRadius: number;
   selected: boolean;
+}
+
+interface TimeBlockManager {
+  // Multi-selection state
+  private selectedBlockIds: Set<string>;
+  
+  // Multi-selection methods
+  toggleBlockSelection(blockId: string): void;
+  selectBlocks(blockIds: string[]): void;
+  getSelectedBlocks(): readonly RenderedTimeBlock[];
+  getSelectedBlockCount(): number;
+  updateSelectedBlocksStyle(updates: Partial<TimeBlock>): Result<void, ValidationError>;
+  removeSelectedBlocks(): number;
 }
 
 interface RenderedTimeBlock extends TimeBlock {
@@ -539,8 +558,10 @@ The week planner is now in a **production-ready state** with all major issues re
   - Ctrl+M opens menu
   - Ctrl+I imports JSON files
   - Ctrl+O exports JSON files 
-  - Delete/Backspace removes blocks
-  - Escape cancels editing
+  - Ctrl+A selects all blocks
+  - Ctrl+click toggles individual block selection
+  - Delete/Backspace removes all selected blocks
+  - Escape cancels editing or deselects all blocks
 
 ### ✅ **Technical Excellence**
 - **Strict TypeScript**: Zero `any` types, comprehensive type safety

@@ -541,7 +541,7 @@ export class WeekPlanner {
             startDay,
             daySpan,
             text: '',
-            color: '#3b82f6',
+            color: '#e5007d',
             textColor: defaultStyling.textColor,
             fontSize: defaultStyling.fontSize,
             fontStyle: defaultStyling.fontStyle,
@@ -641,7 +641,7 @@ export class WeekPlanner {
             startDay,
             daySpan,
             text: '',
-            color: '#3b82f6',
+            color: '#e5007d',
             textColor: defaultStyling.textColor,
             fontSize: defaultStyling.fontSize,
             fontStyle: defaultStyling.fontStyle,
@@ -902,7 +902,7 @@ export class WeekPlanner {
             borderStyle: {
                 width: 0,
                 style: 'solid',
-                color: '#ffffff'
+                color: '#e5007d'
             },
             cornerRadius: 0
         };

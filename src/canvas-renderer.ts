@@ -20,7 +20,7 @@ export class CanvasRenderer {
         gridLines: '#475569',           // dark-600
         hourLines: '#64748b',           // dark-500
         separatorLines: '#64748b',      // dark-500
-        selectionHighlight: '#3b82f6',  // primary-500
+        selectionHighlight: '#e5007d',  // primary-500
         lunchTimeBackground: '#334155'  // dark-700 - slightly lighter for lunch time
     } as const;
 

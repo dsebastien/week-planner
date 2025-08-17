@@ -290,9 +290,9 @@
                         </div>
                     </div>
 
-                    <!-- Alignment Row -->
+                    <!-- Horizontal Alignment Row -->
                     <div class="flex items-center gap-2">
-                        <label class="text-xs text-gray-300">Align:</label>
+                        <label class="text-xs text-gray-300">Horizontal:</label>
                         <button id="alignLeft" class="w-8 h-7 rounded border border-gray-600 text-white hover:bg-gray-700 transition-colors flex items-center justify-center">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h8m-8 6h16"></path>
@@ -306,6 +306,26 @@
                         <button id="alignRight" class="w-8 h-7 rounded border border-gray-600 text-white hover:bg-gray-700 transition-colors flex items-center justify-center">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M12 12h8M6 18h16"></path>
+                            </svg>
+                        </button>
+                    </div>
+
+                    <!-- Vertical Alignment Row -->
+                    <div class="flex items-center gap-2">
+                        <label class="text-xs text-gray-300">Vertical:</label>
+                        <button id="alignTop" class="w-8 h-7 rounded border border-gray-600 text-white hover:bg-gray-700 transition-colors flex items-center justify-center">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4h16M4 8h8m-8 4h16"></path>
+                            </svg>
+                        </button>
+                        <button id="alignMiddle" class="w-8 h-7 rounded border border-gray-600 text-white hover:bg-gray-700 transition-colors flex items-center justify-center">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M8 12h8M4 18h16"></path>
+                            </svg>
+                        </button>
+                        <button id="alignBottom" class="w-8 h-7 rounded border border-gray-600 text-white hover:bg-gray-700 transition-colors flex items-center justify-center">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 10h16M8 12h8M4 20h16"></path>
                             </svg>
                         </button>
                     </div>
@@ -443,6 +463,9 @@
         const alignLeft = document.getElementById('alignLeft');
         const alignCenter = document.getElementById('alignCenter');
         const alignRight = document.getElementById('alignRight');
+        const alignTop = document.getElementById('alignTop');
+        const alignMiddle = document.getElementById('alignMiddle');
+        const alignBottom = document.getElementById('alignBottom');
         const borderStyle = document.getElementById('borderStyle');
         const borderWidth = document.getElementById('borderWidth');
         const cornerRadius = document.getElementById('cornerRadius');
@@ -497,10 +520,15 @@
             boldBtn.classList.toggle('bg-blue-600', block.fontStyle.bold);
             italicBtn.classList.toggle('bg-blue-600', block.fontStyle.italic);
             
-            // Update alignment buttons
+            // Update horizontal alignment buttons
             alignLeft.classList.toggle('bg-blue-600', block.textAlignment === 'left');
             alignCenter.classList.toggle('bg-blue-600', block.textAlignment === 'center');
             alignRight.classList.toggle('bg-blue-600', block.textAlignment === 'right');
+            
+            // Update vertical alignment buttons
+            alignTop.classList.toggle('bg-blue-600', block.verticalAlignment === 'top');
+            alignMiddle.classList.toggle('bg-blue-600', block.verticalAlignment === 'middle');
+            alignBottom.classList.toggle('bg-blue-600', block.verticalAlignment === 'bottom');
             
             editToolbar.classList.remove('hidden');
             positionToolbar(block);
@@ -585,6 +613,26 @@
             alignCenter.classList.toggle('bg-blue-600', alignment === 'center');
             alignRight.classList.toggle('bg-blue-600', alignment === 'right');
             updateBlockStyling('textAlignment', alignment);
+        }
+
+        // Vertical alignment buttons
+        alignTop?.addEventListener('click', () => {
+            updateVerticalAlignment('top');
+        });
+
+        alignMiddle?.addEventListener('click', () => {
+            updateVerticalAlignment('middle');
+        });
+
+        alignBottom?.addEventListener('click', () => {
+            updateVerticalAlignment('bottom');
+        });
+
+        function updateVerticalAlignment(alignment) {
+            alignTop.classList.toggle('bg-blue-600', alignment === 'top');
+            alignMiddle.classList.toggle('bg-blue-600', alignment === 'middle');
+            alignBottom.classList.toggle('bg-blue-600', alignment === 'bottom');
+            updateBlockStyling('verticalAlignment', alignment);
         }
 
         // Border style and width

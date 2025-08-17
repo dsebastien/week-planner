@@ -4,6 +4,11 @@
 export type TextAlignment = 'left' | 'center' | 'right';
 
 /**
+ * Vertical alignment options
+ */
+export type VerticalAlignment = 'top' | 'middle' | 'bottom';
+
+/**
  * Font style options
  */
 export interface FontStyle {
@@ -38,6 +43,7 @@ export interface TimeBlock {
     readonly fontSize: number; // 8-24 pixels
     readonly fontStyle: FontStyle;
     readonly textAlignment: TextAlignment;
+    readonly verticalAlignment: VerticalAlignment;
     readonly borderStyle: BorderStyle;
     readonly cornerRadius: number; // 0-20 pixels
     selected: boolean;

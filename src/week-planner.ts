@@ -9,7 +9,8 @@ import {
     ResizeHandle,
     FontStyle,
     BorderStyle,
-    TextAlignment
+    TextAlignment,
+    VerticalAlignment
 } from './types.js';
 import { GridUtils } from './grid-utils.js';
 import { TimeBlockManager } from './time-block-manager.js';
@@ -516,6 +517,7 @@ export class WeekPlanner {
             fontSize: defaultStyling.fontSize,
             fontStyle: defaultStyling.fontStyle,
             textAlignment: defaultStyling.textAlignment,
+            verticalAlignment: defaultStyling.verticalAlignment,
             borderStyle: defaultStyling.borderStyle,
             cornerRadius: defaultStyling.cornerRadius,
             selected: false
@@ -597,6 +599,7 @@ export class WeekPlanner {
             fontSize: defaultStyling.fontSize,
             fontStyle: defaultStyling.fontStyle,
             textAlignment: defaultStyling.textAlignment,
+            verticalAlignment: defaultStyling.verticalAlignment,
             borderStyle: defaultStyling.borderStyle,
             cornerRadius: defaultStyling.cornerRadius,
             selected: true
@@ -837,6 +840,7 @@ export class WeekPlanner {
         fontSize: number;
         fontStyle: FontStyle;
         textAlignment: TextAlignment;
+        verticalAlignment: VerticalAlignment;
         borderStyle: BorderStyle;
         cornerRadius: number;
     } {
@@ -848,6 +852,7 @@ export class WeekPlanner {
                 italic: false
             },
             textAlignment: 'center',
+            verticalAlignment: 'middle',
             borderStyle: {
                 width: 2,
                 style: 'solid',

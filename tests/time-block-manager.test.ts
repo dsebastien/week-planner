@@ -1,7 +1,7 @@
 import { test, describe } from 'node:test';
 import assert from 'node:assert';
 import { TimeBlockManager } from '../src/time-block-manager.js';
-import { GridConfig, TimeBlock } from '../src/types.js';
+import { GridConfig, TimeBlock, VerticalAlignment } from '../src/types.js';
 
 describe('TimeBlockManager', () => {
     const testConfig: GridConfig = {
@@ -36,6 +36,7 @@ describe('TimeBlockManager', () => {
             italic: false
         },
         textAlignment: 'center',
+        verticalAlignment: 'middle',
         borderStyle: {
             width: 2,
             style: 'solid',

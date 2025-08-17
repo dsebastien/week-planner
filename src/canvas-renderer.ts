@@ -518,14 +518,14 @@ export class CanvasRenderer {
         const textArea = this.getTextArea(block);
         
         if (isSmallBlock) {
-            // For small blocks, center text vertically and use single line
-            const centerY = block.y + block.height / 2;
+            // For small blocks, use simple vertical positioning
+            const textY = this.getVerticalTextY(block, block.text, true);
             const textX = this.getTextX(block, textArea.x);
-            this.ctx.fillText(block.text, textX, centerY);
+            this.ctx.fillText(block.text, textX, textY);
         } else {
-            // For larger blocks, use wrapped text
+            // For larger blocks, use wrapped text with vertical alignment
             const textX = this.getTextX(block, textArea.x);
-            this.drawWrappedText(block.text, textX, textArea.y, textArea.maxWidth, textArea.maxHeight);
+            this.drawWrappedTextWithVerticalAlignment(block, block.text, textX, textArea.maxWidth, textArea.maxHeight);
         }
         
         
@@ -626,6 +626,96 @@ export class CanvasRenderer {
             maxWidth: block.width - 2 * padding,
             maxHeight: Math.max(0, block.height - timeInfoHeight - 2 * padding)
         };
+    }
+
+    /**
+     * Calculate vertical position for text based on alignment
+     */
+    private getVerticalTextY(block: TimeBlock, text: string, isSmallBlock: boolean): number {
+        const textArea = this.getTextArea(block);
+        
+        if (isSmallBlock) {
+            // For small blocks, use simple positioning within available area
+            switch (block.verticalAlignment) {
+                case 'top':
+                    return textArea.y;
+                case 'bottom':
+                    return textArea.y + textArea.maxHeight;
+                case 'middle':
+                default:
+                    return block.y + block.height / 2;
+            }
+        } else {
+            // For larger blocks, calculate based on text content
+            const lineHeight = 16;
+            const lines = this.getTextLines(text, textArea.maxWidth);
+            const totalTextHeight = lines.length * lineHeight;
+            
+            switch (block.verticalAlignment) {
+                case 'top':
+                    return textArea.y;
+                case 'bottom':
+                    return textArea.y + textArea.maxHeight - totalTextHeight;
+                case 'middle':
+                default:
+                    return textArea.y + (textArea.maxHeight - totalTextHeight) / 2;
+            }
+        }
+    }
+
+    /**
+     * Get text lines for wrapping calculation
+     */
+    private getTextLines(text: string, maxWidth: number): string[] {
+        const words = text.split(' ');
+        const lines: string[] = [];
+        let line = '';
+
+        for (let i = 0; i < words.length; i++) {
+            const testLine = line + words[i] + ' ';
+            const metrics = this.ctx.measureText(testLine);
+            
+            if (metrics.width > maxWidth && i > 0) {
+                lines.push(line.trim());
+                line = words[i] + ' ';
+            } else {
+                line = testLine;
+            }
+        }
+        
+        if (line.trim()) {
+            lines.push(line.trim());
+        }
+        
+        return lines;
+    }
+
+    /**
+     * Draw wrapped text with vertical alignment support
+     */
+    private drawWrappedTextWithVerticalAlignment(block: TimeBlock, text: string, x: number, maxWidth: number, maxHeight: number): void {
+        const lineHeight = 16;
+        const lines = this.getTextLines(text, maxWidth);
+        const totalTextHeight = lines.length * lineHeight;
+        
+        // Calculate starting Y position based on vertical alignment
+        const startY = this.getVerticalTextY(block, text, false);
+        
+        // Draw each line
+        let currentY = startY;
+        for (let i = 0; i < lines.length; i++) {
+            if (currentY + lineHeight > this.getTextArea(block).y + maxHeight) {
+                // Truncate with ellipsis if we exceed bounds
+                if (i > 0) {
+                    const truncated = lines[i] + '...';
+                    this.ctx.fillText(truncated, x, currentY);
+                }
+                break;
+            }
+            
+            this.ctx.fillText(lines[i]!, x, currentY);
+            currentY += lineHeight;
+        }
     }
 
     /**
@@ -927,11 +1017,11 @@ export class CanvasRenderer {
                     break;
             }
             
-            const textY = block.y + block.height / 2;
+            const { textY, dominantBaseline } = this.getSVGVerticalAlignment(block);
             
             svg += `<text x="${textX}" y="${textY}" 
                 text-anchor="${textAnchor}" 
-                dominant-baseline="middle" 
+                dominant-baseline="${dominantBaseline}" 
                 fill="${block.textColor}" 
                 font-family="Inter, system-ui, sans-serif" 
                 font-size="${fontSize}" 
@@ -943,6 +1033,32 @@ export class CanvasRenderer {
         }
         
         return svg;
+    }
+
+    /**
+     * Calculate SVG vertical alignment properties
+     */
+    private getSVGVerticalAlignment(block: TimeBlock): { textY: number; dominantBaseline: string } {
+        const textArea = this.getTextArea(block);
+        
+        switch (block.verticalAlignment) {
+            case 'top':
+                return {
+                    textY: textArea.y,
+                    dominantBaseline: 'hanging'
+                };
+            case 'bottom':
+                return {
+                    textY: textArea.y + textArea.maxHeight,
+                    dominantBaseline: 'text-after-edge'
+                };
+            case 'middle':
+            default:
+                return {
+                    textY: block.y + block.height / 2,
+                    dominantBaseline: 'middle'
+                };
+        }
     }
 
     /**

@@ -255,12 +255,19 @@ export class TimeBlockManager {
     }
 
     /**
+     * Gets all domain blocks without calculated pixel positions (for export)
+     */
+    private getDomainBlocks(): readonly TimeBlock[] {
+        return Array.from(this.blocks.values());
+    }
+
+    /**
      * Exports all data for saving
      */
     exportData(): WeekPlannerData {
         return {
             version: '1.0',
-            blocks: this.getBlocks(),
+            blocks: this.getDomainBlocks(),
             config: this.config,
             exportedAt: new Date().toISOString()
         };

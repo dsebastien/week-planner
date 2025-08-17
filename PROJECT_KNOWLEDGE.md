@@ -89,7 +89,11 @@ Time blocks:
 ### Export/Import System
 - **PNG Export**: Canvas-based image export
 - **SVG Export**: Vector-based export with proper styling
-- **JSON Export/Import**: Complete data persistence with version compatibility
+- **JSON Export/Import**: Clean domain-only data format without pixel coordinates
+  - Exports logical coordinates (startDay, startTime, duration, daySpan)
+  - Includes styling and business properties
+  - Excludes calculated pixel positions (x, y, width, height)
+  - Portable and zoom-independent format
 
 ### UI/UX
 - Dark theme with Inter font family

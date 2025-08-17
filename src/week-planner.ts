@@ -942,8 +942,9 @@ export class WeekPlanner {
                 if (selectedBlocks.length === 1) {
                     (window as any).editToolbar.position(selectedBlocks[0]);
                 } else if (selectedBlocks.length > 1) {
-                    // For multiple blocks, position toolbar near the first block
-                    (window as any).editToolbar.position(selectedBlocks[0]);
+                    // For multiple blocks, calculate optimal position
+                    const optimalPosition = this.calculateOptimalToolbarPosition(selectedBlocks);
+                    (window as any).editToolbar.position(optimalPosition);
                 }
             }
         }
@@ -971,9 +972,19 @@ export class WeekPlanner {
         const selectedCount = this.blockManager.getSelectedBlockCount();
         
         if (selectedCount > 1 && (window as any).editToolbar) {
-            // For multi-selection, show toolbar with the first selected block
-            // but indicate it's for multiple blocks
-            (window as any).editToolbar.showMultiple(selectedBlocks);
+            // For multi-selection, calculate optimal toolbar position
+            const optimalPosition = this.calculateOptimalToolbarPosition(selectedBlocks);
+            
+            // Check if editToolbar has showMultiple method, otherwise fall back to show
+            if (typeof (window as any).editToolbar.showMultiple === 'function') {
+                (window as any).editToolbar.showMultiple(selectedBlocks, optimalPosition);
+            } else {
+                // Fallback: show toolbar with first block but position optimally
+                (window as any).editToolbar.show(selectedBlocks[0]);
+                if (typeof (window as any).editToolbar.position === 'function') {
+                    (window as any).editToolbar.position(optimalPosition);
+                }
+            }
         } else if (selectedCount === 1 && (window as any).editToolbar) {
             // Single selection - show normal toolbar
             (window as any).editToolbar.show(selectedBlocks[0]);
@@ -981,6 +992,54 @@ export class WeekPlanner {
             // No selection - hide toolbar
             (window as any).editToolbar.hide();
         }
+    }
+
+    /**
+     * Calculates optimal toolbar position for multiple selected blocks
+     */
+    private calculateOptimalToolbarPosition(selectedBlocks: readonly RenderedTimeBlock[]): RenderedTimeBlock {
+        if (selectedBlocks.length === 0) {
+            throw new Error('Cannot calculate position for empty selection');
+        }
+
+        if (selectedBlocks.length === 1) {
+            return selectedBlocks[0]!;
+        }
+
+        // Calculate the bounding box of all selected blocks
+        let minX = Infinity;
+        let minY = Infinity;
+        let maxX = -Infinity;
+        let maxY = -Infinity;
+
+        for (const block of selectedBlocks) {
+            minX = Math.min(minX, block.x);
+            minY = Math.min(minY, block.y);
+            maxX = Math.max(maxX, block.x + block.width);
+            maxY = Math.max(maxY, block.y + block.height);
+        }
+
+        // Calculate center point of the bounding box
+        const centerX = (minX + maxX) / 2;
+        const centerY = (minY + maxY) / 2;
+        const width = maxX - minX;
+        const height = maxY - minY;
+
+        // Create a virtual block representing the center of the selection
+        // Use properties from the first block for styling reference
+        const firstBlock = selectedBlocks[0]!;
+        
+        const virtualBlock: RenderedTimeBlock = {
+            ...firstBlock,
+            id: 'multi-selection-center',
+            x: centerX - width / 4, // Offset slightly to avoid overlapping
+            y: centerY - height / 4,
+            width: width / 2,
+            height: height / 2,
+            selected: true
+        };
+        
+        return virtualBlock;
     }
 
     /**

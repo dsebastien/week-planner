@@ -84,6 +84,7 @@ Time blocks:
 - Newly created blocks are not auto-selected (cleaner UI state)
 - **Multi-Selection Support**: Select multiple blocks using Ctrl+click
 - **Batch Operations**: Apply styling changes to all selected blocks simultaneously
+- **Smart Toolbar Positioning**: Styling panel automatically repositions to center of selection for multi-block operations
 - Automatic overlap prevention
 - Duration validation (minimum 30 minutes, multiples of 30)
 - Text editing via double-click

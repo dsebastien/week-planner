@@ -18,6 +18,7 @@ Add support for moving selected time blocks with click and drag. The move operat
 - showError(message: string) should display a notification, not an alert
 - Generate a readme and update memory to remind you about always keeping it up to date
 - Time blocks should support multi-line text
+- Add block styling option to show/hide the start time, end time & duration
 
 Add export to Markdown option using the following template
 

@@ -179,6 +179,7 @@ export class WeekPlanner {
         document.getElementById('exportSVG')?.addEventListener('click', () => this.exportSVG());
         document.getElementById('exportPNG')?.addEventListener('click', () => this.exportPNG());
         document.getElementById('exportJSON')?.addEventListener('click', () => this.exportJSON());
+        document.getElementById('exportMarkdown')?.addEventListener('click', () => this.exportMarkdown());
         document.getElementById('importJSON')?.addEventListener('click', () => this.importJSON());
         document.getElementById('clearAll')?.addEventListener('click', () => this.clearAll());
     }
@@ -1061,6 +1062,64 @@ export class WeekPlanner {
         const data = this.blockManager.exportData();
         const json = JSON.stringify(data, null, 2);
         this.downloadFile(json, 'week-planner.json', 'application/json');
+    }
+
+    private exportMarkdown(): void {
+        const blocks = this.blockManager.getBlocks();
+        const markdown = this.generateMarkdown(blocks);
+        this.downloadFile(markdown, 'week-planner.md', 'text/markdown');
+    }
+
+    private generateMarkdown(blocks: readonly RenderedTimeBlock[]): string {
+        // Get current date for header
+        const today = new Date();
+        const year = today.getFullYear();
+        const month = String(today.getMonth() + 1).padStart(2, '0');
+        const day = String(today.getDate()).padStart(2, '0');
+        const dateStr = `${year}-${month}-${day}`;
+
+        // Start with header
+        let markdown = `# ${dateStr} - Week Planning\n\n`;
+
+        // Group blocks by day
+        const dayNames = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+        const blocksByDay: { [key: number]: RenderedTimeBlock[] } = {};
+
+        // Initialize empty arrays for each day
+        for (let i = 0; i < 7; i++) {
+            blocksByDay[i] = [];
+        }
+
+        // Group blocks by starting day
+        for (const block of blocks) {
+            blocksByDay[block.startDay]?.push(block);
+        }
+
+        // Generate markdown for each day
+        for (let dayIndex = 0; dayIndex < 7; dayIndex++) {
+            const dayName = dayNames[dayIndex];
+            const dayBlocks = blocksByDay[dayIndex] || [];
+
+            markdown += `## ${dayName}\n`;
+
+            if (dayBlocks.length === 0) {
+                markdown += '- No events scheduled\n\n';
+            } else {
+                // Sort blocks by start time
+                const sortedBlocks = dayBlocks.sort((a, b) => a.startTime - b.startTime);
+
+                for (const block of sortedBlocks) {
+                    const startTime = GridUtils.formatTime(block.startTime);
+                    const endTime = GridUtils.formatTime(block.startTime + block.duration);
+                    const text = block.text.trim() || 'Untitled event';
+                    
+                    markdown += `- ${startTime} - ${endTime}: ${text}\n`;
+                }
+                markdown += '\n';
+            }
+        }
+
+        return markdown;
     }
 
     private importJSON(): void {

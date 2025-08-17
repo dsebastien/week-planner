@@ -1044,16 +1044,27 @@ export class WeekPlanner {
     }
 
     /**
+     * Generate filename with current date
+     */
+    private generateFilename(extension: string): string {
+        const today = new Date();
+        const year = today.getFullYear();
+        const month = String(today.getMonth() + 1).padStart(2, '0');
+        const day = String(today.getDate()).padStart(2, '0');
+        return `${year}-${month}-${day} - Week Planning.${extension}`;
+    }
+
+    /**
      * Export functionality
      */
     private exportSVG(): void {
         const svg = this.renderer.exportSVG(this.blockManager.getBlocks());
-        this.downloadFile(svg, 'week-planner.svg', 'image/svg+xml');
+        this.downloadFile(svg, this.generateFilename('svg'), 'image/svg+xml');
     }
 
     private exportPNG(): void {
         const link = document.createElement('a');
-        link.download = 'week-planner.png';
+        link.download = this.generateFilename('png');
         link.href = this.canvas.toDataURL();
         link.click();
     }
@@ -1061,13 +1072,13 @@ export class WeekPlanner {
     private exportJSON(): void {
         const data = this.blockManager.exportData();
         const json = JSON.stringify(data, null, 2);
-        this.downloadFile(json, 'week-planner.json', 'application/json');
+        this.downloadFile(json, this.generateFilename('json'), 'application/json');
     }
 
     private exportMarkdown(): void {
         const blocks = this.blockManager.getBlocks();
         const markdown = this.generateMarkdown(blocks);
-        this.downloadFile(markdown, 'week-planner.md', 'text/markdown');
+        this.downloadFile(markdown, this.generateFilename('md'), 'text/markdown');
     }
 
     private generateMarkdown(blocks: readonly RenderedTimeBlock[]): string {

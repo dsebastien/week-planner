@@ -1,5 +1,4 @@
 BUSY:
-- Default filename for exported planning (for all export formats): YYYY-mm-dd - Week Planning
 - Add support for moving selected time blocks with click and drag. The move operation should only be allowed if the target time slots are all unoccupied
 
 - When right clicking on a time block, a menu should be shown with the following options: copy style, paste style (if one was copied previously), copy. When right clicking on an empty cell, the menu should show the following options: paste (if a time block was copied previously), Add time block here

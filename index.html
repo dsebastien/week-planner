@@ -273,9 +273,9 @@
             >
 
             <!-- Edit Toolbar -->
-            <div id="editToolbar" class="absolute z-50 hidden bg-gray-800 border border-gray-600 rounded-lg shadow-xl p-3 min-w-[320px]" style="backdrop-filter: blur(16px);">
+            <div id="editToolbar" class="absolute hidden bg-gray-800 border border-gray-600 rounded-lg shadow-xl p-3 min-w-[320px]" style="backdrop-filter: blur(16px); z-index: 100; pointer-events: none;">
                 <!-- Toolbar Header -->
-                <div class="flex items-center justify-between mb-3 pb-2 border-b border-gray-600">
+                <div class="flex items-center justify-between mb-3 pb-2 border-b border-gray-600" style="pointer-events: auto;">
                     <span class="text-sm font-medium text-white">Block Styling</span>
                     <button id="closeToolbar" class="text-gray-400 hover:text-white transition-colors">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -285,7 +285,7 @@
                 </div>
 
                 <!-- Toolbar Content -->
-                <div class="space-y-3">
+                <div class="space-y-3" style="pointer-events: auto;">
                     <!-- Colors Row -->
                     <div class="space-y-2">
                         <!-- Background Color -->
@@ -551,19 +551,40 @@
             // Calculate position relative to viewport
             const blockCenterX = canvasRect.left + block.x + block.width / 2;
             const blockBottom = canvasRect.top + block.y + block.height;
+            const blockTop = canvasRect.top + block.y;
+            
+            // Get toolbar dimensions
+            const toolbarRect = editToolbar.getBoundingClientRect();
+            const toolbarWidth = toolbarRect.width || 320; // fallback to min-width
+            const toolbarHeight = toolbarRect.height || 200; // estimated height
+            
+            // Calculate position within canvas bounds
+            const canvasLeft = canvasRect.left;
+            const canvasRight = canvasRect.right;
+            const canvasTop = canvasRect.top;
+            const canvasBottom = canvasRect.bottom;
             
             // Position toolbar below block by default, or above if too close to bottom
-            const toolbarRect = editToolbar.getBoundingClientRect();
-            const viewportHeight = window.innerHeight;
-            
             let top = blockBottom + 10;
-            if (top + toolbarRect.height > viewportHeight - 20) {
-                top = canvasRect.top + block.y - toolbarRect.height - 10;
+            if (top + toolbarHeight > canvasBottom - 20) {
+                top = blockTop - toolbarHeight - 10;
+                // If still too high, position at top of canvas
+                if (top < canvasTop + 20) {
+                    top = canvasTop + 20;
+                }
             }
             
-            let left = blockCenterX - toolbarRect.width / 2;
-            const maxLeft = window.innerWidth - toolbarRect.width - 20;
-            left = Math.max(20, Math.min(left, maxLeft));
+            // Position horizontally centered on block, but keep within canvas bounds
+            let left = blockCenterX - toolbarWidth / 2;
+            if (left < canvasLeft + 20) {
+                left = canvasLeft + 20;
+            } else if (left + toolbarWidth > canvasRight - 20) {
+                left = canvasRight - toolbarWidth - 20;
+            }
+            
+            // Ensure we stay within canvas boundaries
+            left = Math.max(canvasLeft + 10, Math.min(left, canvasRight - toolbarWidth - 10));
+            top = Math.max(canvasTop + 10, Math.min(top, canvasBottom - toolbarHeight - 10));
             
             editToolbar.style.left = `${left}px`;
             editToolbar.style.top = `${top}px`;

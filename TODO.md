@@ -1,7 +1,9 @@
 BUSY:
 
-The block style overlay MUST considered above (think z-index) the grid and not part of it. It should not prevent resizing operations like it currently does
+
 The block style overlay MUST ALWAYS BE displayed IN the grid, not outside or partly outside like this: /c/Users/trankill/Pictures/Screenshots/Capture d'\''écran 2025-08-17 172150.png
+
+When multiple blocks are selected/deselected, the block styling panel does not always move as it should. It should behave consistently and always reposition if the selected blocks change
 
 - When right clicking on a time block, a menu should be shown with the following options: copy style, paste style (if one was copied previously), copy. When right clicking on an empty cell, the menu should show the following options: paste (if a time block was copied previously), Add time block here
 - The code of this app is on GitHub and I want to build it and deploy it from there. I own dsebastien.net and want to deploy this at weekplanner.tools.dsebastien.net. My GitHub account has already two custom domains (dsebastien.net and stats.notes.dsebastien.net), so I suppose I could add one more. Generate the GitHub actions workflow I need to (release/build/deploy...). The release creation should also generate a changelog. Finally, explain how I should setup everything step by step
@@ -18,3 +20,5 @@ The block style overlay MUST ALWAYS BE displayed IN the grid, not outside or par
 
 - Implement import from Markdown (assuming the Markdown template is used)
 - Cleanup Typescript imports. Import the normal typescript way, not from .js files!
+- Create a README.md file. Update memory to ensure that all future changes are also reflected in the readme
+- Add an MIT license to the project and commit it

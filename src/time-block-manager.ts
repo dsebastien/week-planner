@@ -255,10 +255,13 @@ export class TimeBlockManager {
     }
 
     /**
-     * Gets all domain blocks without calculated pixel positions (for export)
+     * Gets all domain blocks without calculated pixel positions and UI state (for export)
      */
     private getDomainBlocks(): readonly TimeBlock[] {
-        return Array.from(this.blocks.values());
+        return Array.from(this.blocks.values()).map(block => {
+            const { selected, ...domainBlock } = block;
+            return domainBlock as TimeBlock;
+        });
     }
 
     /**
@@ -322,7 +325,8 @@ export class TimeBlockManager {
         // Clear existing data and import
         this.clearAll();
         for (const block of data.blocks) {
-            this.blocks.set(block.id, { ...block });
+            // Ensure imported blocks are not selected by default
+            this.blocks.set(block.id, { ...block, selected: false });
         }
 
         return { success: true, data: undefined };

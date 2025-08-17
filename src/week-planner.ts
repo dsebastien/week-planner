@@ -899,11 +899,11 @@ export class WeekPlanner {
             textAlignment: 'center',
             verticalAlignment: 'middle',
             borderStyle: {
-                width: 2,
+                width: 0,
                 style: 'solid',
                 color: '#ffffff'
             },
-            cornerRadius: 5
+            cornerRadius: 0
         };
     }
 

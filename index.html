@@ -66,52 +66,147 @@
         .animate-pulse-slow {
             animation: pulse-slow 4s ease-in-out infinite;
         }
+
+        /* Epic floating animations */
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+        }
+        
+        .animate-float {
+            animation: float 6s ease-in-out infinite;
+        }
+
+        /* Enhanced glass morphism effects */
+        .glass-ultra {
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            background: rgba(31, 41, 55, 0.8);
+            border: 1px solid rgba(75, 85, 99, 0.3);
+        }
+
+        /* Gradient text animations */
+        @keyframes gradient-shift {
+            0%, 100% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+        }
+
+        .gradient-text {
+            background: linear-gradient(-45deg, #3b82f6, #8b5cf6, #ec4899, #10b981);
+            background-size: 400% 400%;
+            animation: gradient-shift 8s ease infinite;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        /* Epic progress bar animations */
+        @keyframes progress-glow {
+            0%, 100% { box-shadow: 0 0 10px rgba(59, 130, 246, 0.5); }
+            50% { box-shadow: 0 0 20px rgba(59, 130, 246, 0.8); }
+        }
+
+        .progress-bar {
+            animation: progress-glow 2s ease-in-out infinite;
+        }
+
+        /* Canvas enhancement */
+        #weekCanvas {
+            transition: filter 0.3s ease;
+        }
+
+        #weekCanvas:hover {
+            filter: brightness(1.05);
+        }
+
+        /* Floating panels enhancement */
+        .floating-panel {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .floating-panel:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+        }
     </style>
 </head>
 <body class="bg-dark-900 text-white overflow-hidden">
-    <!-- Minimal Header -->
-    <header class="absolute top-0 left-0 right-0 z-50 glass">
-        <div class="flex items-center justify-between px-6 py-3">
-            <!-- Logo & Title -->
-            <div class="flex items-center gap-3">
-                <div class="w-6 h-6 bg-gradient-to-br from-primary-500 to-primary-700 rounded-md flex items-center justify-center shadow-lg">
-                    <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
-                    </svg>
-                </div>
-                <h1 class="text-lg font-semibold text-white">Week Planner</h1>
-            </div>
-            
-            <!-- Quick Actions -->
-            <div class="flex items-center gap-3">
-                <!-- Buy Me A Coffee Button -->
-                <a href="https://www.buymeacoffee.com/dsebastien" target="_blank" rel="noopener noreferrer" 
-                   class="inline-flex items-center px-4 py-2.5 bg-gradient-to-r from-orange-500 to-pink-500 hover:from-orange-600 hover:to-pink-600 text-white text-sm font-medium rounded-xl transition-all duration-200 shadow-lg hover:shadow-xl transform hover:scale-105"
-                   title="Support Week Planner development">
-                    <svg class="w-4 h-4 mr-1.5" fill="currentColor" viewBox="0 0 24 24">
-                        <path d="M2 21h18v-2H2v2zM20 8H4V6c0-1.1.9-2 2-2h12c1.1 0 2 .9 2 2v2zM21.5 8.5c-.83 0-1.5.67-1.5 1.5v3c0 .83.67 1.5 1.5 1.5s1.5-.67 1.5-1.5v-3c0-.83-.67-1.5-1.5-1.5zM20 16H4v-6h16v6z"/>
-                    </svg>
-                    ☕ Support
-                </a>
-                
-                <!-- Menu Toggle -->
-                <button id="toolbarToggle" class="relative inline-flex items-center justify-center px-4 py-2.5 bg-gradient-to-br from-gray-800 via-gray-700 to-gray-800 border border-gray-600/50 rounded-xl shadow-lg backdrop-blur-xl hover:from-gray-700 hover:via-gray-600 hover:to-gray-700 hover:shadow-xl transform hover:scale-105 transition-all duration-200 group cursor-pointer">
-                    <!-- Glass effect overlay -->
-                    <div class="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent rounded-xl pointer-events-none"></div>
-                    
-                    <!-- Menu icon with gradient -->
-                    <div class="relative flex items-center gap-2">
-                        <svg class="w-5 h-5 text-gray-300 group-hover:text-white transition-colors duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
-                        </svg>
-                        <span class="text-sm font-medium text-gray-300 group-hover:text-white transition-colors duration-200">Menu</span>
+    <!-- Epic Professional Header -->
+    <header class="absolute top-0 left-0 right-0 z-50">
+        <!-- Main Header Bar -->
+        <div class="bg-gradient-to-r from-gray-900/95 via-gray-800/95 to-gray-900/95 backdrop-blur-xl border-b border-gray-600/30 shadow-2xl">
+            <div class="flex items-center justify-between px-6 py-4">
+                <!-- Enhanced Logo & Brand Section -->
+                <div class="flex items-center gap-4">
+                    <div class="relative group">
+                        <div class="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-xl flex items-center justify-center shadow-xl transform group-hover:scale-105 transition-all duration-200">
+                            <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                            </svg>
+                        </div>
+                        <div class="absolute inset-0 bg-gradient-to-br from-blue-500/20 to-purple-600/20 rounded-xl blur group-hover:blur-md transition-all duration-200"></div>
                     </div>
+                    <div>
+                        <h1 class="text-xl font-bold gradient-text">Week Planner</h1>
+                        <p class="text-xs text-gray-400 font-medium" id="currentWeekInfo">Plan Your Perfect Week</p>
+                    </div>
+                </div>
+
+                <!-- Spacer for center alignment -->
+                <div class="hidden lg:block flex-1"></div>
+                
+                <!-- Enhanced Right Actions -->
+                <div class="flex items-center gap-3">
+
+                    <!-- Undo/Redo Buttons -->
+                    <div class="flex items-center gap-1">
+                        <button id="undoButton" disabled 
+                                class="inline-flex items-center justify-center w-9 h-9 bg-gradient-to-br from-gray-800 via-gray-700 to-gray-800 border border-gray-600/50 rounded-lg shadow-lg backdrop-blur-xl hover:from-gray-700 hover:via-gray-600 hover:to-gray-700 hover:shadow-xl transform hover:scale-105 transition-all duration-200 group cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
+                                title="Undo (Ctrl+Z)">
+                            <svg class="w-4 h-4 text-gray-300 group-hover:text-white transition-colors duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6"></path>
+                            </svg>
+                        </button>
+                        
+                        <button id="redoButton" disabled 
+                                class="inline-flex items-center justify-center w-9 h-9 bg-gradient-to-br from-gray-800 via-gray-700 to-gray-800 border border-gray-600/50 rounded-lg shadow-lg backdrop-blur-xl hover:from-gray-700 hover:via-gray-600 hover:to-gray-700 hover:shadow-xl transform hover:scale-105 transition-all duration-200 group cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
+                                title="Redo (Ctrl+Y)">
+                            <svg class="w-4 h-4 text-gray-300 group-hover:text-white transition-colors duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 10h-10a8 8 0 00-8 8v2m18-10l-6 6m6-6l-6-6"></path>
+                            </svg>
+                        </button>
+                    </div>
+
+                    <!-- Buy Me A Coffee Button -->
+                    <a href="https://www.buymeacoffee.com/dsebastien" target="_blank" rel="noopener noreferrer" 
+                       class="hidden sm:inline-flex items-center px-4 py-2.5 bg-gradient-to-r from-orange-500 to-pink-500 hover:from-orange-600 hover:to-pink-600 text-white text-sm font-medium rounded-xl transition-all duration-200 shadow-lg hover:shadow-xl transform hover:scale-105"
+                       title="Support Week Planner development">
+                        <svg class="w-4 h-4 mr-1.5" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M2 21h18v-2H2v2zM20 8H4V6c0-1.1.9-2 2-2h12c1.1 0 2 .9 2 2v2zM21.5 8.5c-.83 0-1.5.67-1.5 1.5v3c0 .83.67 1.5 1.5 1.5s1.5-.67 1.5-1.5v-3c0-.83-.67-1.5-1.5-1.5zM20 16H4v-6h16v6z"/>
+                        </svg>
+                        ☕ Support
+                    </a>
                     
-                    <!-- Subtle glow effect on hover -->
-                    <div class="absolute inset-0 rounded-xl bg-gradient-to-br from-blue-500/0 to-purple-500/0 group-hover:from-blue-500/20 group-hover:to-purple-500/20 transition-all duration-300 pointer-events-none"></div>
-                </button>
+                    <!-- Enhanced Menu Toggle -->
+                    <button id="toolbarToggle" class="relative inline-flex items-center justify-center px-4 py-2.5 bg-gradient-to-br from-gray-800 via-gray-700 to-gray-800 border border-gray-600/50 rounded-xl shadow-xl backdrop-blur-xl hover:from-gray-700 hover:via-gray-600 hover:to-gray-700 hover:shadow-2xl transform hover:scale-105 transition-all duration-200 group cursor-pointer">
+                        <!-- Glass effect overlay -->
+                        <div class="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent rounded-xl pointer-events-none"></div>
+                        
+                        <!-- Menu icon with gradient -->
+                        <div class="relative flex items-center gap-2">
+                            <svg class="w-5 h-5 text-gray-300 group-hover:text-white transition-colors duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+                            </svg>
+                            <span class="text-sm font-medium text-gray-300 group-hover:text-white transition-colors duration-200">Menu</span>
+                        </div>
+                        
+                        <!-- Enhanced glow effect on hover -->
+                        <div class="absolute inset-0 rounded-xl bg-gradient-to-br from-blue-500/0 to-purple-500/0 group-hover:from-blue-500/30 group-hover:to-purple-500/30 transition-all duration-300 pointer-events-none blur-sm"></div>
+                    </button>
+                </div>
             </div>
         </div>
+
     </header>
 
     <!-- Enhanced Main Menu Modal -->
@@ -379,21 +474,103 @@
         </div>
     </div>
 
-    <!-- Main Content -->
-    <main class="pt-12 h-screen">
-        <!-- Canvas Container -->
-        <div class="relative w-full h-full bg-gradient-to-br from-dark-900 via-dark-800 to-dark-900">
-            <canvas id="weekCanvas" class="w-full h-full block"></canvas>
-            
-            <!-- Floating Text Input -->
-            <input 
-                type="text" 
-                id="textInput" 
-                maxlength="100"
-                placeholder="Enter block text..."
-                class="absolute z-50 hidden px-3 py-2 bg-white text-black border-2 border-blue-500 rounded-lg shadow-lg focus:outline-none focus:ring-2 focus:ring-blue-400 text-sm font-medium"
-                style="color: #000000 !important; background-color: #ffffff !important; border: 2px solid #3b82f6 !important;"
-            >
+    <!-- Epic Main Content Layout -->
+    <main class="pt-16 h-screen">
+        <!-- Main Layout Container -->
+        <div class="relative flex h-full">
+            <!-- Collapsible Quick Tools Panel -->
+            <div id="quickToolsPanel" class="absolute left-4 top-4 w-72 z-40 transition-transform duration-300 translate-x-[-260px] hover:translate-x-0">
+                <div class="bg-gradient-to-br from-gray-900/95 via-gray-800/95 to-gray-900/95 backdrop-blur-xl border border-gray-600/30 rounded-2xl shadow-2xl floating-panel overflow-hidden">
+                    <!-- Handle -->
+                    <div class="absolute right-[-20px] top-1/2 transform -translate-y-1/2 bg-gradient-to-br from-gray-900/95 via-gray-800/95 to-gray-900/95 backdrop-blur-xl border border-gray-600/30 rounded-r-xl p-2 cursor-pointer" id="quickToolsHandle">
+                        <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                        </svg>
+                    </div>
+
+                    <div class="p-6">
+                        <!-- Panel Header -->
+                        <div class="flex items-center gap-3 mb-6">
+                            <div class="w-8 h-8 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-lg flex items-center justify-center">
+                                <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path>
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                                </svg>
+                            </div>
+                            <h3 class="font-semibold text-white">Quick Tools</h3>
+                        </div>
+                        
+                        <!-- Tools -->
+                        <div class="space-y-4">
+                            <!-- Selection Tools -->
+                            <div class="bg-gray-800/50 border border-gray-600/30 rounded-xl p-4">
+                                <h4 class="text-sm font-medium text-gray-300 mb-3">Selection</h4>
+                                <div class="space-y-2">
+                                    <button id="toolSelectAll" class="w-full text-left px-3 py-2 text-sm text-gray-300 hover:text-white hover:bg-gray-700/50 rounded-lg transition-all duration-200 flex items-center gap-2">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                        </svg>
+                                        Select All Blocks
+                                    </button>
+                                    <button id="toolClearAll" class="w-full text-left px-3 py-2 text-sm text-gray-300 hover:text-white hover:bg-red-600/20 rounded-lg transition-all duration-200 flex items-center gap-2">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                                        </svg>
+                                        Clear All Blocks
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- Quick Templates -->
+                            <div class="bg-gray-800/50 border border-gray-600/30 rounded-xl p-4">
+                                <h4 class="text-sm font-medium text-gray-300 mb-3">Quick Templates</h4>
+                                <div class="space-y-2">
+                                    <button id="addWorkout" class="w-full text-left px-3 py-2 text-sm text-gray-300 hover:text-white hover:bg-gray-700/50 rounded-lg transition-all duration-200">
+                                        🏃‍♂️ Morning Workout
+                                    </button>
+                                    <button id="addWorkSession" class="w-full text-left px-3 py-2 text-sm text-gray-300 hover:text-white hover:bg-gray-700/50 rounded-lg transition-all duration-200">
+                                        💼 Work Session
+                                    </button>
+                                    <button id="addLunch" class="w-full text-left px-3 py-2 text-sm text-gray-300 hover:text-white hover:bg-gray-700/50 rounded-lg transition-all duration-200">
+                                        🍽️ Lunch Break
+                                    </button>
+                                    <button id="addStudy" class="w-full text-left px-3 py-2 text-sm text-gray-300 hover:text-white hover:bg-gray-700/50 rounded-lg transition-all duration-200">
+                                        📚 Study Time
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Enhanced Canvas Container -->
+            <div class="flex-1 relative">
+                <!-- Background with Enhanced Gradient -->
+                <div class="absolute inset-0 bg-gradient-to-br from-slate-900 via-gray-900 to-slate-900">
+                    <!-- Subtle Grid Pattern -->
+                    <div class="absolute inset-0 opacity-5" style="background-image: radial-gradient(circle at 1px 1px, rgba(255,255,255,0.3) 1px, transparent 0); background-size: 20px 20px;"></div>
+                    <!-- Ambient Glow -->
+                    <div class="absolute inset-0 bg-gradient-to-br from-blue-500/5 via-transparent to-purple-500/5"></div>
+                </div>
+
+                <!-- Main Canvas -->
+                <canvas id="weekCanvas" class="relative w-full h-full block z-10"></canvas>
+                
+                <!-- Floating Text Input (Enhanced) -->
+                <input 
+                    type="text" 
+                    id="textInput" 
+                    maxlength="100"
+                    placeholder="Enter block text..."
+                    class="absolute z-50 hidden px-4 py-3 bg-white/95 backdrop-blur-sm text-black border-2 border-blue-500 rounded-xl shadow-2xl focus:outline-none focus:ring-2 focus:ring-blue-400 text-sm font-medium transition-all duration-200"
+                    style="color: #000000 !important; background-color: rgba(255,255,255,0.95) !important; border: 2px solid #3b82f6 !important;"
+                >
+
+
+
+            </div>
+        </div>
 
             <!-- Context Menu -->
             <div id="contextMenu" class="absolute hidden bg-gray-800 border border-gray-600 rounded-lg shadow-xl py-2 min-w-[200px]" style="backdrop-filter: blur(16px); z-index: 200;">
@@ -1642,11 +1819,131 @@
             // Add the block through WeekPlanner
             const result = window.weekPlanner.blockManager.addBlock(newBlock);
             if (result.success) {
-                window.weekPlanner.renderer.draw();
+                window.weekPlanner.render();
             }
         }
 
         // NOTE: Context menu functions now exposed through TypeScript main.ts
+        
+
+        // Undo/Redo functionality
+        document.addEventListener('DOMContentLoaded', () => {
+            const undoButton = document.getElementById('undoButton');
+            const redoButton = document.getElementById('redoButton');
+            
+            // Update button states based on undo/redo availability
+            function updateUndoRedoButtons() {
+                try {
+                    if (window.weekPlanner && window.weekPlanner.blockManager && window.weekPlanner.blockManager.undoManager) {
+                        const undoManager = window.weekPlanner.blockManager.undoManager;
+                        
+                        if (undoButton) {
+                            const canUndo = undoManager.canUndo();
+                            undoButton.disabled = !canUndo;
+                            undoButton.title = canUndo 
+                                ? `Undo ${undoManager.getUndoDescription() || 'last action'} (Ctrl+Z)`
+                                : 'Nothing to undo (Ctrl+Z)';
+                        }
+                        
+                        if (redoButton) {
+                            const canRedo = undoManager.canRedo();
+                            redoButton.disabled = !canRedo;
+                            redoButton.title = canRedo 
+                                ? `Redo ${undoManager.getRedoDescription() || 'next action'} (Ctrl+Y)`
+                                : 'Nothing to redo (Ctrl+Y)';
+                        }
+                    } else {
+                        // WeekPlanner not ready yet, keep buttons disabled
+                        if (undoButton) {
+                            undoButton.disabled = true;
+                            undoButton.title = 'Nothing to undo (Ctrl+Z)';
+                        }
+                        if (redoButton) {
+                            redoButton.disabled = true;
+                            redoButton.title = 'Nothing to redo (Ctrl+Y)';
+                        }
+                    }
+                } catch (error) {
+                    console.error('Error updating undo/redo buttons:', error);
+                }
+            }
+            
+            // Undo button
+            undoButton?.addEventListener('click', () => {
+                if (window.weekPlanner && window.weekPlanner.blockManager && window.weekPlanner.blockManager.undoManager) {
+                    const undoManager = window.weekPlanner.blockManager.undoManager;
+                    if (undoManager.undo()) {
+                        window.weekPlanner.render();
+                        // Force immediate update of button states
+                        setTimeout(updateUndoRedoButtons, 10);
+                    }
+                }
+            });
+            
+            // Redo button
+            redoButton?.addEventListener('click', () => {
+                if (window.weekPlanner && window.weekPlanner.blockManager && window.weekPlanner.blockManager.undoManager) {
+                    const undoManager = window.weekPlanner.blockManager.undoManager;
+                    if (undoManager.redo()) {
+                        window.weekPlanner.render();
+                        // Force immediate update of button states
+                        setTimeout(updateUndoRedoButtons, 10);
+                    }
+                }
+            });
+            
+            // Keyboard shortcuts
+            document.addEventListener('keydown', (e) => {
+                if (e.ctrlKey && e.key === 'z' && !e.shiftKey) {
+                    e.preventDefault();
+                    undoButton?.click();
+                } else if (e.ctrlKey && (e.key === 'y' || (e.key === 'z' && e.shiftKey))) {
+                    e.preventDefault();
+                    redoButton?.click();
+                }
+            });
+            
+            // Update button states initially and periodically
+            updateUndoRedoButtons();
+            
+            // Set up periodic updates (every 500ms) to catch state changes
+            setInterval(updateUndoRedoButtons, 500);
+            
+            // Expose updateUndoRedoButtons globally for other operations
+            window.updateUndoRedoButtons = updateUndoRedoButtons;
+        });
+
+        // Quick Tools panel functionality
+        document.addEventListener('DOMContentLoaded', () => {
+            const toolSelectAllBtn = document.getElementById('toolSelectAll');
+            const toolClearAllBtn = document.getElementById('toolClearAll');
+            
+            // Tool Select All button
+            toolSelectAllBtn?.addEventListener('click', () => {
+                if (window.weekPlanner) {
+                    // Get all block IDs and select them
+                    const allBlocks = window.weekPlanner.blockManager.getBlocks();
+                    const allBlockIds = allBlocks.map(block => block.id);
+                    window.weekPlanner.blockManager.selectBlocks(allBlockIds);
+                    window.weekPlanner.render();
+                }
+            });
+            
+            // Tool Clear All button
+            toolClearAllBtn?.addEventListener('click', () => {
+                if (window.weekPlanner) {
+                    // Clear all blocks with undo support
+                    window.weekPlanner.blockManager.clearAllWithUndo();
+                    window.weekPlanner.render();
+                    // Force update undo/redo buttons after operation
+                    setTimeout(() => {
+                        if (window.updateUndoRedoButtons) {
+                            window.updateUndoRedoButtons();
+                        }
+                    }, 10);
+                }
+            });
+        });
     </script>
 </body>
 </html>

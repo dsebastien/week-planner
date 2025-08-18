@@ -13,8 +13,11 @@ Week Planner is a visual scheduling tool that helps you organize your time acros
 - **Move and resize blocks** with simple drag-and-drop
 - **Copy and paste** recurring activities
 - **Export your schedule** as images or data files
+- **Professional interface** with modern glass morphism design
+- **Quick Tools panel** for instant access to essential functions
+- **Full undo/redo support** with keyboard shortcuts
 
-Perfect for students, professionals, freelancers, or anyone who wants to visualize their weekly schedule!
+Perfect for students, professionals, freelancers, or anyone who wants to visualize their weekly schedule with a truly beautiful interface!
 
 ## 🚀 Getting Started
 
@@ -52,6 +55,8 @@ When you select a block, a styling panel appears with these options:
 ### Essential Shortcuts
 - **Ctrl + M**: Open/close the main menu
 - **Ctrl + A**: Select all blocks
+- **Ctrl + Z**: Undo last action
+- **Ctrl + Y**: Redo last undone action
 - **Delete** or **Backspace**: Delete selected blocks
 - **Escape**: Cancel editing or deselect all blocks
 
@@ -151,6 +156,30 @@ Access these from the main menu (☰ button):
 - Block out hobby time
 
 ## 🔧 Advanced Features
+
+### Epic Main Screen Interface
+Week Planner features a modern, professional interface with:
+
+- **Glass Morphism Design**: Beautiful frosted glass effects with backdrop blur
+- **Dark Theme**: Professional dark interface with carefully chosen color palette
+- **Gradient Backgrounds**: Subtle gradients throughout for depth and visual interest
+- **Responsive Layout**: Optimized for all screen sizes with mobile-first approach
+
+### Quick Tools Panel
+Access essential functions through the collapsible Quick Tools panel:
+
+- **🎯 Smart Positioning**: Fixed position with elegant handle to show/hide
+- **⚡ Quick Actions**: Select All, Clear All, and other essential operations
+- **🎨 Integrated Controls**: Seamlessly integrated with the main interface
+- **⌨️ Keyboard Accessible**: Full keyboard navigation support
+
+### Header Controls
+Streamlined header with functional buttons:
+
+- **↶ Undo/Redo**: Full undo/redo functionality with keyboard shortcuts (Ctrl+Z/Ctrl+Y)
+- **📁 Menu Access**: Clean menu system with organized import/export options
+- **🎨 Color Picker**: Prominently placed for quick block color changes
+- **✨ Professional Styling**: Glass morphism buttons with hover effects
 
 ### Multi-Day Blocks
 - **Drag across multiple days** for vacations, conferences, or projects

@@ -1,4 +1,3 @@
-- Bug with paste style (eg from a large block with large text to a 30min block)
 - Drastically improve the main UI to use a similar design to that of the block styling panel
 - Cleanup Typescript imports. Import the normal typescript way, not from .js files!
 - Move as much logic from the index.html to TypeScript

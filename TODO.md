@@ -1,5 +1,4 @@
 Busy:
-- Add a favicon (calendar icon)
 - The quick tools panel should be improved. The way it is "hidden"/shown is really bad
 - When exporting to PNG, the image should have the perfect size for being printed on an horizontal A4 page
 - Cleanup Typescript imports. Import the normal typescript way, not from .js files!

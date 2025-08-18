@@ -529,32 +529,36 @@ export class CanvasRenderer {
         // Use block's text color
         this.ctx.fillStyle = block.textColor;
         
-        // Build font string from block properties
+        // Use the exact font size the user requested - no arbitrary scaling
         const fontWeight = block.fontStyle.bold ? '700' : '500';
         const fontStyle = block.fontStyle.italic ? 'italic' : 'normal';
-        const fontSize = Math.max(8, Math.min(48, block.fontSize)); // Clamp between 8-48px
+        const fontSize = Math.max(8, Math.min(48, block.fontSize)); // Only clamp to valid range
+        
         this.ctx.font = `${fontStyle} ${fontWeight} ${fontSize}px Inter, "Segoe UI", system-ui, sans-serif`;
         
         // Set text alignment
         this.ctx.textAlign = block.textAlignment;
         
-        const isSmallBlock = block.height < 40;
-        this.ctx.textBaseline = isSmallBlock ? 'middle' : 'top';
-
+        // Calculate text area
         const textArea = this.getTextArea(block);
         
-        if (isSmallBlock) {
-            // For small blocks, use simple vertical positioning with ellipsis
-            const textY = this.getVerticalTextY(block, block.text, true);
-            const textX = this.getTextX(block, textArea.x);
-            const truncatedText = this.truncateTextWithEllipsis(block.text, textArea.maxWidth);
-            this.ctx.fillText(truncatedText, textX, textY);
-        } else {
-            // For larger blocks, use wrapped text with vertical alignment
+        // Simple approach: try wrapped text first, fall back to single line if needed
+        const lineHeight = fontSize * 1.3;
+        const maxLines = Math.floor(textArea.maxHeight / lineHeight);
+        
+        if (maxLines >= 1) {
+            // We have room for at least one line - use wrapped text with proper vertical alignment
+            this.ctx.textBaseline = 'top';
             const textX = this.getTextX(block, textArea.x);
             this.drawWrappedTextWithVerticalAlignment(block, block.text, textX, textArea.maxWidth, textArea.maxHeight);
+        } else {
+            // Not enough room for proper line height - center single line in available space
+            this.ctx.textBaseline = 'middle';
+            const textX = this.getTextX(block, block.x + block.width / 2);
+            const textY = block.y + block.height / 2;
+            const truncatedText = this.truncateTextWithEllipsis(block.text, textArea.maxWidth);
+            this.ctx.fillText(truncatedText, textX, textY);
         }
-        
         
         this.ctx.restore();
     }
@@ -652,15 +656,16 @@ export class CanvasRenderer {
 
 
     private getTextArea(block: RenderedTimeBlock): { x: number; y: number; maxWidth: number; maxHeight: number } {
-        // Adaptive layout based on block height
         const isSmallBlock = block.height < 40;
-        const padding = isSmallBlock ? 3 : 8;
-        const timeInfoHeight = isSmallBlock ? 12 : 20; // Compact time info for small blocks
+        const padding = 8;
+        
+        // Use actual time info height based on block size
+        const timeInfoHeight = isSmallBlock ? 14 : 20; // Small blocks need less space for time info
         
         return {
             x: block.x + block.width / 2,
             y: block.y + timeInfoHeight + padding,
-            maxWidth: block.width - 2 * padding,
+            maxWidth: Math.max(0, block.width - 2 * padding),
             maxHeight: Math.max(0, block.height - timeInfoHeight - 2 * padding)
         };
     }
@@ -819,34 +824,36 @@ export class CanvasRenderer {
      * Draw wrapped text with vertical alignment support
      */
     private drawWrappedTextWithVerticalAlignment(block: RenderedTimeBlock, text: string, x: number, maxWidth: number, maxHeight: number): void {
-        // Calculate line height based on font size (1.3x font size for good readability)
+        // Use exact user-requested font size - no fallbacks or workarounds
         const fontSize = Math.max(8, Math.min(48, block.fontSize));
         const lineHeight = fontSize * 1.3;
         const textArea = this.getTextArea(block);
         
-        // Calculate how many lines can actually fit in the available height
+        // Calculate how many lines can fit with the user's requested font size
         const maxLinesAvailable = Math.floor(maxHeight / lineHeight);
         if (maxLinesAvailable <= 0) {
-            return; // No space for any text
+            // No lines fit with this font size - don't render anything
+            // This is systematic behavior: user chose a font size that doesn't fit
+            return;
         }
         
-        // Get all potential lines
+        // Get all potential lines using exact font size
         const allLines = this.getTextLines(text, maxWidth);
         
-        // Determine which lines to actually render based on available space
+        // Determine which lines to render based on available space
         let linesToRender: string[];
         if (allLines.length <= maxLinesAvailable) {
-            // All lines fit
+            // All lines fit - render them all
             linesToRender = allLines;
         } else {
-            // Need to truncate and add ellipsis
+            // Truncate lines that don't fit and add ellipsis to last visible line
             if (maxLinesAvailable === 1) {
-                // Only one line fits, combine all text with ellipsis
+                // Only one line fits - combine all text and truncate with ellipsis
                 const allText = allLines.join(' ');
                 const truncatedText = this.truncateTextWithEllipsis(allText, maxWidth);
                 linesToRender = [truncatedText];
             } else {
-                // Multiple lines fit, use all but last for content, last for ellipsis
+                // Multiple lines fit - use first lines + truncated last line
                 const contentLines = allLines.slice(0, maxLinesAvailable - 1);
                 const remainingText = allLines.slice(maxLinesAvailable - 1).join(' ');
                 const truncatedLastLine = this.truncateTextWithEllipsis(remainingText, maxWidth);
@@ -854,7 +861,7 @@ export class CanvasRenderer {
             }
         }
         
-        // Calculate starting Y position for the actual lines we'll render
+        // Calculate starting Y position based on vertical alignment
         const actualTextHeight = linesToRender.length * lineHeight;
         let startY: number;
         
@@ -871,17 +878,14 @@ export class CanvasRenderer {
                 break;
         }
         
-        // Draw each line within bounds
+        // Render each line at exact user-requested font size
         let currentY = startY;
-        for (let i = 0; i < linesToRender.length; i++) {
-            // Double-check bounds (shouldn't be needed but safety first)
-            if (currentY + lineHeight > textArea.y + maxHeight) {
-                break;
+        for (const line of linesToRender) {
+            // Only render if line is within bounds
+            if (currentY + lineHeight <= textArea.y + maxHeight) {
+                this.ctx.fillText(line, x, currentY);
+                currentY += lineHeight;
             }
-            
-            const lineText = this.truncateTextWithEllipsis(linesToRender[i]!, maxWidth);
-            this.ctx.fillText(lineText, x, currentY);
-            currentY += lineHeight;
         }
     }
 

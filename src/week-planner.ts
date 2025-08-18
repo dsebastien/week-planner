@@ -16,6 +16,7 @@ import {
 import { GridUtils } from './grid-utils.js';
 import { TimeBlockManager } from './time-block-manager.js';
 import { CanvasRenderer } from './canvas-renderer.js';
+import { UIManager } from './ui-manager.js';
 
 /**
  * Main application controller for the week planner
@@ -27,6 +28,7 @@ export class WeekPlanner {
     
     private renderer: CanvasRenderer;
     public blockManager: TimeBlockManager;
+    public uiManager: UIManager;
     private config: GridConfig;
     
     private mouseState: MouseState = {
@@ -60,6 +62,7 @@ export class WeekPlanner {
         // Initialize components
         this.blockManager = new TimeBlockManager(this.config);
         this.renderer = new CanvasRenderer(this.canvas, this.config);
+        this.uiManager = new UIManager();
         
         // Setup and start
         this.initialize();
@@ -528,7 +531,7 @@ export class WeekPlanner {
                     }
                 },
                 {
-                    label: 'Copy',
+                    label: this.blockManager.getSelectedBlockCount() > 1 ? `Copy ${this.blockManager.getSelectedBlockCount()} blocks` : 'Copy',
                     disabled: false,
                     action: () => contextMenuSystem.copyBlock(clickedBlock)
                 }
@@ -550,7 +553,7 @@ export class WeekPlanner {
             
             const menuItems = [
                 {
-                    label: 'Paste',
+                    label: contextMenuSystem.getCopiedBlockCount() > 1 ? `Paste ${contextMenuSystem.getCopiedBlockCount()} blocks` : 'Paste',
                     disabled: !contextMenuSystem.hasCopiedBlock(),
                     action: () => {
                         contextMenuSystem.pasteBlock(day, timeMinutes);
@@ -1319,9 +1322,8 @@ export class WeekPlanner {
      * Closes the main menu
      */
     private closeMenu(): void {
-        // Trigger the closeModal function from the HTML
-        const event = new CustomEvent('closeMenu');
-        document.dispatchEvent(event);
+        // Use UIManager to close the modal
+        this.uiManager.closeModal();
     }
 
     /**

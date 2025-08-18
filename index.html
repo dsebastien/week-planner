@@ -848,81 +848,7 @@
         }
     </style>
     <script>
-        // Hide loading screen when page is loaded
-        window.addEventListener('load', () => {
-            const loadingScreen = document.getElementById('loadingScreen');
-            if (loadingScreen) {
-                loadingScreen.style.opacity = '0';
-                setTimeout(() => {
-                    loadingScreen.style.display = 'none';
-                }, 300);
-            }
-        });
-
-        // Modal functionality
-        const toolbarToggle = document.getElementById('toolbarToggle');
-        const toolbarMenu = document.getElementById('toolbarMenu');
-        const closeSidebar = document.getElementById('closeSidebar');
-        const modalBackdrop = document.getElementById('modalBackdrop');
-        const modalContent = document.getElementById('modalContent');
-
-        function openModal() {
-            // Deselect any current block selection and hide toolbar
-            if (window.weekPlanner) {
-                window.weekPlanner.blockManager?.selectBlock(null);
-                if (window.editToolbar) {
-                    window.editToolbar.hide();
-                }
-                // Re-render to update the selection state
-                window.weekPlanner.render?.();
-            }
-            
-            toolbarMenu.classList.remove('hidden');
-            document.body.classList.add('overflow-hidden');
-            
-            // Trigger animation
-            setTimeout(() => {
-                modalContent.classList.remove('modal-exit');
-                modalContent.classList.add('modal-enter');
-            }, 10);
-        }
-
-        function closeModal() {
-            modalContent.classList.remove('modal-enter');
-            modalContent.classList.add('modal-exit');
-            
-            setTimeout(() => {
-                toolbarMenu.classList.add('hidden');
-                document.body.classList.remove('overflow-hidden');
-            }, 300);
-        }
-
-        toolbarToggle?.addEventListener('click', openModal);
-        closeSidebar?.addEventListener('click', closeModal);
-        modalBackdrop?.addEventListener('click', closeModal);
-
-        // Close modal when Clear All is clicked
-        document.getElementById('clearAll')?.addEventListener('click', () => {
-            closeModal();
-        });
-
-        // Keyboard shortcuts
-        document.addEventListener('keydown', (e) => {
-            // Escape key closes modal
-            if (e.key === 'Escape' && !toolbarMenu.classList.contains('hidden')) {
-                closeModal();
-            }
-            
-            // Ctrl+M opens/closes modal
-            if (e.ctrlKey && e.key === 'm') {
-                e.preventDefault(); // Prevent browser default behavior
-                if (toolbarMenu.classList.contains('hidden')) {
-                    openModal();
-                } else {
-                    closeModal();
-                }
-            }
-        });
+        // NOTE: Loading screen and modal functionality moved to TypeScript UIManager
 
         // Edit Toolbar functionality
         const editToolbar = document.getElementById('editToolbar');
@@ -1556,10 +1482,7 @@
         });
 
 
-        // Listen for closeMenu event from WeekPlanner
-        document.addEventListener('closeMenu', () => {
-            closeModal();
-        });
+        // NOTE: closeMenu functionality now handled directly by UIManager
 
         // Expose functions for WeekPlanner to use
         window.editToolbar = {
@@ -1655,9 +1578,18 @@
         function pasteBlockStyle(targetBlock) {
             if (!copiedStyle || !targetBlock || !window.weekPlanner) return;
             
+            // Create a copy of the style to modify
+            const styleToApply = { ...copiedStyle };
+            
+            // Adjust font size for small target blocks (height < 40px)
+            // This prevents text overflow when pasting from large blocks to small blocks
+            if (targetBlock.height < 40 && styleToApply.fontSize > 14) {
+                styleToApply.fontSize = Math.min(styleToApply.fontSize, 14);
+            }
+            
             // Apply all copied style properties
-            Object.keys(copiedStyle).forEach(property => {
-                window.weekPlanner.updateSelectedBlockStyle(property, copiedStyle[property]);
+            Object.keys(styleToApply).forEach(property => {
+                window.weekPlanner.updateSelectedBlockStyle(property, styleToApply[property]);
             });
         }
 
@@ -1700,17 +1632,7 @@
             }
         }
 
-        // Expose context menu functions for WeekPlanner
-        window.contextMenuSystem = {
-            showContextMenu,
-            hideContextMenu,
-            copyBlockStyle,
-            pasteBlockStyle,
-            copyBlock,
-            pasteBlock,
-            hasCopiedStyle: () => copiedStyle !== null,
-            hasCopiedBlock: () => copiedBlock !== null
-        };
+        // NOTE: Context menu functions now exposed through TypeScript main.ts
     </script>
 </body>
 </html>

@@ -694,6 +694,45 @@ export class WeekPlanner {
             return;
         }
         
+        // Handle Ctrl+C for copy selected blocks
+        if (event.ctrlKey && event.key === 'c') {
+            event.preventDefault();
+            const selectedBlocks = this.blockManager.getSelectedBlocks();
+            if (selectedBlocks.length > 0) {
+                // Copy all selected blocks using the first selected block as reference
+                const firstBlock = selectedBlocks[0];
+                if (firstBlock) {
+                    this.uiManager.copyBlock(firstBlock);
+                }
+            }
+            return;
+        }
+        
+        // Handle Ctrl+V for paste at current mouse location
+        if (event.ctrlKey && event.key === 'v') {
+            event.preventDefault();
+            if (this.uiManager.hasCopiedBlock()) {
+                let pastePoint = this.mouseState.currentPoint;
+                
+                // If no current mouse position, use center of canvas
+                if (!pastePoint) {
+                    const rect = this.canvas.getBoundingClientRect();
+                    pastePoint = {
+                        x: rect.width / 2,
+                        y: rect.height / 2
+                    };
+                }
+                
+                // Get the cell at paste position
+                const cell = this.getCellFromPoint(pastePoint);
+                if (cell) {
+                    this.uiManager.pasteBlock(cell.dayIndex, cell.startTime);
+                    this.render();
+                }
+            }
+            return;
+        }
+        
         // Handle Escape to cancel template placement or deselect all
         if (event.key === 'Escape') {
             if (this.templatePlacementMode) {

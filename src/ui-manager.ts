@@ -370,8 +370,6 @@ export class UIManager {
             borderStyle: { ...block.borderStyle },
             cornerRadius: block.cornerRadius
         }));
-        
-        console.log(`Copied ${this.copiedBlocks.length} block(s)`);
     }
 
     /**
@@ -414,7 +412,6 @@ export class UIManager {
         // Trigger full re-render to update UI immediately
         if (successfulPastes > 0) {
             weekPlanner.render();
-            console.log(`Pasted ${successfulPastes} block(s)`);
         }
     }
 }

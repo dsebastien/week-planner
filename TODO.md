@@ -1,12 +1,17 @@
 Busy:
-- The quick tools panel should be improved. The way it is "hidden"/shown is really bad
-- When exporting to PNG, the image should have the perfect size for being printed on an horizontal A4 page
+- Move operations should be supported by the undo/redo
+- Quick templates should add 30-minute blocks
+- GET http://localhost:8080/favicon.ico 404 (Not Found)
+- GET http://localhost:8080/site.webmanifest 404 (Not Found)
+- Manifest fetch from http://localhost:8080/site.webmanifest failed, code 404
+- When exporting to PNG/SVG, the image should have the perfect size for being printed on an horizontal A4 page
 - Cleanup Typescript imports. Import the normal typescript way, not from .js files!
 - Move as much logic from the index.html to TypeScript
-- How to quickly monetize this app and generate revenue?
+- Add support for ctrl + c when blocks are selected and ctrl + v to paste at the current mouse location
 - The code of this app is on GitHub and I want to build it and deploy it from there. I own dsebastien.net and want to deploy this at weekplanner.tools.dsebastien.net. My GitHub account has already two custom domains (dsebastien.net and stats.notes.dsebastien.net), so I suppose I could add one more. Generate the GitHub actions workflow I need to (release/build/deploy...). The release creation should also generate a changelog. Finally, explain how I should setup everything step by step
-- Add gradients to time blocks based on their background color
 - Make this work great on mobile
 - UI quality should remain great even when zooming in/out
 - Turn this into an Obsidian plugin
 - Create CONTRIBUTING.md file
+- It should be possible to undo a clear all operation
+- Add gradients to time blocks based on their background color

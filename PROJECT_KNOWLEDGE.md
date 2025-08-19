@@ -44,6 +44,13 @@ Menu actions:
 - Export to PNG, SVG, JSON
 - Import from JSON
 
+Quick Tools actions:
+- **Template Placement**: Click template buttons to start drag-to-place mode
+  - Templates follow mouse cursor as transparent previews
+  - Click on empty grid cell to place 30-minute template block
+  - Escape key cancels placement mode
+  - Available templates: Work, Meeting, Break, Meal
+
 ## Domain model
 Time blocks:
 - id
@@ -322,6 +329,28 @@ this.blocks.set(blockId, updatedBlock);
 8. **ES Module Imports**: TypeScript imports must use `.js` extensions for ES modules served directly in browser without bundler
 
 ## Recent Fixes & Improvements
+
+### **Session August 18, 2025: Template Drag-to-Place System**
+- **🎯 Complete Template Placement System**: Implemented drag-to-place template system for Quick Tools
+  - **Mouse Following**: Template blocks appear as transparent previews that follow the mouse cursor
+  - **30-Minute Defaults**: All templates create 30-minute blocks by default as requested
+  - **Visual Feedback**: Translucent preview blocks show where templates will be placed
+  - **Grid Snapping**: Templates snap to valid grid cells during placement
+  - **Click to Place**: Single click places the template block at the current position
+  - **Escape to Cancel**: Escape key cancels template placement mode
+  - **Overlap Prevention**: Templates cannot be placed on occupied cells
+  - **Grid Boundary Enforcement**: Template placement restricted to valid time slots (05:00-23:30)
+- **🔧 TypeScript Compilation Fixes**: Resolved all compilation errors for template system
+  - **Fixed Mouse State**: Corrected readonly property assignment with spread operator
+  - **Fixed Method Calls**: Updated `getCellFromPoint` call structure
+  - **Proper Type Safety**: All template operations use strict TypeScript interfaces
+- **✅ Functional Template System**: Quick Tools templates now work as intended
+  - **Work Template**: Creates focused work blocks
+  - **Meeting Template**: Creates meeting time blocks  
+  - **Break Template**: Creates break/rest periods
+  - **Meal Template**: Creates meal time blocks
+  - **All templates follow mouse until clicked to place**
+  - **All templates create exactly 30-minute duration blocks**
 
 ### **Session August 18, 2025: Epic Main Screen UI Overhaul**
 - **🎨 Complete Interface Cleanup**: Removed all non-functional elements from epic main screen

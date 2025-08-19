@@ -50,6 +50,10 @@ export class WeekPlanner {
     private editingBlock: RenderedTimeBlock | null = null;
     private resizeTimeout: ReturnType<typeof setTimeout> | null = null;
     private highlightedCell: { day: number; timeMinutes: number } | null = null;
+    
+    // Template placement mode
+    private templatePlacementMode: boolean = false;
+    private templatePlacementData: TimeBlock | null = null;
 
     constructor() {
         // Initialize DOM elements
@@ -284,6 +288,15 @@ export class WeekPlanner {
         
         const point = this.getMousePosition(event);
         
+        // Handle template placement mode
+        if (this.templatePlacementMode) {
+            // Only handle clicks in the grid area
+            if (GridUtils.isInGridArea(point.x, point.y, this.config)) {
+                this.placeTemplate();
+            }
+            return;
+        }
+        
         // Only handle clicks in the grid area
         if (!GridUtils.isInGridArea(point.x, point.y, this.config)) {
             return;
@@ -385,6 +398,13 @@ export class WeekPlanner {
      */
     private onMouseMove(event: MouseEvent): void {
         const point = this.getMousePosition(event);
+        this.mouseState = { ...this.mouseState, currentPoint: point };
+        
+        // Handle template placement mode
+        if (this.templatePlacementMode) {
+            this.updateTemplatePreview();
+            return;
+        }
 
         // Update cursor if not dragging or resizing
         if (!this.mouseState.isDragging && !this.mouseState.resizing) {
@@ -630,12 +650,17 @@ export class WeekPlanner {
             return;
         }
         
-        // Handle Escape to deselect all
-        if (event.key === 'Escape' && !this.editingBlock) {
-            this.blockManager.clearSelection();
-            this.updateToolbarForMultiSelection();
-            this.render();
-            return;
+        // Handle Escape to cancel template placement or deselect all
+        if (event.key === 'Escape') {
+            if (this.templatePlacementMode) {
+                this.cancelTemplatePlacement();
+                return;
+            } else if (!this.editingBlock) {
+                this.blockManager.clearSelection();
+                this.updateToolbarForMultiSelection();
+                this.render();
+                return;
+            }
         }
         
         if (event.key === 'Delete' || event.key === 'Backspace') {
@@ -750,10 +775,6 @@ export class WeekPlanner {
         };
 
         this.render();
-        // Only draw creation preview block if we're not moving blocks
-        if (this.previewBlock && this.mouseState.movingBlockIds.length === 0 && !this.mouseState.moving) {
-            this.renderer.drawPreviewBlock(this.previewBlock);
-        }
     }
 
     /**
@@ -1316,6 +1337,11 @@ export class WeekPlanner {
         if (this.highlightedCell) {
             this.renderer.drawHighlightedCell(this.highlightedCell.day, this.highlightedCell.timeMinutes);
         }
+        
+        // Draw template preview block during template placement mode
+        if (this.templatePlacementMode && this.previewBlock) {
+            this.renderer.drawPreviewBlock(this.previewBlock);
+        }
     }
 
     /**
@@ -1625,6 +1651,118 @@ export class WeekPlanner {
             (window as any).editToolbar.hide();
         }
         this.render();
+    }
+
+    /**
+     * Template placement methods
+     */
+    
+    /**
+     * Start template placement mode with a template block
+     */
+    startTemplatePlacement(templateBlock: Omit<TimeBlock, 'id'>): void {
+        this.templatePlacementMode = true;
+        this.templatePlacementData = {
+            ...templateBlock,
+            id: 'template-preview',
+            duration: 30 // Always 30 minutes for templates
+        };
+        
+        // Change cursor to indicate placement mode
+        this.canvas.style.cursor = 'crosshair';
+        
+        // Get current mouse position from the canvas if available
+        const rect = this.canvas.getBoundingClientRect();
+        const centerX = rect.width / 2;
+        const centerY = rect.height / 2;
+        
+        // Initialize mouse state with center position
+        this.mouseState = { 
+            ...this.mouseState, 
+            currentPoint: { x: centerX, y: centerY } 
+        };
+        
+        // Create initial preview at center or mouse position if available
+        this.updateTemplatePreview();
+        this.render();
+    }
+    
+    /**
+     * Cancel template placement mode
+     */
+    cancelTemplatePlacement(): void {
+        this.templatePlacementMode = false;
+        this.templatePlacementData = null;
+        this.previewBlock = null;
+        this.canvas.style.cursor = 'default';
+        this.render();
+    }
+    
+    /**
+     * Update template preview based on current mouse position
+     */
+    private updateTemplatePreview(): void {
+        if (!this.templatePlacementMode || !this.templatePlacementData || !this.mouseState.currentPoint) {
+            return;
+        }
+        
+        // Get grid cell from current mouse position
+        const cell = this.getCellFromPoint(this.mouseState.currentPoint);
+        if (!cell) {
+            this.previewBlock = null;
+            this.render();
+            return;
+        }
+        
+        // Create preview block at the grid cell
+        const { x, y, width, height } = GridUtils.calculateBlockPixelProperties(
+            cell.dayIndex,
+            cell.startTime,
+            30, // Always 30 minutes
+            1, // Always single day
+            this.config
+        );
+        
+        this.previewBlock = {
+            ...this.templatePlacementData,
+            startDay: cell.dayIndex,
+            startTime: cell.startTime,
+            duration: 30,
+            daySpan: 1,
+            x,
+            y,
+            width,
+            height
+        };
+        
+        this.render();
+    }
+    
+    /**
+     * Place the template at the current position
+     */
+    private placeTemplate(): void {
+        if (!this.templatePlacementMode || !this.templatePlacementData || !this.previewBlock) {
+            return;
+        }
+        
+        // Create the actual block
+        const blockData: TimeBlock = {
+            ...this.templatePlacementData,
+            id: this.generateBlockId(),
+            startDay: this.previewBlock.startDay,
+            startTime: this.previewBlock.startTime,
+            duration: 30,
+            daySpan: 1,
+            selected: false
+        };
+        
+        // Try to add the block
+        const result = this.blockManager.addBlockWithUndo(blockData);
+        if (result.success) {
+            // Exit template placement mode
+            this.cancelTemplatePlacement();
+        }
     }
 
     /**

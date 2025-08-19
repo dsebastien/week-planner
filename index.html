@@ -165,6 +165,91 @@
                 <!-- Enhanced Right Actions -->
                 <div class="flex items-center gap-3">
 
+                    <!-- Quick Tools Button -->
+                    <div class="relative">
+                        <button id="quickToolsToggle" 
+                                class="inline-flex items-center justify-center gap-2 px-3 py-2 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white rounded-lg shadow-lg backdrop-blur-xl transform hover:scale-105 transition-all duration-200 font-medium text-sm"
+                                title="Quick Tools & Templates">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path>
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                            </svg>
+                            Quick Tools
+                        </button>
+
+                        <!-- Dropdown Panel -->
+                        <div id="quickToolsDropdown" class="absolute top-full right-0 mt-2 w-80 bg-gradient-to-br from-gray-900/98 via-gray-800/98 to-gray-900/98 backdrop-blur-2xl border-2 border-purple-400/40 rounded-2xl shadow-2xl shadow-purple-500/20 overflow-hidden transform scale-95 opacity-0 pointer-events-none transition-all duration-300 z-50">
+                            <div class="bg-gradient-to-r from-purple-600/20 via-indigo-600/20 to-purple-600/20 px-6 py-4 border-b border-purple-400/30">
+                                <h3 class="text-lg font-bold text-white flex items-center gap-3">
+                                    <div class="w-6 h-6 bg-gradient-to-br from-purple-500 to-indigo-600 rounded-lg flex items-center justify-center">
+                                        <svg class="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+                                        </svg>
+                                    </div>
+                                    Quick Actions
+                                </h3>
+                            </div>
+
+                            <div class="p-4 space-y-4">
+                                <!-- Selection Tools -->
+                                <div class="bg-gradient-to-br from-blue-600/20 via-cyan-600/20 to-blue-600/20 border border-blue-400/40 rounded-xl p-4">
+                                    <h4 class="font-semibold text-white mb-3 flex items-center gap-2">
+                                        <div class="w-5 h-5 bg-gradient-to-br from-blue-500 to-cyan-600 rounded flex items-center justify-center">
+                                            <svg class="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                            </svg>
+                                        </div>
+                                        Selection
+                                    </h4>
+                                    <div class="grid grid-cols-2 gap-2">
+                                        <button id="toolSelectAll" class="bg-gradient-to-r from-blue-600/80 to-cyan-600/80 hover:from-blue-500 hover:to-cyan-500 text-white px-3 py-2 rounded-lg transition-all duration-200 flex items-center justify-center gap-1 font-medium text-sm shadow-lg hover:shadow-blue-500/25 transform hover:scale-105">
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                            </svg>
+                                            Select All
+                                        </button>
+                                        <button id="toolClearAll" class="bg-gradient-to-r from-red-600/80 to-pink-600/80 hover:from-red-500 hover:to-pink-500 text-white px-3 py-2 rounded-lg transition-all duration-200 flex items-center justify-center gap-1 font-medium text-sm shadow-lg hover:shadow-red-500/25 transform hover:scale-105">
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                                            </svg>
+                                            Clear All
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <!-- Quick Templates -->
+                                <div class="bg-gradient-to-br from-emerald-600/20 via-green-600/20 to-emerald-600/20 border border-emerald-400/40 rounded-xl p-4">
+                                    <h4 class="font-semibold text-white mb-3 flex items-center gap-2">
+                                        <div class="w-5 h-5 bg-gradient-to-br from-emerald-500 to-green-600 rounded flex items-center justify-center">
+                                            <svg class="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                                            </svg>
+                                        </div>
+                                        Templates
+                                    </h4>
+                                    <div class="grid grid-cols-2 gap-2">
+                                        <button id="addWorkout" class="bg-gradient-to-r from-emerald-600/70 to-green-600/70 hover:from-emerald-500 hover:to-green-500 text-white px-3 py-2 rounded-lg transition-all duration-200 flex items-center gap-2 font-medium text-sm shadow-lg hover:shadow-emerald-500/25 transform hover:scale-105">
+                                            <span class="text-base">🏃‍♂️</span>
+                                            <span class="text-xs">Workout</span>
+                                        </button>
+                                        <button id="addWorkSession" class="bg-gradient-to-r from-blue-600/70 to-indigo-600/70 hover:from-blue-500 hover:to-indigo-500 text-white px-3 py-2 rounded-lg transition-all duration-200 flex items-center gap-2 font-medium text-sm shadow-lg hover:shadow-blue-500/25 transform hover:scale-105">
+                                            <span class="text-base">💼</span>
+                                            <span class="text-xs">Work</span>
+                                        </button>
+                                        <button id="addLunch" class="bg-gradient-to-r from-amber-600/70 to-orange-600/70 hover:from-amber-500 hover:to-orange-500 text-white px-3 py-2 rounded-lg transition-all duration-200 flex items-center gap-2 font-medium text-sm shadow-lg hover:shadow-amber-500/25 transform hover:scale-105">
+                                            <span class="text-base">🍽️</span>
+                                            <span class="text-xs">Lunch</span>
+                                        </button>
+                                        <button id="addStudy" class="bg-gradient-to-r from-violet-600/70 to-purple-600/70 hover:from-violet-500 hover:to-purple-500 text-white px-3 py-2 rounded-lg transition-all duration-200 flex items-center gap-2 font-medium text-sm shadow-lg hover:shadow-violet-500/25 transform hover:scale-105">
+                                            <span class="text-base">📚</span>
+                                            <span class="text-xs">Study</span>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
                     <!-- Undo/Redo Buttons -->
                     <div class="flex items-center gap-1">
                         <button id="undoButton" disabled 
@@ -485,71 +570,6 @@
     <main class="pt-16 h-screen">
         <!-- Main Layout Container -->
         <div class="relative flex h-full">
-            <!-- Collapsible Quick Tools Panel -->
-            <div id="quickToolsPanel" class="absolute left-4 top-4 w-72 z-40 transition-transform duration-300 translate-x-[-260px] hover:translate-x-0">
-                <div class="bg-gradient-to-br from-gray-900/95 via-gray-800/95 to-gray-900/95 backdrop-blur-xl border border-gray-600/30 rounded-2xl shadow-2xl floating-panel overflow-hidden">
-                    <!-- Handle -->
-                    <div class="absolute right-[-20px] top-1/2 transform -translate-y-1/2 bg-gradient-to-br from-gray-900/95 via-gray-800/95 to-gray-900/95 backdrop-blur-xl border border-gray-600/30 rounded-r-xl p-2 cursor-pointer" id="quickToolsHandle">
-                        <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
-                        </svg>
-                    </div>
-
-                    <div class="p-6">
-                        <!-- Panel Header -->
-                        <div class="flex items-center gap-3 mb-6">
-                            <div class="w-8 h-8 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-lg flex items-center justify-center">
-                                <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path>
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
-                                </svg>
-                            </div>
-                            <h3 class="font-semibold text-white">Quick Tools</h3>
-                        </div>
-                        
-                        <!-- Tools -->
-                        <div class="space-y-4">
-                            <!-- Selection Tools -->
-                            <div class="bg-gray-800/50 border border-gray-600/30 rounded-xl p-4">
-                                <h4 class="text-sm font-medium text-gray-300 mb-3">Selection</h4>
-                                <div class="space-y-2">
-                                    <button id="toolSelectAll" class="w-full text-left px-3 py-2 text-sm text-gray-300 hover:text-white hover:bg-gray-700/50 rounded-lg transition-all duration-200 flex items-center gap-2">
-                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                                        </svg>
-                                        Select All Blocks
-                                    </button>
-                                    <button id="toolClearAll" class="w-full text-left px-3 py-2 text-sm text-gray-300 hover:text-white hover:bg-red-600/20 rounded-lg transition-all duration-200 flex items-center gap-2">
-                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
-                                        </svg>
-                                        Clear All Blocks
-                                    </button>
-                                </div>
-                            </div>
-
-                            <!-- Quick Templates -->
-                            <div class="bg-gray-800/50 border border-gray-600/30 rounded-xl p-4">
-                                <h4 class="text-sm font-medium text-gray-300 mb-3">Quick Templates</h4>
-                                <div class="space-y-2">
-                                    <button id="addWorkout" class="w-full text-left px-3 py-2 text-sm text-gray-300 hover:text-white hover:bg-gray-700/50 rounded-lg transition-all duration-200">
-                                        🏃‍♂️ Morning Workout
-                                    </button>
-                                    <button id="addWorkSession" class="w-full text-left px-3 py-2 text-sm text-gray-300 hover:text-white hover:bg-gray-700/50 rounded-lg transition-all duration-200">
-                                        💼 Work Session
-                                    </button>
-                                    <button id="addLunch" class="w-full text-left px-3 py-2 text-sm text-gray-300 hover:text-white hover:bg-gray-700/50 rounded-lg transition-all duration-200">
-                                        🍽️ Lunch Break
-                                    </button>
-                                    <button id="addStudy" class="w-full text-left px-3 py-2 text-sm text-gray-300 hover:text-white hover:bg-gray-700/50 rounded-lg transition-all duration-200">
-                                        📚 Study Time
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
 
             <!-- Enhanced Canvas Container -->
             <div class="flex-1 relative">
@@ -1922,8 +1942,47 @@
 
         // Quick Tools panel functionality
         document.addEventListener('DOMContentLoaded', () => {
+            const quickToolsToggle = document.getElementById('quickToolsToggle');
+            const quickToolsDropdown = document.getElementById('quickToolsDropdown');
             const toolSelectAllBtn = document.getElementById('toolSelectAll');
             const toolClearAllBtn = document.getElementById('toolClearAll');
+
+            let isDropdownOpen = false;
+
+            // Quick Tools Dropdown Toggle
+            quickToolsToggle?.addEventListener('click', (e) => {
+                e.stopPropagation();
+                
+                if (isDropdownOpen) {
+                    // Close dropdown
+                    quickToolsDropdown.classList.remove('scale-100', 'opacity-100');
+                    quickToolsDropdown.classList.add('scale-95', 'opacity-0', 'pointer-events-none');
+                    isDropdownOpen = false;
+                } else {
+                    // Open dropdown
+                    quickToolsDropdown.classList.remove('scale-95', 'opacity-0', 'pointer-events-none');
+                    quickToolsDropdown.classList.add('scale-100', 'opacity-100');
+                    isDropdownOpen = true;
+                }
+            });
+
+            // Close dropdown when clicking outside
+            document.addEventListener('click', (e) => {
+                if (isDropdownOpen && !quickToolsDropdown.contains(e.target) && !quickToolsToggle.contains(e.target)) {
+                    quickToolsDropdown.classList.remove('scale-100', 'opacity-100');
+                    quickToolsDropdown.classList.add('scale-95', 'opacity-0', 'pointer-events-none');
+                    isDropdownOpen = false;
+                }
+            });
+
+            // Close dropdown after clicking a button inside it
+            function closeDropdownAfterAction() {
+                setTimeout(() => {
+                    quickToolsDropdown.classList.remove('scale-100', 'opacity-100');
+                    quickToolsDropdown.classList.add('scale-95', 'opacity-0', 'pointer-events-none');
+                    isDropdownOpen = false;
+                }, 150); // Small delay for visual feedback
+            }
             
             // Tool Select All button
             toolSelectAllBtn?.addEventListener('click', () => {
@@ -1934,6 +1993,7 @@
                     window.weekPlanner.blockManager.selectBlocks(allBlockIds);
                     window.weekPlanner.render();
                 }
+                closeDropdownAfterAction();
             });
             
             // Tool Clear All button
@@ -1949,6 +2009,88 @@
                         }
                     }, 10);
                 }
+                closeDropdownAfterAction();
+            });
+
+            // Quick Templates functionality
+            const templates = {
+                workout: {
+                    text: '🏃‍♂️ Morning Workout',
+                    duration: 60, // 1 hour
+                    color: '#10b981', // emerald-500
+                    time: 7 * 60 // 7:00 AM
+                },
+                work: {
+                    text: '💼 Work Session',
+                    duration: 120, // 2 hours
+                    color: '#3b82f6', // blue-500
+                    time: 9 * 60 // 9:00 AM
+                },
+                lunch: {
+                    text: '🍽️ Lunch Break',
+                    duration: 60, // 1 hour
+                    color: '#f59e0b', // amber-500
+                    time: 12 * 60 // 12:00 PM
+                },
+                study: {
+                    text: '📚 Study Time',
+                    duration: 90, // 1.5 hours
+                    color: '#8b5cf6', // violet-500
+                    time: 19 * 60 // 7:00 PM
+                }
+            };
+
+            // Helper function to start template placement mode
+            function startTemplatePlacement(templateKey) {
+                const template = templates[templateKey];
+                if (!template || !window.weekPlanner) return;
+
+                // Create the template data (without id, startDay, startTime)
+                const templateData = {
+                    text: template.text,
+                    color: template.color,
+                    textColor: '#ffffff',
+                    fontSize: 16,
+                    fontStyle: {
+                        bold: false,
+                        italic: false
+                    },
+                    textAlignment: 'center',
+                    verticalAlignment: 'middle',
+                    borderStyle: {
+                        width: 2,
+                        style: 'solid',
+                        color: template.color
+                    },
+                    cornerRadius: 0,
+                    selected: false,
+                    duration: 30, // Always 30 minutes for templates
+                    daySpan: 1
+                };
+
+                // Start template placement mode
+                window.weekPlanner.startTemplatePlacement(templateData);
+            }
+
+            // Template button event listeners
+            document.getElementById('addWorkout')?.addEventListener('click', () => {
+                startTemplatePlacement('workout');
+                closeDropdownAfterAction();
+            });
+
+            document.getElementById('addWorkSession')?.addEventListener('click', () => {
+                startTemplatePlacement('work');
+                closeDropdownAfterAction();
+            });
+
+            document.getElementById('addLunch')?.addEventListener('click', () => {
+                startTemplatePlacement('lunch');
+                closeDropdownAfterAction();
+            });
+
+            document.getElementById('addStudy')?.addEventListener('click', () => {
+                startTemplatePlacement('study');
+                closeDropdownAfterAction();
             });
         });
     </script>

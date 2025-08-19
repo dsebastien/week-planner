@@ -300,6 +300,53 @@ export class TimeBlockManager {
     }
 
     /**
+     * Resizes a block using logical coordinates with undo support
+     */
+    resizeBlockLogicalWithUndo(blockId: string, newStartDay: number, newStartTime: number, newDuration: number, newDaySpan: number): Result<void, ValidationError> {
+        const originalBlock = this.blocks.get(blockId);
+        if (!originalBlock) {
+            return {
+                success: false,
+                error: {
+                    code: 'BLOCK_NOT_FOUND',
+                    message: 'Block not found',
+                    field: 'blockId'
+                }
+            };
+        }
+
+        // Store original properties for undo
+        const originalProps = {
+            startDay: originalBlock.startDay,
+            startTime: originalBlock.startTime,
+            duration: originalBlock.duration,
+            daySpan: originalBlock.daySpan
+        };
+
+        // Perform the resize
+        const result = this.resizeBlockLogical(blockId, newStartDay, newStartTime, newDuration, newDaySpan);
+        
+        if (result.success) {
+            // Create undo operation
+            const operation = UndoManager.createOperation(
+                'resize',
+                `Resize block: ${originalBlock.text || 'Untitled'}`,
+                () => {
+                    // Undo: restore original properties
+                    this.resizeBlockLogical(blockId, originalProps.startDay, originalProps.startTime, originalProps.duration, originalProps.daySpan);
+                },
+                () => {
+                    // Redo: apply the resize again
+                    this.resizeBlockLogical(blockId, newStartDay, newStartTime, newDuration, newDaySpan);
+                }
+            );
+            this.undoManager.addOperation(operation);
+        }
+
+        return result;
+    }
+
+    /**
      * Resizes a block with validation using logical coordinates (legacy pixel-based method)
      */
     resizeBlock(blockId: string, newX: number, newY: number, newWidth: number, newHeight: number): Result<void, ValidationError> {
@@ -486,6 +533,62 @@ export class TimeBlockManager {
     }
 
     /**
+     * Moves multiple blocks maintaining their relative positions with undo support
+     */
+    moveBlocksWithUndo(blockIds: string[], newStartDay: number, newStartTime: number): Result<void, ValidationError> {
+        if (blockIds.length === 0) {
+            return {
+                success: false,
+                error: { code: 'INVALID_SELECTION', message: 'No blocks selected', field: 'blockIds' }
+            };
+        }
+
+        // Store original positions for undo
+        const originalPositions = new Map<string, { startDay: number; startTime: number }>();
+        for (const blockId of blockIds) {
+            const block = this.blocks.get(blockId);
+            if (block) {
+                originalPositions.set(blockId, {
+                    startDay: block.startDay,
+                    startTime: block.startTime
+                });
+            }
+        }
+
+        // Perform the move
+        const result = this.moveBlocks(blockIds, newStartDay, newStartTime);
+        
+        if (result.success) {
+            // Create undo operation
+            const operation = UndoManager.createOperation(
+                'move',
+                `Move ${blockIds.length} block(s)`,
+                () => {
+                    // Undo: restore original positions
+                    for (const [blockId, originalPos] of originalPositions) {
+                        const block = this.blocks.get(blockId);
+                        if (block) {
+                            const restoredBlock: TimeBlock = {
+                                ...block,
+                                startDay: originalPos.startDay,
+                                startTime: originalPos.startTime
+                            };
+                            this.blocks.set(blockId, restoredBlock);
+                        }
+                    }
+                },
+                () => {
+                    // Redo: apply the move again
+                    this.moveBlocks(blockIds, newStartDay, newStartTime);
+                }
+            );
+            this.undoManager.addOperation(operation);
+        }
+
+        return result;
+    }
+
+    /**
      * Gets all blocks as a readonly array with dynamically calculated pixel positions
      */
     getBlocks(): readonly RenderedTimeBlock[] {
@@ -624,11 +727,38 @@ export class TimeBlockManager {
     }
 
     /**
-     * Clears all blocks and clears undo history
+     * Clears all blocks with undo support
      */
     clearAllWithUndo(): void {
+        const allBlocks = Array.from(this.blocks.values());
+        const selectedIds = new Set(this.selectedBlockIds);
+        
+        if (allBlocks.length === 0) {
+            return; // Nothing to clear
+        }
+
+        // Clear all blocks
         this.clearAll();
-        this.undoManager.clearHistory();
+
+        // Create undo operation to restore all blocks
+        const operation = UndoManager.createOperation(
+            'clear_all',
+            `Clear all blocks (${allBlocks.length} blocks)`,
+            () => {
+                // Undo: restore all blocks
+                for (const block of allBlocks) {
+                    this.blocks.set(block.id, { ...block });
+                    if (selectedIds.has(block.id)) {
+                        this.selectedBlockIds.add(block.id);
+                    }
+                }
+            },
+            () => {
+                // Redo: clear all blocks again
+                this.clearAll();
+            }
+        );
+        this.undoManager.addOperation(operation);
     }
 
     /**

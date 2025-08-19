@@ -17,6 +17,7 @@ import { GridUtils } from './grid-utils.js';
 import { TimeBlockManager } from './time-block-manager.js';
 import { CanvasRenderer } from './canvas-renderer.js';
 import { UIManager } from './ui-manager.js';
+import { UndoManager } from './undo-manager.js';
 
 /**
  * Main application controller for the week planner
@@ -50,6 +51,7 @@ export class WeekPlanner {
     private editingBlock: RenderedTimeBlock | null = null;
     private resizeTimeout: ReturnType<typeof setTimeout> | null = null;
     private highlightedCell: { day: number; timeMinutes: number } | null = null;
+    private resizeOriginalState: { startDay: number; startTime: number; duration: number; daySpan: number } | null = null;
     
     // Template placement mode
     private templatePlacementMode: boolean = false;
@@ -322,6 +324,14 @@ export class WeekPlanner {
                     originalBlock: { ...clickedBlock }
                 };
                 
+                // Store original state for undo
+                this.resizeOriginalState = {
+                    startDay: clickedBlock.startDay,
+                    startTime: clickedBlock.startTime,
+                    duration: clickedBlock.duration,
+                    daySpan: clickedBlock.daySpan
+                };
+                
                 // Hide styling panel during resize to prevent interference
                 if ((window as any).editToolbar) {
                     (window as any).editToolbar.hide();
@@ -436,9 +446,43 @@ export class WeekPlanner {
      * Handle mouse up events
      */
     private onMouseUp(): void {
-        if (this.mouseState.resizing && this.mouseState.resizeBlockId) {
-            // Resize operation is finished, no additional action needed
-            // The resize was applied in real-time during updateResize
+        if (this.mouseState.resizing && this.mouseState.resizeBlockId && this.resizeOriginalState) {
+            // Resize operation is finished - create undo operation
+            const currentBlock = this.blockManager.getBlock(this.mouseState.resizeBlockId);
+            if (currentBlock) {
+                const blockId = this.mouseState.resizeBlockId;
+                const originalState = this.resizeOriginalState;
+                const finalState = {
+                    startDay: currentBlock.startDay,
+                    startTime: currentBlock.startTime,
+                    duration: currentBlock.duration,
+                    daySpan: currentBlock.daySpan
+                };
+                
+                // Only create undo operation if the block actually changed
+                if (originalState.startDay !== finalState.startDay || 
+                    originalState.startTime !== finalState.startTime ||
+                    originalState.duration !== finalState.duration ||
+                    originalState.daySpan !== finalState.daySpan) {
+                    
+                    const operation = UndoManager.createOperation(
+                        'resize',
+                        `Resize block: ${currentBlock.text || 'Untitled'}`,
+                        () => {
+                            // Undo: restore original state
+                            this.blockManager.resizeBlockLogical(blockId, originalState.startDay, originalState.startTime, originalState.duration, originalState.daySpan);
+                        },
+                        () => {
+                            // Redo: restore final state
+                            this.blockManager.resizeBlockLogical(blockId, finalState.startDay, finalState.startTime, finalState.duration, finalState.daySpan);
+                        }
+                    );
+                    this.blockManager.undoManager.addOperation(operation);
+                }
+            }
+            
+            // Clear resize state
+            this.resizeOriginalState = null;
         } else if (this.mouseState.moving && this.mouseState.movingBlockIds.length > 0) {
             this.finishBlockMove();
         } else if (this.mouseState.isDragging && this.previewBlock) {
@@ -904,7 +948,7 @@ export class WeekPlanner {
         if ((dayOffset !== 0 || timeOffset !== 0) && 
             this.blockManager.canMoveToPosition(this.mouseState.movingBlockIds, newStartDay, newStartTime)) {
             
-            const result = this.blockManager.moveBlocks(this.mouseState.movingBlockIds, newStartDay, newStartTime);
+            const result = this.blockManager.moveBlocksWithUndo(this.mouseState.movingBlockIds, newStartDay, newStartTime);
             
             if (!result.success) {
                 this.showError(result.error.message);

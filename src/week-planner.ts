@@ -975,96 +975,125 @@ export class WeekPlanner {
         }
 
         const originalBlock = this.mouseState.originalBlock;
-        const deltaX = currentPoint.x - this.mouseState.startPoint.x;
-        const deltaY = currentPoint.y - this.mouseState.startPoint.y;
-
-        let newX = originalBlock.x;
-        let newY = originalBlock.y;
-        let newWidth = originalBlock.width;
-        let newHeight = originalBlock.height;
-
-        // Apply resize based on handle type
-        switch (this.mouseState.resizeHandle) {
-            case 'top':
-                newY = originalBlock.y + deltaY;
-                newHeight = originalBlock.height - deltaY;
-                break;
-            case 'bottom':
-                newHeight = originalBlock.height + deltaY;
-                break;
-            case 'left':
-                newX = originalBlock.x + deltaX;
-                newWidth = originalBlock.width - deltaX;
-                break;
-            case 'right':
-                newWidth = originalBlock.width + deltaX;
-                break;
-            case 'top-left':
-                newX = originalBlock.x + deltaX;
-                newY = originalBlock.y + deltaY;
-                newWidth = originalBlock.width - deltaX;
-                newHeight = originalBlock.height - deltaY;
-                break;
-            case 'top-right':
-                newY = originalBlock.y + deltaY;
-                newWidth = originalBlock.width + deltaX;
-                newHeight = originalBlock.height - deltaY;
-                break;
-            case 'bottom-left':
-                newX = originalBlock.x + deltaX;
-                newWidth = originalBlock.width - deltaX;
-                newHeight = originalBlock.height + deltaY;
-                break;
-            case 'bottom-right':
-                newWidth = originalBlock.width + deltaX;
-                newHeight = originalBlock.height + deltaY;
-                break;
-        }
-
-        // Snap to grid boundaries
-        if (this.mouseState.resizeHandle.includes('left') || this.mouseState.resizeHandle.includes('right')) {
-            // Snap horizontal positions to day boundaries
-            const leftDayIndex = Math.round((newX - this.config.timeColumnWidth) / this.config.dayWidth);
-            newX = this.config.timeColumnWidth + leftDayIndex * this.config.dayWidth;
-            
-            const rightDayIndex = Math.round((newX + newWidth - this.config.timeColumnWidth) / this.config.dayWidth);
-            newWidth = Math.max(this.config.dayWidth, (rightDayIndex - leftDayIndex) * this.config.dayWidth);
-        }
-
-        if (this.mouseState.resizeHandle.includes('top') || this.mouseState.resizeHandle.includes('bottom')) {
-            // Snap vertical positions to time slot boundaries
-            const topSlotIndex = Math.round((newY - this.config.headerHeight) / this.config.timeSlotHeight);
-            newY = this.config.headerHeight + topSlotIndex * this.config.timeSlotHeight;
-            
-            const bottomSlotIndex = Math.round((newY + newHeight - this.config.headerHeight) / this.config.timeSlotHeight);
-            newHeight = Math.max(this.config.timeSlotHeight, (bottomSlotIndex - topSlotIndex) * this.config.timeSlotHeight);
-        }
-
-        // Ensure minimum sizes
-        newWidth = Math.max(this.config.dayWidth, newWidth);
-        newHeight = Math.max(this.config.timeSlotHeight, newHeight);
-
-        // Ensure the block stays within grid bounds
-        newX = Math.max(this.config.timeColumnWidth, newX);
-        newY = Math.max(this.config.headerHeight, newY);
         
-        const maxX = this.config.timeColumnWidth + (this.config.days.length - 1) * this.config.dayWidth;
-        const maxY = this.config.headerHeight + ((this.config.endHour - this.config.startHour) * 2 - 1) * this.config.timeSlotHeight;
+        // Convert current mouse position to grid cell
+        const currentCell = this.getCellFromPoint(currentPoint);
+        if (!currentCell) return;
         
-        if (newX + newWidth > maxX + this.config.dayWidth) {
-            newWidth = maxX + this.config.dayWidth - newX;
-        }
-        if (newY + newHeight > maxY + this.config.timeSlotHeight) {
-            newHeight = maxY + this.config.timeSlotHeight - newY;
-        }
+        // Calculate the new TimeBlock properties based on resize handle
+        const newProperties = this.calculateResizeProperties(originalBlock, currentCell, this.mouseState.resizeHandle);
+        if (!newProperties) return;
 
-        // Apply the resize
-        const result = this.blockManager.resizeBlock(this.mouseState.resizeBlockId, newX, newY, newWidth, newHeight);
+        // Apply the resize using logical coordinates
+        const result = this.blockManager.resizeBlockLogical(
+            this.mouseState.resizeBlockId, 
+            newProperties.startDay,
+            newProperties.startTime,
+            newProperties.duration,
+            newProperties.daySpan
+        );
         
         if (result.success) {
             this.render();
         }
         // If resize failed due to overlap, we don't render to maintain visual feedback
+    }
+
+    /**
+     * Calculate new TimeBlock properties for resize operation
+     */
+    private calculateResizeProperties(
+        originalBlock: RenderedTimeBlock, 
+        currentCell: { dayIndex: number; startTime: number },
+        handle: ResizeHandle
+    ): { startDay: number; startTime: number; duration: number; daySpan: number } | null {
+        
+        // Calculate original end boundaries
+        const originalEndDay = originalBlock.startDay + originalBlock.daySpan - 1;
+        const originalEndTime = originalBlock.startTime + originalBlock.duration;
+        
+        // Start with original properties
+        let newStartDay = originalBlock.startDay;
+        let newStartTime = originalBlock.startTime;
+        let newDaySpan = originalBlock.daySpan;
+        let newDuration = originalBlock.duration;
+
+        switch (handle) {
+            case 'top':
+                // Resize from top: change start time, preserve end time
+                newStartTime = currentCell.startTime;
+                newDuration = originalEndTime - newStartTime;
+                break;
+                
+            case 'bottom':
+                // Resize from bottom: preserve start time, change end time
+                const newEndTime = currentCell.startTime + 30; // End of current cell
+                newDuration = newEndTime - originalBlock.startTime;
+                break;
+                
+            case 'left':
+                // Resize from left: change start day, preserve end day
+                newStartDay = currentCell.dayIndex;
+                newDaySpan = originalEndDay - newStartDay + 1;
+                break;
+                
+            case 'right':
+                // Resize from right: preserve start day, change end day
+                newDaySpan = currentCell.dayIndex - originalBlock.startDay + 1;
+                break;
+                
+            case 'top-left':
+                // Resize from top-left: change both start time and start day
+                newStartTime = currentCell.startTime;
+                newDuration = originalEndTime - newStartTime;
+                newStartDay = currentCell.dayIndex;
+                newDaySpan = originalEndDay - newStartDay + 1;
+                break;
+                
+            case 'top-right':
+                // Resize from top-right: change start time and end day
+                newStartTime = currentCell.startTime;
+                newDuration = originalEndTime - newStartTime;
+                newDaySpan = currentCell.dayIndex - originalBlock.startDay + 1;
+                break;
+                
+            case 'bottom-left':
+                // Resize from bottom-left: change end time and start day
+                const newEndTimeBL = currentCell.startTime + 30;
+                newDuration = newEndTimeBL - originalBlock.startTime;
+                newStartDay = currentCell.dayIndex;
+                newDaySpan = originalEndDay - newStartDay + 1;
+                break;
+                
+            case 'bottom-right':
+                // Resize from bottom-right: change both end time and end day
+                const newEndTimeBR = currentCell.startTime + 30;
+                newDuration = newEndTimeBR - originalBlock.startTime;
+                newDaySpan = currentCell.dayIndex - originalBlock.startDay + 1;
+                break;
+                
+            default:
+                return null;
+        }
+
+        // Validate and clamp the properties
+        newStartDay = Math.max(0, Math.min(6, newStartDay));
+        newDaySpan = Math.max(1, Math.min(7 - newStartDay, newDaySpan));
+        newStartTime = Math.max(this.config.startHour * 60, newStartTime);
+        newDuration = Math.max(30, newDuration);
+        
+        // Ensure the block doesn't exceed the time range
+        const maxValidTime = this.config.endHour * 60;
+        if (newStartTime + newDuration > maxValidTime) {
+            newDuration = maxValidTime - newStartTime;
+        }
+
+        return {
+            startDay: newStartDay,
+            startTime: newStartTime,
+            duration: newDuration,
+            daySpan: newDaySpan
+        };
     }
 
     /**

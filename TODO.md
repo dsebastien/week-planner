@@ -1,6 +1,9 @@
 Busy:
-- Move operations should be supported by the undo/redo
-- Quick templates should add 30-minute blocks
+
+Resize bug
+
+Move operations should be included in the undo/redo history
+
 - GET http://localhost:8080/favicon.ico 404 (Not Found)
 - GET http://localhost:8080/site.webmanifest 404 (Not Found)
 - Manifest fetch from http://localhost:8080/site.webmanifest failed, code 404

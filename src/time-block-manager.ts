@@ -248,7 +248,59 @@ export class TimeBlockManager {
     }
 
     /**
-     * Resizes a block with validation using logical coordinates
+     * Resizes a block using logical coordinates directly (preferred method)
+     */
+    resizeBlockLogical(blockId: string, newStartDay: number, newStartTime: number, newDuration: number, newDaySpan: number): Result<void, ValidationError> {
+        const originalBlock = this.blocks.get(blockId);
+        if (!originalBlock) {
+            return {
+                success: false,
+                error: {
+                    code: 'BLOCK_NOT_FOUND',
+                    message: 'Block not found',
+                    field: 'blockId'
+                }
+            };
+        }
+
+        // Create the resized block with logical coordinates as source of truth
+        const resizedBlock: TimeBlock = {
+            ...originalBlock,
+            startDay: newStartDay,
+            startTime: newStartTime,
+            duration: newDuration,
+            daySpan: newDaySpan,
+            selected: originalBlock.selected
+        };
+
+        // Validate the resized block
+        const validation = this.validateBlock(resizedBlock);
+        if (!validation.success) {
+            return validation;
+        }
+
+        // Check for overlaps with other blocks (excluding the current block)
+        const otherBlocks = Array.from(this.blocks.values()).filter(block => block.id !== blockId);
+        const hasOverlap = otherBlocks.some(block => this.blocksOverlap(resizedBlock, block));
+        
+        if (hasOverlap) {
+            return {
+                success: false,
+                error: {
+                    code: 'OVERLAP',
+                    message: 'Block would overlap with another block',
+                    field: 'position'
+                }
+            };
+        }
+
+        // Update the block
+        this.blocks.set(blockId, resizedBlock);
+        return { success: true, data: undefined };
+    }
+
+    /**
+     * Resizes a block with validation using logical coordinates (legacy pixel-based method)
      */
     resizeBlock(blockId: string, newX: number, newY: number, newWidth: number, newHeight: number): Result<void, ValidationError> {
         const originalBlock = this.blocks.get(blockId);

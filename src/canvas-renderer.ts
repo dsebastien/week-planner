@@ -629,9 +629,9 @@ export class CanvasRenderer {
         const startTime = GridUtils.formatTime(block.startTime);
         const endTime = GridUtils.formatTime(block.startTime + block.duration);
         
-        // For 30-minute blocks, don't show duration to save space for text
+        // For 30-minute blocks, only show start time to save space for text
         if (block.duration === 30) {
-            return `${startTime}-${endTime}`;
+            return startTime;
         }
         
         const duration = GridUtils.formatDuration(block.duration);

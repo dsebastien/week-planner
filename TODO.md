@@ -1,8 +1,5 @@
 Busy:
 
-- Move, resize and clear all operations should be supported by the undo/redo feature
-
-
 - UI quality should remain perfect even when zooming in/out
 - When exporting to PNG/SVG, the image should have the perfect size for being printed on an horizontal A4 page
 - Cleanup Typescript imports. Import the normal typescript way, not from .js files!
@@ -12,3 +9,4 @@ Busy:
 - Turn this into an Obsidian plugin
 - Create CONTRIBUTING.md file
 - Add gradients to time blocks based on their background color
+- Add a switch (boolean) setting to set Sunday as the first day of the week.

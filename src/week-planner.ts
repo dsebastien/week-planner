@@ -1411,8 +1411,8 @@ export class WeekPlanner {
             this.renderer.drawHighlightedCell(this.highlightedCell.day, this.highlightedCell.timeMinutes);
         }
         
-        // Draw template preview block during template placement mode
-        if (this.templatePlacementMode && this.previewBlock) {
+        // Draw preview block during block creation (drag) or template placement
+        if (this.previewBlock) {
             this.renderer.drawPreviewBlock(this.previewBlock);
         }
     }

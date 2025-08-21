@@ -6,7 +6,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - NEVER read or modify the TODO.md file
 - I'm an expert, consult me for everything you're not certain about
 - Always run `npm run serve` in the background
-- Use Puppeteer via the Dockmaster MCP server to check the results, see if everything works correctly, understand issues, bugs, etc
+- **ALWAYS use Puppeteer or Playwright MCP to verify/test/troubleshoot anything you implement/change/fix** - check results, functionality, UI behavior, bugs, etc
 - Read @./PROJECT_KNOWLEDGE.md to refresh your memory about the project
 - Whenever you make changes, update/save PROJECT_KNOWLEDGE.md
 

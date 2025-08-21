@@ -1474,9 +1474,8 @@ export class WeekPlanner {
         const updates: any = {};
         updates[property] = value;
 
-        // For now, use the non-undo version for style updates to avoid too many undo operations
-        // TODO: Consider implementing batch undo for style changes
-        const result = this.blockManager.updateSelectedBlocksStyle(updates);
+        // Use the undo-enabled version for style updates
+        const result = this.blockManager.updateSelectedBlocksStyleWithUndo(updates);
         if (result.success) {
             this.render();
             // Toolbar stays in user-positioned location
@@ -1653,23 +1652,23 @@ export class WeekPlanner {
                             return;
                         }
 
-                        // Clear existing blocks and import new ones
-                        this.blockManager.clearAll();
+                        // Create import data structure for undo support
+                        const importData: WeekPlannerData = {
+                            version: '1.0',
+                            blocks: blocks,
+                            config: this.config,
+                            exportedAt: new Date().toISOString()
+                        };
                         
-                        let importedCount = 0;
-                        for (const block of blocks) {
-                            const result = this.blockManager.addBlock(block);
-                            if (result.success) {
-                                importedCount++;
-                            }
-                        }
+                        // Use importDataWithUndo for proper undo support
+                        const result = this.blockManager.importDataWithUndo(importData);
+                        let importedCount = result.success ? blocks.length : 0;
                         
-                        if (importedCount > 0) {
+                        if (result.success) {
                             this.render();
                             this.closeMenu();
-                            console.log(`Successfully imported ${importedCount} time blocks from Markdown`);
                         } else {
-                            this.showError('Failed to import any time blocks from Markdown');
+                            this.showError(`Failed to import Markdown: ${result.error.message}`);
                         }
                     } catch (error) {
                         this.showError('Invalid Markdown file format');

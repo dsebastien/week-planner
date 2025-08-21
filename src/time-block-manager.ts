@@ -236,6 +236,69 @@ export class TimeBlockManager {
     }
 
     /**
+     * Updates styling properties for all selected blocks with undo support
+     */
+    updateSelectedBlocksStyleWithUndo(updates: Partial<TimeBlock>): Result<void, ValidationError> {
+        if (this.selectedBlockIds.size === 0) {
+            return {
+                success: false,
+                error: {
+                    code: 'NO_SELECTION',
+                    message: 'No blocks selected for styling update'
+                }
+            };
+        }
+
+        const selectedIds = Array.from(this.selectedBlockIds);
+        
+        // Store original values for undo
+        const originalValues = new Map<string, Partial<TimeBlock>>();
+        for (const blockId of selectedIds) {
+            const block = this.blocks.get(blockId);
+            if (block) {
+                const original: Partial<TimeBlock> = {};
+                for (const key in updates) {
+                    (original as any)[key] = (block as any)[key];
+                }
+                originalValues.set(blockId, original);
+            }
+        }
+
+        // Apply updates to all selected blocks
+        for (const blockId of selectedIds) {
+            const result = this.updateBlock(blockId, updates);
+            if (!result.success) {
+                return result; // Return first error encountered
+            }
+        }
+
+        // Create undo operation for the style change
+        const styleProperties = Object.keys(updates).join(', ');
+        const operation = UndoManager.createOperation(
+            'style',
+            `Update ${styleProperties} for ${selectedIds.length} block(s)`,
+            () => {
+                // Undo: restore original values
+                for (const blockId of selectedIds) {
+                    const originalValue = originalValues.get(blockId);
+                    if (originalValue) {
+                        this.updateBlock(blockId, originalValue);
+                    }
+                }
+            },
+            () => {
+                // Redo: apply the style changes again
+                for (const blockId of selectedIds) {
+                    this.updateBlock(blockId, updates);
+                }
+            }
+        );
+        this.undoManager.addOperation(operation);
+
+        return { success: true, data: undefined };
+    }
+
+    /**
      * Removes all selected blocks
      */
     removeSelectedBlocks(): number {
@@ -890,33 +953,99 @@ export class TimeBlockManager {
     }
 
     /**
-     * Imports data from export with undo support and clears history
+     * Imports data from export with undo support
      */
     importDataWithUndo(data: WeekPlannerData): Result<void, ValidationError> {
         // Store current state for undo
         const currentData = this.exportData();
         
-        const result = this.importData(data);
+        // Validate before making any changes
+        const validationResult = this.validateImportData(data);
+        if (!validationResult.success) {
+            return validationResult;
+        }
+        
+        // Perform the import
+        const result = this.importDataSilent(data);
         if (result.success) {
-            // Clear undo history as specified in requirements
-            this.undoManager.clearHistory();
-            
-            // Create a single import operation (though history was just cleared)
+            // Add import operation to undo history (like any other operation)
             const operation = UndoManager.createOperation(
                 'import',
                 `Import ${data.blocks.length} blocks`,
                 () => {
-                    this.importData(currentData);
-                    this.undoManager.clearHistory(); // Clear again after undo
+                    this.importDataSilent(currentData);
                 },
                 () => {
-                    this.importData(data);
-                    this.undoManager.clearHistory(); // Clear again after redo
+                    this.importDataSilent(data);
                 }
             );
             this.undoManager.addOperation(operation);
         }
         return result;
+    }
+
+    /**
+     * Validate import data without making changes
+     */
+    private validateImportData(data: WeekPlannerData): Result<void, ValidationError> {
+        // Validate version compatibility
+        if (data.version !== '1.0') {
+            return {
+                success: false,
+                error: {
+                    code: 'VERSION_MISMATCH',
+                    message: `Unsupported version: ${data.version}`
+                }
+            };
+        }
+
+        // Validate all blocks before importing
+        for (const block of data.blocks) {
+            const validation = this.validateBlock(block);
+            if (!validation.success) {
+                return {
+                    success: false,
+                    error: {
+                        code: 'INVALID_BLOCK',
+                        message: `Invalid block ${block.id}: ${validation.error.message}`
+                    }
+                };
+            }
+        }
+
+        // Check for overlaps in imported data
+        for (let i = 0; i < data.blocks.length; i++) {
+            for (let j = i + 1; j < data.blocks.length; j++) {
+                const blockI = data.blocks[i];
+                const blockJ = data.blocks[j];
+                if (blockI && blockJ && this.blocksOverlap(blockI, blockJ)) {
+                    return {
+                        success: false,
+                        error: {
+                            code: 'IMPORT_OVERLAP',
+                            message: `Overlapping blocks in import data: ${blockI.id} and ${blockJ.id}`
+                        }
+                    };
+                }
+            }
+        }
+
+        return { success: true, data: undefined };
+    }
+
+    /**
+     * Private method to import data without clearing history (used by undo/redo)
+     */
+    private importDataSilent(data: WeekPlannerData): Result<void, ValidationError> {
+        // Clear existing data and import (without affecting undo history)
+        this.blocks.clear();
+        this.selectedBlockIds.clear();
+        for (const block of data.blocks) {
+            // Ensure imported blocks are not selected by default
+            this.blocks.set(block.id, { ...block, selected: false });
+        }
+
+        return { success: true, data: undefined };
     }
 
     /**

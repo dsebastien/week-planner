@@ -1535,9 +1535,57 @@ export class WeekPlanner {
     }
 
     private exportPNG(): void {
+        // A4 landscape dimensions at 300 DPI for print quality
+        const A4_WIDTH = 3508;  // 11.69 inches * 300 DPI
+        const A4_HEIGHT = 2480; // 8.27 inches * 300 DPI
+        
+        // Create a temporary high-resolution canvas for print export
+        const exportCanvas = document.createElement('canvas');
+        exportCanvas.width = A4_WIDTH;
+        exportCanvas.height = A4_HEIGHT;
+        
+        const exportCtx = exportCanvas.getContext('2d');
+        if (!exportCtx) {
+            console.error('Failed to get export canvas context');
+            return;
+        }
+        
+        // Calculate scale to fit the current canvas content to A4 while maintaining aspect ratio
+        const currentAspectRatio = this.canvas.width / this.canvas.height;
+        const a4AspectRatio = A4_WIDTH / A4_HEIGHT;
+        
+        let scaledWidth: number;
+        let scaledHeight: number;
+        let offsetX = 0;
+        let offsetY = 0;
+        
+        if (currentAspectRatio > a4AspectRatio) {
+            // Current canvas is wider than A4 - fit to width
+            scaledWidth = A4_WIDTH;
+            scaledHeight = A4_WIDTH / currentAspectRatio;
+            offsetY = (A4_HEIGHT - scaledHeight) / 2; // Center vertically
+        } else {
+            // Current canvas is taller than A4 - fit to height  
+            scaledHeight = A4_HEIGHT;
+            scaledWidth = A4_HEIGHT * currentAspectRatio;
+            offsetX = (A4_WIDTH - scaledWidth) / 2; // Center horizontally
+        }
+        
+        // Fill background with white
+        exportCtx.fillStyle = '#ffffff';
+        exportCtx.fillRect(0, 0, A4_WIDTH, A4_HEIGHT);
+        
+        // Draw the current canvas content scaled to fit A4
+        exportCtx.drawImage(
+            this.canvas,
+            0, 0, this.canvas.width, this.canvas.height,
+            offsetX, offsetY, scaledWidth, scaledHeight
+        );
+        
+        // Export the A4-optimized image
         const link = document.createElement('a');
         link.download = this.generateFilename('png');
-        link.href = this.canvas.toDataURL();
+        link.href = exportCanvas.toDataURL('image/png');
         link.click();
     }
 

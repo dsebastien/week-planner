@@ -86,7 +86,7 @@ interface TimeBlock {
 - **Multi-Selection**: Ctrl+click selection with batch operations
 - **Professional Styling Panel**: Color pickers, typography, alignment controls
 - **Undo/Redo System**: 100 operation history with full TypeScript integration, including all operations (create, edit, move, resize, style changes, import, delete)
-- **Export/Import**: PNG, SVG, JSON, Markdown formats with multi-day block support
+- **Export/Import**: PNG (A4 print-optimized), SVG, JSON, Markdown formats with multi-day block support
 - **Template System**: Quick placement of common block types with clean UI (hides styling panel during placement)
 - **Context Menus**: Right-click copy/paste for styles and blocks
 

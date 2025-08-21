@@ -26,7 +26,7 @@ A visual week planning application built with TypeScript, HTML5 Canvas, and mode
 - **Create**: Click/drag to create blocks, double-click for single 30-minute blocks
 - **Edit**: Double-click blocks to edit text
 - **Select**: Click to select, Ctrl+click for multi-selection
-- **Resize**: Drag blue resize handles on selected blocks
+- **Resize**: Drag resize handles (only visible when exactly one block is selected)
 - **Move**: Drag selected blocks to new positions
 - **Context Menu**: Right-click for copy/paste operations
 

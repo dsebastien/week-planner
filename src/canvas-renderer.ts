@@ -335,6 +335,9 @@ export class CanvasRenderer {
      * Draws all time blocks
      */
     private drawBlocks(blocks: readonly RenderedTimeBlock[]): void {
+        // Count selected blocks for resize handle logic
+        const selectedCount = blocks.filter(block => block.selected).length;
+        
         // Sort blocks by position for consistent rendering order
         const sortedBlocks = [...blocks].sort((a, b) => {
             if (a.y !== b.y) return a.y - b.y;
@@ -342,20 +345,20 @@ export class CanvasRenderer {
         });
 
         for (const block of sortedBlocks) {
-            this.drawBlock(block);
+            this.drawBlock(block, selectedCount);
         }
     }
 
     /**
      * Draws a single time block
      */
-    private drawBlock(block: RenderedTimeBlock): void {
+    private drawBlock(block: RenderedTimeBlock, selectedCount: number): void {
         this.drawBlockBackground(block);
         this.drawBlockBorder(block);
         this.drawBlockSelection(block);
         this.drawBlockTimeInfo(block);
         this.drawBlockText(block);
-        this.drawResizeHandles(block);
+        this.drawResizeHandles(block, selectedCount);
     }
 
     /**
@@ -922,10 +925,11 @@ export class CanvasRenderer {
     }
 
     /**
-     * Draws resize handles on selected blocks
+     * Draws resize handles on selected blocks (only when exactly one block is selected)
      */
-    private drawResizeHandles(block: RenderedTimeBlock): void {
-        if (!block.selected) return;
+    private drawResizeHandles(block: RenderedTimeBlock, selectedCount: number): void {
+        // Only show resize handles when exactly one block is selected
+        if (!block.selected || selectedCount !== 1) return;
 
         const handleSize = 12;
         const handleColor = CanvasRenderer.THEME.selectionHighlight;

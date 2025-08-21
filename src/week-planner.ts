@@ -1573,9 +1573,16 @@ export class WeekPlanner {
             blocksByDay[i] = [];
         }
 
-        // Group blocks by starting day
+        // Group blocks by all days they span (including multi-day blocks)
         for (const block of blocks) {
-            blocksByDay[block.startDay]?.push(block);
+            for (let day = block.startDay; day < block.startDay + block.daySpan; day++) {
+                if (day >= 0 && day < 7) {
+                    if (!blocksByDay[day]) {
+                        blocksByDay[day] = [];
+                    }
+                    blocksByDay[day]!.push(block);
+                }
+            }
         }
 
         // Generate markdown for each day
@@ -1594,7 +1601,13 @@ export class WeekPlanner {
                 for (const block of sortedBlocks) {
                     const startTime = GridUtils.formatTime(block.startTime);
                     const endTime = GridUtils.formatTime(block.startTime + block.duration);
-                    const text = block.text.trim() || 'Untitled event';
+                    let text = block.text.trim() || 'Untitled event';
+                    
+                    // Add "(Day x/y)" notation for multi-day blocks
+                    if (block.daySpan > 1) {
+                        const dayNumber = dayIndex - block.startDay + 1;
+                        text += ` (Day ${dayNumber}/${block.daySpan})`;
+                    }
                     
                     markdown += `- ${startTime} - ${endTime}: ${text}\n`;
                 }
@@ -1686,6 +1699,14 @@ export class WeekPlanner {
         let currentDay = -1;
         
         const dayNames = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+        const multiDayBlocks = new Map<string, {
+            startDay: number;
+            startTime: number;
+            duration: number;
+            text: string;
+            daySpan: number;
+            dayParts: Array<{ day: number; dayNumber: number }>;
+        }>();
         
         for (const line of lines) {
             const trimmedLine = line.trim();
@@ -1706,9 +1727,9 @@ export class WeekPlanner {
             // Check if this is a time block line (- 09:00 - 10:30: Meeting)
             const timeBlockMatch = trimmedLine.match(/^-\s+(\d{1,2}):(\d{2})\s*-\s*(\d{1,2}):(\d{2}):\s*(.+)$/);
             if (timeBlockMatch && currentDay !== -1) {
-                const [, startHour, startMin, endHour, endMin, text] = timeBlockMatch;
+                const [, startHour, startMin, endHour, endMin, fullText] = timeBlockMatch;
                 
-                if (!startHour || !startMin || !endHour || !endMin || !text) {
+                if (!startHour || !startMin || !endHour || !endMin || !fullText) {
                     continue;
                 }
                 
@@ -1724,7 +1745,43 @@ export class WeekPlanner {
                 // Ensure duration is a multiple of 30 minutes
                 const adjustedDuration = Math.max(30, Math.round(duration / 30) * 30);
                 
-                // Get default styling for imported blocks
+                // Check if this is a multi-day block with "(Day x/y)" notation
+                const multiDayMatch = fullText.match(/^(.+?)\s+\(Day\s+(\d+)\/(\d+)\)$/);
+                if (multiDayMatch) {
+                    const [, text, dayNumberStr, totalDaysStr] = multiDayMatch;
+                    
+                    if (!text || !dayNumberStr || !totalDaysStr) {
+                        continue;
+                    }
+                    
+                    const dayNumber = parseInt(dayNumberStr);
+                    const totalDays = parseInt(totalDaysStr);
+                    
+                    if (dayNumber > 0 && totalDays > 1 && dayNumber <= totalDays) {
+                        // Create a unique key for this multi-day block
+                        const blockKey = `${text.trim()}-${startTime}-${adjustedDuration}-${totalDays}`;
+                        
+                        if (!multiDayBlocks.has(blockKey)) {
+                            // First occurrence - calculate the start day
+                            const blockStartDay = currentDay - (dayNumber - 1);
+                            multiDayBlocks.set(blockKey, {
+                                startDay: blockStartDay,
+                                startTime,
+                                duration: adjustedDuration,
+                                text: text.trim(),
+                                daySpan: totalDays,
+                                dayParts: []
+                            });
+                        }
+                        
+                        // Record this day part
+                        const multiDayBlock = multiDayBlocks.get(blockKey)!;
+                        multiDayBlock.dayParts.push({ day: currentDay, dayNumber });
+                        continue;
+                    }
+                }
+                
+                // Regular single-day block
                 const defaultStyling = this.getDefaultStyling();
                 
                 const block: TimeBlock = {
@@ -1733,7 +1790,34 @@ export class WeekPlanner {
                     startTime: startTime,
                     duration: adjustedDuration,
                     daySpan: 1,
-                    text: text.trim(),
+                    text: fullText.trim(),
+                    color: '#e5007d', // Default background color (same as new blocks)
+                    textColor: defaultStyling.textColor,
+                    fontSize: defaultStyling.fontSize,
+                    fontStyle: defaultStyling.fontStyle,
+                    textAlignment: defaultStyling.textAlignment,
+                    verticalAlignment: defaultStyling.verticalAlignment,
+                    borderStyle: defaultStyling.borderStyle,
+                    cornerRadius: defaultStyling.cornerRadius,
+                    selected: false
+                };
+                
+                blocks.push(block);
+            }
+        }
+        
+        // Add reconstructed multi-day blocks
+        const defaultStyling = this.getDefaultStyling();
+        for (const multiDayBlock of multiDayBlocks.values()) {
+            // Only add if we have collected all day parts
+            if (multiDayBlock.dayParts.length === multiDayBlock.daySpan) {
+                const block: TimeBlock = {
+                    id: `imported-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+                    startDay: multiDayBlock.startDay,
+                    startTime: multiDayBlock.startTime,
+                    duration: multiDayBlock.duration,
+                    daySpan: multiDayBlock.daySpan,
+                    text: multiDayBlock.text,
                     color: '#e5007d', // Default background color (same as new blocks)
                     textColor: defaultStyling.textColor,
                     fontSize: defaultStyling.fontSize,

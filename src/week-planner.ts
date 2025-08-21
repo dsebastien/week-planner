@@ -1779,6 +1779,11 @@ export class WeekPlanner {
             duration: 30 // Always 30 minutes for templates
         };
         
+        // Hide the block styling panel during template placement
+        if ((window as any).editToolbar) {
+            (window as any).editToolbar.hide();
+        }
+        
         // Change cursor to indicate placement mode
         this.canvas.style.cursor = 'crosshair';
         
@@ -1806,6 +1811,10 @@ export class WeekPlanner {
         this.templatePlacementData = null;
         this.previewBlock = null;
         this.canvas.style.cursor = 'default';
+        
+        // Restore the styling panel if there are selected blocks
+        this.updateToolbarForMultiSelection();
+        
         this.render();
     }
     

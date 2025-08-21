@@ -1963,7 +1963,17 @@
                     quickToolsDropdown.classList.remove('scale-100', 'opacity-100');
                     quickToolsDropdown.classList.add('scale-95', 'opacity-0', 'pointer-events-none');
                     isDropdownOpen = false;
+                    
+                    // Restore styling panel if there are selected blocks
+                    if (window.weekPlanner) {
+                        window.weekPlanner.updateToolbarForMultiSelection();
+                    }
                 } else {
+                    // Hide the block styling panel when opening Quick Tools
+                    if (window.editToolbar) {
+                        window.editToolbar.hide();
+                    }
+                    
                     // Open dropdown
                     quickToolsDropdown.classList.remove('scale-95', 'opacity-0', 'pointer-events-none');
                     quickToolsDropdown.classList.add('scale-100', 'opacity-100');
@@ -1977,6 +1987,11 @@
                     quickToolsDropdown.classList.remove('scale-100', 'opacity-100');
                     quickToolsDropdown.classList.add('scale-95', 'opacity-0', 'pointer-events-none');
                     isDropdownOpen = false;
+                    
+                    // Restore styling panel if there are selected blocks
+                    if (window.weekPlanner) {
+                        window.weekPlanner.updateToolbarForMultiSelection();
+                    }
                 }
             });
 
@@ -1986,6 +2001,11 @@
                     quickToolsDropdown.classList.remove('scale-100', 'opacity-100');
                     quickToolsDropdown.classList.add('scale-95', 'opacity-0', 'pointer-events-none');
                     isDropdownOpen = false;
+                    
+                    // Restore styling panel if there are selected blocks
+                    if (window.weekPlanner) {
+                        window.weekPlanner.updateToolbarForMultiSelection();
+                    }
                 }, 150); // Small delay for visual feedback
             }
             

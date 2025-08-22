@@ -1609,8 +1609,11 @@ export class WeekPlanner {
         const day = String(today.getDate()).padStart(2, '0');
         const dateStr = `${year}-${month}-${day}`;
 
-        // Start with header
-        let markdown = `# ${dateStr} - Week Planning\n\n`;
+        // Generate YAML front matter with block styles
+        const yamlFrontMatter = this.generateYamlFrontMatter(blocks, dateStr);
+
+        // Start with YAML front matter and header
+        let markdown = `${yamlFrontMatter}\n# ${dateStr} - Week Planning\n\n`;
 
         // Group blocks by day
         const dayNames = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
@@ -1649,7 +1652,7 @@ export class WeekPlanner {
                 for (const block of sortedBlocks) {
                     const startTime = GridUtils.formatTime(block.startTime);
                     const endTime = GridUtils.formatTime(block.startTime + block.duration);
-                    let text = block.text.trim() || 'Untitled event';
+                    let text = block.text.trim() || 'Untitled';
                     
                     // Add "(Day x/y)" notation for multi-day blocks
                     if (block.daySpan > 1) {
@@ -1664,6 +1667,86 @@ export class WeekPlanner {
         }
 
         return markdown;
+    }
+
+    /**
+     * Generate YAML front matter with block styling information
+     */
+    private generateYamlFrontMatter(blocks: readonly RenderedTimeBlock[], dateStr: string): string {
+        const today = new Date();
+        const exportedAt = today.toISOString();
+        const dayNames = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+        
+        // Create block styles array
+        const blockStyles: any[] = [];
+        
+        for (const block of blocks) {
+            // Generate time block identifier based on day span
+            let timeBlockId: string;
+            if (block.daySpan === 1) {
+                // Single day: "[Monday] 09:00 - 10:30: Meeting"
+                timeBlockId = `[${dayNames[block.startDay]}] ${GridUtils.formatTime(block.startTime)} - ${GridUtils.formatTime(block.startTime + block.duration)}: ${block.text || 'Untitled'}`;
+            } else {
+                // Multi-day: "[Monday - Wednesday] 09:00 - 10:30: Meeting"
+                const startDayName = dayNames[block.startDay];
+                const endDayName = dayNames[block.startDay + block.daySpan - 1];
+                timeBlockId = `[${startDayName} - ${endDayName}] ${GridUtils.formatTime(block.startTime)} - ${GridUtils.formatTime(block.startTime + block.duration)}: ${block.text || 'Untitled'}`;
+            }
+            
+            const styleEntry = {
+                time_block: timeBlockId,
+                color: block.color,
+                text_color: block.textColor,
+                font_size: block.fontSize,
+                font_style: {
+                    bold: block.fontStyle.bold,
+                    italic: block.fontStyle.italic
+                },
+                text_alignment: block.textAlignment,
+                vertical_alignment: block.verticalAlignment,
+                border: {
+                    width: block.borderStyle.width,
+                    style: block.borderStyle.style,
+                    color: block.borderStyle.color
+                },
+                corner_radius: block.cornerRadius
+            };
+            
+            blockStyles.push(styleEntry);
+        }
+        
+        // Generate YAML content
+        const yamlContent = {
+            date: dateStr,
+            exported_at: exportedAt,
+            block_styles: blockStyles
+        };
+        
+        // Convert to YAML format manually (simple implementation)
+        let yaml = '---\n';
+        yaml += `date: "${yamlContent.date}"\n`;
+        yaml += `exported_at: "${yamlContent.exported_at}"\n`;
+        yaml += 'block_styles:\n';
+        
+        for (const style of blockStyles) {
+            yaml += `  - time_block: "${style.time_block}"\n`;
+            yaml += `    color: "${style.color}"\n`;
+            yaml += `    text_color: "${style.text_color}"\n`;
+            yaml += `    font_size: ${style.font_size}\n`;
+            yaml += `    font_style:\n`;
+            yaml += `      bold: ${style.font_style.bold}\n`;
+            yaml += `      italic: ${style.font_style.italic}\n`;
+            yaml += `    text_alignment: "${style.text_alignment}"\n`;
+            yaml += `    vertical_alignment: "${style.vertical_alignment}"\n`;
+            yaml += `    border:\n`;
+            yaml += `      width: ${style.border.width}\n`;
+            yaml += `      style: "${style.border.style}"\n`;
+            yaml += `      color: "${style.border.color}"\n`;
+            yaml += `    corner_radius: ${style.corner_radius}\n`;
+        }
+        
+        yaml += '---';
+        return yaml;
     }
 
     private importJSON(): void {
@@ -1743,7 +1826,12 @@ export class WeekPlanner {
 
     private parseMarkdown(content: string): TimeBlock[] {
         const blocks: TimeBlock[] = [];
-        const lines = content.split('\n');
+        
+        // Parse YAML front matter if present
+        const { yamlData, markdownContent } = this.parseYamlFrontMatter(content);
+        const blockStylesMap = this.createBlockStylesMap(yamlData?.block_styles);
+        
+        const lines = markdownContent.split('\n');
         let currentDay = -1;
         
         const dayNames = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
@@ -1832,21 +1920,32 @@ export class WeekPlanner {
                 // Regular single-day block
                 const defaultStyling = this.getDefaultStyling();
                 
+                // Generate style key for lookup
+                const timeBlockId = `[${dayNames[currentDay]}] ${GridUtils.formatTime(startTime)} - ${GridUtils.formatTime(startTime + adjustedDuration)}: ${fullText.trim()}`;
+                const style = blockStylesMap.get(timeBlockId) || {};
+                
                 const block: TimeBlock = {
                     id: `imported-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
                     startDay: currentDay,
                     startTime: startTime,
                     duration: adjustedDuration,
                     daySpan: 1,
-                    text: fullText.trim(),
-                    color: '#e5007d', // Default background color (same as new blocks)
-                    textColor: defaultStyling.textColor,
-                    fontSize: defaultStyling.fontSize,
-                    fontStyle: defaultStyling.fontStyle,
-                    textAlignment: defaultStyling.textAlignment,
-                    verticalAlignment: defaultStyling.verticalAlignment,
-                    borderStyle: defaultStyling.borderStyle,
-                    cornerRadius: defaultStyling.cornerRadius,
+                    text: fullText.trim() === 'Untitled' ? '' : fullText.trim(),
+                    color: style.color || '#e5007d',
+                    textColor: style.text_color || defaultStyling.textColor,
+                    fontSize: style.font_size || defaultStyling.fontSize,
+                    fontStyle: {
+                        bold: style.font_style?.bold ?? defaultStyling.fontStyle.bold,
+                        italic: style.font_style?.italic ?? defaultStyling.fontStyle.italic
+                    },
+                    textAlignment: style.text_alignment || defaultStyling.textAlignment,
+                    verticalAlignment: style.vertical_alignment || defaultStyling.verticalAlignment,
+                    borderStyle: {
+                        width: style.border?.width ?? defaultStyling.borderStyle.width,
+                        style: style.border?.style || defaultStyling.borderStyle.style,
+                        color: style.border?.color || defaultStyling.borderStyle.color
+                    },
+                    cornerRadius: style.corner_radius ?? defaultStyling.cornerRadius,
                     selected: false
                 };
                 
@@ -1859,21 +1958,34 @@ export class WeekPlanner {
         for (const multiDayBlock of multiDayBlocks.values()) {
             // Only add if we have collected all day parts
             if (multiDayBlock.dayParts.length === multiDayBlock.daySpan) {
+                // Generate style key for multi-day block lookup
+                const startDayName = dayNames[multiDayBlock.startDay];
+                const endDayName = dayNames[multiDayBlock.startDay + multiDayBlock.daySpan - 1];
+                const timeBlockId = `[${startDayName} - ${endDayName}] ${GridUtils.formatTime(multiDayBlock.startTime)} - ${GridUtils.formatTime(multiDayBlock.startTime + multiDayBlock.duration)}: ${multiDayBlock.text}`;
+                const style = blockStylesMap.get(timeBlockId) || {};
+                
                 const block: TimeBlock = {
                     id: `imported-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
                     startDay: multiDayBlock.startDay,
                     startTime: multiDayBlock.startTime,
                     duration: multiDayBlock.duration,
                     daySpan: multiDayBlock.daySpan,
-                    text: multiDayBlock.text,
-                    color: '#e5007d', // Default background color (same as new blocks)
-                    textColor: defaultStyling.textColor,
-                    fontSize: defaultStyling.fontSize,
-                    fontStyle: defaultStyling.fontStyle,
-                    textAlignment: defaultStyling.textAlignment,
-                    verticalAlignment: defaultStyling.verticalAlignment,
-                    borderStyle: defaultStyling.borderStyle,
-                    cornerRadius: defaultStyling.cornerRadius,
+                    text: multiDayBlock.text === 'Untitled' ? '' : multiDayBlock.text,
+                    color: style.color || '#e5007d',
+                    textColor: style.text_color || defaultStyling.textColor,
+                    fontSize: style.font_size || defaultStyling.fontSize,
+                    fontStyle: {
+                        bold: style.font_style?.bold ?? defaultStyling.fontStyle.bold,
+                        italic: style.font_style?.italic ?? defaultStyling.fontStyle.italic
+                    },
+                    textAlignment: style.text_alignment || defaultStyling.textAlignment,
+                    verticalAlignment: style.vertical_alignment || defaultStyling.verticalAlignment,
+                    borderStyle: {
+                        width: style.border?.width ?? defaultStyling.borderStyle.width,
+                        style: style.border?.style || defaultStyling.borderStyle.style,
+                        color: style.border?.color || defaultStyling.borderStyle.color
+                    },
+                    cornerRadius: style.corner_radius ?? defaultStyling.cornerRadius,
                     selected: false
                 };
                 
@@ -1882,6 +1994,173 @@ export class WeekPlanner {
         }
         
         return blocks;
+    }
+
+    /**
+     * Parse YAML front matter from Markdown content
+     */
+    private parseYamlFrontMatter(content: string): { yamlData: any | null; markdownContent: string } {
+        const lines = content.split('\n');
+        
+        // Check if content starts with YAML front matter
+        if (lines.length < 3 || lines[0]?.trim() !== '---') {
+            return { yamlData: null, markdownContent: content };
+        }
+        
+        // Find the closing ---
+        let endIndex = -1;
+        for (let i = 1; i < lines.length; i++) {
+            if (lines[i]?.trim() === '---') {
+                endIndex = i;
+                break;
+            }
+        }
+        
+        if (endIndex === -1) {
+            return { yamlData: null, markdownContent: content };
+        }
+        
+        // Extract YAML content
+        const yamlLines = lines.slice(1, endIndex);
+        const yamlContent = yamlLines.join('\n');
+        
+        // Extract Markdown content (everything after the closing ---)
+        const markdownLines = lines.slice(endIndex + 1);
+        const markdownContent = markdownLines.join('\n');
+        
+        // Parse YAML (simple implementation for our specific format)
+        let yamlData: any = null;
+        try {
+            yamlData = this.parseSimpleYaml(yamlContent);
+        } catch (error) {
+            console.warn('Failed to parse YAML front matter:', error);
+        }
+        
+        return { yamlData, markdownContent };
+    }
+    
+    /**
+     * Simple YAML parser for our specific block styles format
+     */
+    private parseSimpleYaml(yamlContent: string): any {
+        const result: any = {};
+        const lines = yamlContent.split('\n');
+        let currentContext: any = result;
+        let contextStack: any[] = [result];
+        let currentArray: any[] | null = null;
+        let currentArrayKey: string | null = null;
+        let currentIndent = 0;
+        
+        for (const line of lines) {
+            const trimmedLine = line.trim();
+            if (!trimmedLine || trimmedLine.startsWith('#')) continue;
+            
+            const indent = line.length - line.trimStart().length;
+            const colonIndex = line.indexOf(':');
+            
+            if (colonIndex === -1) continue;
+            
+            const key = line.substring(0, colonIndex).trim();
+            const value = line.substring(colonIndex + 1).trim();
+            
+            // Handle array items
+            if (key.startsWith('- ')) {
+                const arrayKey = key.substring(2);
+                if (currentArray) {
+                    const item: any = {};
+                    if (value) {
+                        item[arrayKey] = this.parseYamlValue(value);
+                    }
+                    currentArray.push(item);
+                    currentContext = item;
+                } else {
+                    // Start new array
+                    currentArray = [];
+                    currentArrayKey = arrayKey;
+                    const item: any = {};
+                    if (value) {
+                        item[arrayKey] = this.parseYamlValue(value);
+                    }
+                    currentArray.push(item);
+                    currentContext = item;
+                }
+            } else {
+                // Handle indent changes
+                if (indent < currentIndent) {
+                    // Pop context stack
+                    while (contextStack.length > 1 && indent < currentIndent) {
+                        contextStack.pop();
+                        currentIndent -= 2;
+                    }
+                    currentContext = contextStack[contextStack.length - 1] || result;
+                }
+                
+                if (value) {
+                    currentContext[key] = this.parseYamlValue(value);
+                } else {
+                    // Nested object or array
+                    if (key === 'block_styles') {
+                        currentArray = [];
+                        currentArrayKey = key;
+                        currentContext[key] = currentArray;
+                    } else {
+                        const nestedObj = {};
+                        currentContext[key] = nestedObj;
+                        contextStack.push(nestedObj);
+                        currentContext = nestedObj;
+                        currentIndent = indent;
+                    }
+                }
+            }
+        }
+        
+        return result;
+    }
+    
+    /**
+     * Parse YAML value to appropriate type
+     */
+    private parseYamlValue(value: string): any {
+        const trimmed = value.trim();
+        
+        // Remove quotes
+        if ((trimmed.startsWith('"') && trimmed.endsWith('"')) || 
+            (trimmed.startsWith("'") && trimmed.endsWith("'"))) {
+            return trimmed.slice(1, -1);
+        }
+        
+        // Boolean values
+        if (trimmed === 'true') return true;
+        if (trimmed === 'false') return false;
+        
+        // Numeric values
+        if (/^-?\d+$/.test(trimmed)) {
+            return parseInt(trimmed);
+        }
+        if (/^-?\d*\.\d+$/.test(trimmed)) {
+            return parseFloat(trimmed);
+        }
+        
+        return trimmed;
+    }
+    
+    /**
+     * Create a map of time block IDs to their styles
+     */
+    private createBlockStylesMap(blockStyles: any[]): Map<string, any> {
+        const stylesMap = new Map<string, any>();
+        
+        if (!Array.isArray(blockStyles)) {
+            return stylesMap;
+        }
+        
+        for (const style of blockStyles) {
+            if (style && typeof style === 'object' && style.time_block) {
+                stylesMap.set(style.time_block, style);
+            }
+        }
+        
+        return stylesMap;
     }
 
     /**

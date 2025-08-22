@@ -86,7 +86,7 @@ interface TimeBlock {
 - **Multi-Selection**: Ctrl+click selection with batch operations
 - **Professional Styling Panel**: Color pickers, typography, alignment controls
 - **Undo/Redo System**: 100 operation history with full TypeScript integration, including all operations (create, edit, move, resize, style changes, import, delete)
-- **Export/Import**: PNG (A4 print-optimized), SVG, JSON, Markdown formats with multi-day block support
+- **Export/Import**: PNG (A4 print-optimized), SVG, JSON, Markdown formats with multi-day block support and YAML front matter styling
 - **Template System**: Quick placement of common block types with clean UI (hides styling panel during placement)
 - **Context Menus**: Right-click copy/paste for styles and blocks
 
@@ -167,3 +167,12 @@ type Result<T, E = Error> =
 - **Deployment Ready**: Static files served via http-server on port 8088
 
 This project demonstrates modern web development best practices with a complete, production-ready week planning application.
+
+## Recent Bug Fixes (August 2025)
+
+### Markdown Import Styling Bug Fix
+- **Issue**: When importing markdown files with YAML front matter, time block styling was not being restored correctly
+- **Root Cause**: Text inconsistency between YAML front matter (`"Untitled"`) and markdown body (`"Untitled event"`) in export functionality
+- **Solution**: Fixed `generateMarkdown()` method in `week-planner.ts:1655` to use consistent text (`"Untitled"` instead of `"Untitled event"`)
+- **Impact**: Markdown import now correctly restores all styling properties (colors, fonts, alignment, borders) for both single-day and multi-day blocks
+- **Files Modified**: `src/week-planner.ts`

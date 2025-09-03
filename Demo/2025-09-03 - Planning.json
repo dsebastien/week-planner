@@ -1,0 +1,807 @@
+{
+  "version": "1.0",
+  "blocks": [
+    {
+      "id": "block_1756025025196_rjbc2ndks",
+      "startTime": 360,
+      "duration": 60,
+      "startDay": 0,
+      "daySpan": 5,
+      "text": "🌅 Réveil 🚿 Toilette 🥣 Déjeuner",
+      "color": "#f97316",
+      "textColor": "#ffffff",
+      "fontSize": 24,
+      "fontStyle": {
+        "bold": false,
+        "italic": false
+      },
+      "textAlignment": "center",
+      "verticalAlignment": "top",
+      "borderStyle": {
+        "width": 0,
+        "style": "solid",
+        "color": "#f97316"
+      },
+      "cornerRadius": 0
+    },
+    {
+      "id": "block_1756025069693_frf7dj0m1",
+      "startTime": 300,
+      "duration": 180,
+      "startDay": 5,
+      "daySpan": 2,
+      "text": "💤 Dodo",
+      "color": "#3b82f6",
+      "textColor": "#ffffff",
+      "fontSize": 24,
+      "fontStyle": {
+        "bold": false,
+        "italic": false
+      },
+      "textAlignment": "center",
+      "verticalAlignment": "middle",
+      "borderStyle": {
+        "width": 0,
+        "style": "solid",
+        "color": "#3b82f6"
+      },
+      "cornerRadius": 0
+    },
+    {
+      "id": "block_1756025098421_jf0wfh57x",
+      "startTime": 300,
+      "duration": 60,
+      "startDay": 0,
+      "daySpan": 5,
+      "text": "💤 Dodo",
+      "color": "#3b82f6",
+      "textColor": "#ffffff",
+      "fontSize": 24,
+      "fontStyle": {
+        "bold": false,
+        "italic": false
+      },
+      "textAlignment": "center",
+      "verticalAlignment": "middle",
+      "borderStyle": {
+        "width": 0,
+        "style": "solid",
+        "color": "#3b82f6"
+      },
+      "cornerRadius": 0
+    },
+    {
+      "id": "block_1756109604516_o3mqus7ne",
+      "startTime": 420,
+      "duration": 60,
+      "startDay": 0,
+      "daySpan": 5,
+      "text": "🎯 Trajet école",
+      "color": "#f97316",
+      "textColor": "#ffffff",
+      "fontSize": 24,
+      "fontStyle": {
+        "bold": false,
+        "italic": false
+      },
+      "textAlignment": "center",
+      "verticalAlignment": "middle",
+      "borderStyle": {
+        "width": 0,
+        "style": "solid",
+        "color": "#f97316"
+      },
+      "cornerRadius": 0
+    },
+    {
+      "id": "block_1756109651505_aul4hxw3r",
+      "startTime": 480,
+      "duration": 450,
+      "startDay": 0,
+      "daySpan": 2,
+      "text": "Ecole",
+      "color": "#6b7280",
+      "textColor": "#ffffff",
+      "fontSize": 24,
+      "fontStyle": {
+        "bold": false,
+        "italic": false
+      },
+      "textAlignment": "center",
+      "verticalAlignment": "middle",
+      "borderStyle": {
+        "width": 0,
+        "style": "solid",
+        "color": "#6b7280"
+      },
+      "cornerRadius": 0
+    },
+    {
+      "startTime": 480,
+      "duration": 450,
+      "startDay": 3,
+      "daySpan": 2,
+      "text": "Ecole",
+      "color": "#6b7280",
+      "textColor": "#ffffff",
+      "fontSize": 24,
+      "fontStyle": {
+        "bold": false,
+        "italic": false
+      },
+      "textAlignment": "center",
+      "verticalAlignment": "middle",
+      "borderStyle": {
+        "width": 0,
+        "style": "solid",
+        "color": "#6b7280"
+      },
+      "cornerRadius": 0,
+      "id": "block-1756109690460-0.7675592344755273-0"
+    },
+    {
+      "startTime": 480,
+      "duration": 270,
+      "startDay": 2,
+      "daySpan": 1,
+      "text": "Ecole",
+      "color": "#6b7280",
+      "textColor": "#ffffff",
+      "fontSize": 24,
+      "fontStyle": {
+        "bold": false,
+        "italic": false
+      },
+      "textAlignment": "center",
+      "verticalAlignment": "middle",
+      "borderStyle": {
+        "width": 0,
+        "style": "solid",
+        "color": "#6b7280"
+      },
+      "cornerRadius": 0,
+      "id": "block-1756109694716-0.49635675598500306-0"
+    },
+    {
+      "startTime": 930,
+      "duration": 60,
+      "startDay": 0,
+      "daySpan": 2,
+      "text": "🏠 Retour maison",
+      "color": "#f97316",
+      "textColor": "#ffffff",
+      "fontSize": 24,
+      "fontStyle": {
+        "bold": false,
+        "italic": false
+      },
+      "textAlignment": "center",
+      "verticalAlignment": "middle",
+      "borderStyle": {
+        "width": 0,
+        "style": "solid",
+        "color": "#f97316"
+      },
+      "cornerRadius": 0,
+      "id": "block-1756109772263-0.7074647572237135-0"
+    },
+    {
+      "startTime": 930,
+      "duration": 60,
+      "startDay": 3,
+      "daySpan": 2,
+      "text": "🏠 Retour maison",
+      "color": "#f97316",
+      "textColor": "#ffffff",
+      "fontSize": 24,
+      "fontStyle": {
+        "bold": false,
+        "italic": false
+      },
+      "textAlignment": "center",
+      "verticalAlignment": "middle",
+      "borderStyle": {
+        "width": 0,
+        "style": "solid",
+        "color": "#f97316"
+      },
+      "cornerRadius": 0,
+      "id": "block-1756109824527-0.6362625702575568-0"
+    },
+    {
+      "startTime": 750,
+      "duration": 60,
+      "startDay": 2,
+      "daySpan": 1,
+      "text": "🏠 Retour maison",
+      "color": "#f97316",
+      "textColor": "#ffffff",
+      "fontSize": 24,
+      "fontStyle": {
+        "bold": false,
+        "italic": false
+      },
+      "textAlignment": "center",
+      "verticalAlignment": "middle",
+      "borderStyle": {
+        "width": 0,
+        "style": "solid",
+        "color": "#f97316"
+      },
+      "cornerRadius": 0,
+      "id": "block-1756109827887-0.6864554080266428-0"
+    },
+    {
+      "id": "block_1756109846104_as41sm4pc",
+      "startTime": 810,
+      "duration": 60,
+      "startDay": 2,
+      "daySpan": 1,
+      "text": "🍽️ Dîner",
+      "color": "#8b5cf6",
+      "textColor": "#ffffff",
+      "fontSize": 24,
+      "fontStyle": {
+        "bold": false,
+        "italic": false
+      },
+      "textAlignment": "center",
+      "verticalAlignment": "middle",
+      "borderStyle": {
+        "width": 0,
+        "style": "solid",
+        "color": "#8b5cf6"
+      },
+      "cornerRadius": 0
+    },
+    {
+      "startTime": 480,
+      "duration": 120,
+      "startDay": 5,
+      "daySpan": 2,
+      "text": "🌅 Réveil 🚿 Toilette 🥣 Déjeuner",
+      "color": "#f97316",
+      "textColor": "#ffffff",
+      "fontSize": 24,
+      "fontStyle": {
+        "bold": false,
+        "italic": false
+      },
+      "textAlignment": "center",
+      "verticalAlignment": "top",
+      "borderStyle": {
+        "width": 0,
+        "style": "solid",
+        "color": "#f97316"
+      },
+      "cornerRadius": 0,
+      "id": "block-1756109879896-0.03300215521847005-0"
+    },
+    {
+      "id": "block_1756109945496_4iwjv46ot",
+      "startTime": 600,
+      "duration": 60,
+      "startDay": 5,
+      "daySpan": 2,
+      "text": "📖Devoirs + Révisions",
+      "color": "#a30000",
+      "textColor": "#ffffff",
+      "fontSize": 24,
+      "fontStyle": {
+        "bold": false,
+        "italic": false
+      },
+      "textAlignment": "center",
+      "verticalAlignment": "middle",
+      "borderStyle": {
+        "width": 0,
+        "style": "solid",
+        "color": "#a30000"
+      },
+      "cornerRadius": 0
+    },
+    {
+      "id": "block_1756110000476_wio7nrtn8",
+      "startTime": 870,
+      "duration": 120,
+      "startDay": 2,
+      "daySpan": 1,
+      "text": "📖Devoirs + Révisions",
+      "color": "#a30000",
+      "textColor": "#ffffff",
+      "fontSize": 24,
+      "fontStyle": {
+        "bold": false,
+        "italic": false
+      },
+      "textAlignment": "center",
+      "verticalAlignment": "middle",
+      "borderStyle": {
+        "width": 0,
+        "style": "solid",
+        "color": "#a30000"
+      },
+      "cornerRadius": 0
+    },
+    {
+      "startTime": 990,
+      "duration": 90,
+      "startDay": 0,
+      "daySpan": 2,
+      "text": "📖Devoirs + Révisions",
+      "color": "#a30000",
+      "textColor": "#ffffff",
+      "fontSize": 24,
+      "fontStyle": {
+        "bold": false,
+        "italic": false
+      },
+      "textAlignment": "center",
+      "verticalAlignment": "middle",
+      "borderStyle": {
+        "width": 0,
+        "style": "solid",
+        "color": "#a30000"
+      },
+      "cornerRadius": 0,
+      "id": "block-1756110049642-0.9772582552490388-0"
+    },
+    {
+      "startTime": 1080,
+      "duration": 60,
+      "startDay": 0,
+      "daySpan": 7,
+      "text": "🍽️ Dîner",
+      "color": "#8b5cf6",
+      "textColor": "#ffffff",
+      "fontSize": 24,
+      "fontStyle": {
+        "bold": false,
+        "italic": false
+      },
+      "textAlignment": "center",
+      "verticalAlignment": "middle",
+      "borderStyle": {
+        "width": 0,
+        "style": "solid",
+        "color": "#8b5cf6"
+      },
+      "cornerRadius": 0,
+      "id": "block-1756110098524-0.17661516546812528-0"
+    },
+    {
+      "id": "block_1756110121087_bikymm2p5",
+      "startTime": 1140,
+      "duration": 30,
+      "startDay": 0,
+      "daySpan": 7,
+      "text": "🚿 Douche",
+      "color": "#0000a3",
+      "textColor": "#ffffff",
+      "fontSize": 24,
+      "fontStyle": {
+        "bold": false,
+        "italic": false
+      },
+      "textAlignment": "center",
+      "verticalAlignment": "middle",
+      "borderStyle": {
+        "width": 0,
+        "style": "solid",
+        "color": "#0000a3"
+      },
+      "cornerRadius": 0
+    },
+    {
+      "id": "block_1756111953870_hpqllo4x4",
+      "startTime": 990,
+      "duration": 60,
+      "startDay": 2,
+      "daySpan": 1,
+      "text": "🎮 Temps libre 📱 Écrans",
+      "color": "#10b981",
+      "textColor": "#ffffff",
+      "fontSize": 24,
+      "fontStyle": {
+        "bold": false,
+        "italic": false
+      },
+      "textAlignment": "center",
+      "verticalAlignment": "middle",
+      "borderStyle": {
+        "width": 0,
+        "style": "solid",
+        "color": "#10b981"
+      },
+      "cornerRadius": 0
+    },
+    {
+      "id": "block_1756111961542_btcwga3o0",
+      "startTime": 1050,
+      "duration": 30,
+      "startDay": 2,
+      "daySpan": 1,
+      "text": "🏃 Sport",
+      "color": "#84cc16",
+      "textColor": "#000000",
+      "fontSize": 24,
+      "fontStyle": {
+        "bold": false,
+        "italic": false
+      },
+      "textAlignment": "center",
+      "verticalAlignment": "middle",
+      "borderStyle": {
+        "width": 0,
+        "style": "solid",
+        "color": "#84cc16"
+      },
+      "cornerRadius": 0
+    },
+    {
+      "startTime": 990,
+      "duration": 90,
+      "startDay": 3,
+      "daySpan": 1,
+      "text": "📖Devoirs + Révisions",
+      "color": "#a30000",
+      "textColor": "#ffffff",
+      "fontSize": 24,
+      "fontStyle": {
+        "bold": false,
+        "italic": false
+      },
+      "textAlignment": "center",
+      "verticalAlignment": "middle",
+      "borderStyle": {
+        "width": 0,
+        "style": "solid",
+        "color": "#a30000"
+      },
+      "cornerRadius": 0,
+      "id": "block-1756112050948-0.547560530628497-0"
+    },
+    {
+      "startTime": 1050,
+      "duration": 30,
+      "startDay": 4,
+      "daySpan": 1,
+      "text": "🏃 Sport",
+      "color": "#84cc16",
+      "textColor": "#000000",
+      "fontSize": 24,
+      "fontStyle": {
+        "bold": false,
+        "italic": false
+      },
+      "textAlignment": "center",
+      "verticalAlignment": "middle",
+      "borderStyle": {
+        "width": 0,
+        "style": "solid",
+        "color": "#84cc16"
+      },
+      "cornerRadius": 0,
+      "id": "block-1756112058774-0.8198959642427233-0"
+    },
+    {
+      "startTime": 990,
+      "duration": 60,
+      "startDay": 4,
+      "daySpan": 1,
+      "text": "🎮 Temps libre 📱 Écrans",
+      "color": "#10b981",
+      "textColor": "#ffffff",
+      "fontSize": 24,
+      "fontStyle": {
+        "bold": false,
+        "italic": false
+      },
+      "textAlignment": "center",
+      "verticalAlignment": "middle",
+      "borderStyle": {
+        "width": 0,
+        "style": "solid",
+        "color": "#10b981"
+      },
+      "cornerRadius": 0,
+      "id": "block-1756112106381-0.3502538101006569-0"
+    },
+    {
+      "startTime": 660,
+      "duration": 90,
+      "startDay": 5,
+      "daySpan": 2,
+      "text": "🎮 Temps libre 📱 Écrans",
+      "color": "#10b981",
+      "textColor": "#ffffff",
+      "fontSize": 24,
+      "fontStyle": {
+        "bold": false,
+        "italic": false
+      },
+      "textAlignment": "center",
+      "verticalAlignment": "middle",
+      "borderStyle": {
+        "width": 0,
+        "style": "solid",
+        "color": "#10b981"
+      },
+      "cornerRadius": 0,
+      "id": "block-1756112119581-0.1299153614308548-0"
+    },
+    {
+      "startTime": 750,
+      "duration": 60,
+      "startDay": 5,
+      "daySpan": 2,
+      "text": "🍽️ Dîner",
+      "color": "#8b5cf6",
+      "textColor": "#ffffff",
+      "fontSize": 24,
+      "fontStyle": {
+        "bold": false,
+        "italic": false
+      },
+      "textAlignment": "center",
+      "verticalAlignment": "middle",
+      "borderStyle": {
+        "width": 0,
+        "style": "solid",
+        "color": "#8b5cf6"
+      },
+      "cornerRadius": 0,
+      "id": "block-1756112132917-0.6836729035218339-0"
+    },
+    {
+      "id": "block_1756112152240_0dcj59qds",
+      "startTime": 810,
+      "duration": 270,
+      "startDay": 5,
+      "daySpan": 2,
+      "text": "😌 Détente 📚 Lecture 🏃 Sport 🚗 Sortie 🌳 Nature 🎨 Activités créatives 📱 Écrans",
+      "color": "#10b981",
+      "textColor": "#ffffff",
+      "fontSize": 24,
+      "fontStyle": {
+        "bold": false,
+        "italic": false
+      },
+      "textAlignment": "center",
+      "verticalAlignment": "middle",
+      "borderStyle": {
+        "width": 0,
+        "style": "solid",
+        "color": "#10b981"
+      },
+      "cornerRadius": 0
+    },
+    {
+      "startTime": 1170,
+      "duration": 120,
+      "startDay": 0,
+      "daySpan": 4,
+      "text": "🎮 Temps libre 📱 Écrans",
+      "color": "#10b981",
+      "textColor": "#ffffff",
+      "fontSize": 24,
+      "fontStyle": {
+        "bold": false,
+        "italic": false
+      },
+      "textAlignment": "center",
+      "verticalAlignment": "middle",
+      "borderStyle": {
+        "width": 0,
+        "style": "solid",
+        "color": "#10b981"
+      },
+      "cornerRadius": 0,
+      "id": "block-1756112310808-0.8182087945849813-0"
+    },
+    {
+      "id": "block_1756112371905_1yn66vix6",
+      "startTime": 1170,
+      "duration": 210,
+      "startDay": 4,
+      "daySpan": 2,
+      "text": "📺 Soirée film 🍿 Pop-corn 🎮 Temps libre 📱 Écrans 🚗 Sortie",
+      "color": "#10b981",
+      "textColor": "#ffffff",
+      "fontSize": 24,
+      "fontStyle": {
+        "bold": false,
+        "italic": false
+      },
+      "textAlignment": "center",
+      "verticalAlignment": "middle",
+      "borderStyle": {
+        "width": 0,
+        "style": "solid",
+        "color": "#10b981"
+      },
+      "cornerRadius": 0
+    },
+    {
+      "startTime": 1320,
+      "duration": 120,
+      "startDay": 0,
+      "daySpan": 4,
+      "text": "💤 Dodo",
+      "color": "#3b82f6",
+      "textColor": "#ffffff",
+      "fontSize": 24,
+      "fontStyle": {
+        "bold": false,
+        "italic": false
+      },
+      "textAlignment": "center",
+      "verticalAlignment": "middle",
+      "borderStyle": {
+        "width": 0,
+        "style": "solid",
+        "color": "#3b82f6"
+      },
+      "cornerRadius": 0,
+      "id": "block-1756112402033-0.1047435642062875-0"
+    },
+    {
+      "startTime": 1320,
+      "duration": 120,
+      "startDay": 6,
+      "daySpan": 1,
+      "text": "💤 Dodo",
+      "color": "#3b82f6",
+      "textColor": "#ffffff",
+      "fontSize": 24,
+      "fontStyle": {
+        "bold": false,
+        "italic": false
+      },
+      "textAlignment": "center",
+      "verticalAlignment": "middle",
+      "borderStyle": {
+        "width": 0,
+        "style": "solid",
+        "color": "#3b82f6"
+      },
+      "cornerRadius": 0,
+      "id": "block-1756112422283-0.19118281680994142-0"
+    },
+    {
+      "startTime": 1410,
+      "duration": 30,
+      "startDay": 4,
+      "daySpan": 2,
+      "text": "💤 Dodo",
+      "color": "#3b82f6",
+      "textColor": "#ffffff",
+      "fontSize": 24,
+      "fontStyle": {
+        "bold": false,
+        "italic": false
+      },
+      "textAlignment": "center",
+      "verticalAlignment": "middle",
+      "borderStyle": {
+        "width": 0,
+        "style": "solid",
+        "color": "#3b82f6"
+      },
+      "cornerRadius": 0,
+      "id": "block-1756112440314-0.7305350065098026-0"
+    },
+    {
+      "id": "block_1756112453702_0ac7wu1z7",
+      "startTime": 1290,
+      "duration": 30,
+      "startDay": 0,
+      "daySpan": 4,
+      "text": "📚 Lecture",
+      "color": "#e5007d",
+      "textColor": "#ffffff",
+      "fontSize": 24,
+      "fontStyle": {
+        "bold": false,
+        "italic": false
+      },
+      "textAlignment": "center",
+      "verticalAlignment": "middle",
+      "borderStyle": {
+        "width": 0,
+        "style": "solid",
+        "color": "#e5007d"
+      },
+      "cornerRadius": 0
+    },
+    {
+      "id": "block_1756112510437_d109jgvrt",
+      "startTime": 1380,
+      "duration": 30,
+      "startDay": 4,
+      "daySpan": 2,
+      "text": "📚 Lecture",
+      "color": "#e5007d",
+      "textColor": "#ffffff",
+      "fontSize": 24,
+      "fontStyle": {
+        "bold": false,
+        "italic": false
+      },
+      "textAlignment": "center",
+      "verticalAlignment": "middle",
+      "borderStyle": {
+        "width": 0,
+        "style": "solid",
+        "color": "#e5007d"
+      },
+      "cornerRadius": 0
+    },
+    {
+      "startTime": 1170,
+      "duration": 120,
+      "startDay": 6,
+      "daySpan": 1,
+      "text": "🎮 Temps libre 📱 Écrans",
+      "color": "#10b981",
+      "textColor": "#ffffff",
+      "fontSize": 24,
+      "fontStyle": {
+        "bold": false,
+        "italic": false
+      },
+      "textAlignment": "center",
+      "verticalAlignment": "middle",
+      "borderStyle": {
+        "width": 0,
+        "style": "solid",
+        "color": "#10b981"
+      },
+      "cornerRadius": 0,
+      "id": "block-1756112541517-0.44158166446358305-0"
+    },
+    {
+      "id": "block_1756112545345_1piqefnql",
+      "startTime": 1290,
+      "duration": 30,
+      "startDay": 6,
+      "daySpan": 1,
+      "text": "📚 Lecture",
+      "color": "#e5007d",
+      "textColor": "#ffffff",
+      "fontSize": 24,
+      "fontStyle": {
+        "bold": false,
+        "italic": false
+      },
+      "textAlignment": "center",
+      "verticalAlignment": "middle",
+      "borderStyle": {
+        "width": 0,
+        "style": "solid",
+        "color": "#e5007d"
+      },
+      "cornerRadius": 0
+    }
+  ],
+  "config": {
+    "startHour": 5,
+    "endHour": 24,
+    "timeSlotHeight": 30,
+    "dayWidth": 348.2857142857143,
+    "headerHeight": 60,
+    "timeColumnWidth": 120,
+    "days": [
+      "Monday",
+      "Tuesday",
+      "Wednesday",
+      "Thursday",
+      "Friday",
+      "Saturday",
+      "Sunday"
+    ],
+    "canvasWidth": 2558,
+    "canvasHeight": 1200
+  },
+  "exportedAt": "2025-09-03T05:19:02.789Z"
+}

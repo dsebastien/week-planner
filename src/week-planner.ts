@@ -1806,12 +1806,13 @@ export class WeekPlanner {
                         
                         // Use importDataWithUndo for proper undo support
                         const result = this.blockManager.importDataWithUndo(importData);
-                        let importedCount = result.success ? blocks.length : 0;
                         
                         if (result.success) {
+                            console.log(`Successfully imported ${blocks.length} blocks from Markdown`);
                             this.render();
                             this.closeMenu();
                         } else {
+                            console.error('Markdown import failed:', result.error);
                             this.showError(`Failed to import Markdown: ${result.error.message}`);
                         }
                     } catch (error) {
@@ -1894,14 +1895,17 @@ export class WeekPlanner {
                     const totalDays = parseInt(totalDaysStr);
                     
                     if (dayNumber > 0 && totalDays > 1 && dayNumber <= totalDays) {
-                        // Create a unique key for this multi-day block
-                        const blockKey = `${text.trim()}-${startTime}-${adjustedDuration}-${totalDays}`;
+                        // Create a unique key for this multi-day block including calculated start day
+                        const calculatedStartDay = currentDay - (dayNumber - 1);
+                        const blockKey = `${text.trim()}-${startTime}-${adjustedDuration}-${totalDays}-${calculatedStartDay}`;
                         
                         if (!multiDayBlocks.has(blockKey)) {
                             // First occurrence - calculate the start day
                             const blockStartDay = currentDay - (dayNumber - 1);
+                            // Ensure start day is valid
+                            const validStartDay = Math.max(0, Math.min(6, blockStartDay));
                             multiDayBlocks.set(blockKey, {
-                                startDay: blockStartDay,
+                                startDay: validStartDay,
                                 startTime,
                                 duration: adjustedDuration,
                                 text: text.trim(),
@@ -1956,11 +1960,12 @@ export class WeekPlanner {
         // Add reconstructed multi-day blocks
         const defaultStyling = this.getDefaultStyling();
         for (const multiDayBlock of multiDayBlocks.values()) {
-            // Only add if we have collected all day parts
-            if (multiDayBlock.dayParts.length === multiDayBlock.daySpan) {
+            // Add if we have at least one day part and valid start day
+            if (multiDayBlock.dayParts.length > 0 && multiDayBlock.startDay >= 0 && multiDayBlock.startDay < 7) {
                 // Generate style key for multi-day block lookup
                 const startDayName = dayNames[multiDayBlock.startDay];
-                const endDayName = dayNames[multiDayBlock.startDay + multiDayBlock.daySpan - 1];
+                const endDayIndex = Math.min(6, multiDayBlock.startDay + multiDayBlock.daySpan - 1);
+                const endDayName = dayNames[endDayIndex];
                 const timeBlockId = `[${startDayName} - ${endDayName}] ${GridUtils.formatTime(multiDayBlock.startTime)} - ${GridUtils.formatTime(multiDayBlock.startTime + multiDayBlock.duration)}: ${multiDayBlock.text}`;
                 const style = blockStylesMap.get(timeBlockId) || {};
                 
@@ -2034,6 +2039,7 @@ export class WeekPlanner {
             yamlData = this.parseSimpleYaml(yamlContent);
         } catch (error) {
             console.warn('Failed to parse YAML front matter:', error);
+            // Continue with null yamlData - import will still work without styling
         }
         
         return { yamlData, markdownContent };

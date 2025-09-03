@@ -1871,11 +1871,17 @@ export class WeekPlanner {
                 }
                 
                 const startTime = parseInt(startHour) * 60 + parseInt(startMin);
-                const endTime = parseInt(endHour) * 60 + parseInt(endMin);
+                let endTime = parseInt(endHour) * 60 + parseInt(endMin);
+                
+                // Handle midnight-crossing blocks (e.g., 22:00 - 00:00)
+                if (endTime < startTime) {
+                    endTime += 24 * 60; // Add 24 hours in minutes (1440)
+                }
+                
                 const duration = endTime - startTime;
                 
                 // Validate time values
-                if (startTime < 0 || endTime < 0 || duration <= 0 || startTime >= endTime) {
+                if (startTime < 0 || duration <= 0) {
                     continue;
                 }
                 

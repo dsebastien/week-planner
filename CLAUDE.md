@@ -32,3 +32,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - All business rules enforced with validation
 - 35 unit tests ensure code quality
 - Export/import functionality with PNG, SVG, JSON formats
+
+## Demo files
+The "Demo" folder contains examples that can be used for testing imports.
+Those should be updated whenever the exports code changes.

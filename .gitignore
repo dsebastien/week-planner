@@ -4,3 +4,4 @@ node_modules/
 *.map
 *.d.ts
 tests-dist/
+.playwright-mcp/

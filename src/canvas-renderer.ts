@@ -129,14 +129,43 @@ export class CanvasRenderer {
     }
 
     /**
-     * Exports the current canvas as SVG
+     * Exports the current canvas as SVG with A4 paper dimensions
      */
     exportSVG(blocks: readonly RenderedTimeBlock[]): string {
+        // A4 landscape dimensions in points (72 DPI for proper printing)
+        const A4_WIDTH = 842;   // 11.69 inches * 72 points/inch
+        const A4_HEIGHT = 595;  // 8.27 inches * 72 points/inch
+        
+        // Calculate scale to fit the current canvas content to A4 while maintaining aspect ratio
+        const currentAspectRatio = this.config.canvasWidth / this.config.canvasHeight;
+        const a4AspectRatio = A4_WIDTH / A4_HEIGHT;
+        
+        let scaledWidth: number;
+        let scaledHeight: number;
+        let offsetX = 0;
+        let offsetY = 0;
+        
+        if (currentAspectRatio > a4AspectRatio) {
+            // Current canvas is wider than A4 - fit to width
+            scaledWidth = A4_WIDTH;
+            scaledHeight = A4_WIDTH / currentAspectRatio;
+            offsetY = (A4_HEIGHT - scaledHeight) / 2; // Center vertically
+        } else {
+            // Current canvas is taller than A4 - fit to height  
+            scaledHeight = A4_HEIGHT;
+            scaledWidth = A4_HEIGHT * currentAspectRatio;
+            offsetX = (A4_WIDTH - scaledWidth) / 2; // Center horizontally
+        }
+        
+        const scale = scaledWidth / this.config.canvasWidth;
+        
         const svgElements = [
-            this.createSVGRoot(),
-            this.generateBackgroundSVG(),
+            this.createSVGRootA4(A4_WIDTH, A4_HEIGHT),
+            this.generateBackgroundSVGA4(A4_WIDTH, A4_HEIGHT),
+            `<g transform="translate(${offsetX},${offsetY}) scale(${scale})">`,
             this.generateGridSVG(),
             ...blocks.map(block => this.generateBlockSVG(block)),
+            '</g>',
             '</svg>'
         ];
         
@@ -1057,6 +1086,14 @@ export class CanvasRenderer {
 
     private generateBackgroundSVG(): string {
         return `<rect width="100%" height="100%" fill="${CanvasRenderer.THEME.background}"/>`;
+    }
+
+    private createSVGRootA4(width: number, height: number): string {
+        return `<svg width="${width}pt" height="${height}pt" viewBox="0 0 ${width} ${height}" xmlns="http://www.w3.org/2000/svg">`;
+    }
+
+    private generateBackgroundSVGA4(width: number, height: number): string {
+        return `<rect width="${width}" height="${height}" fill="#ffffff"/>`;
     }
 
     private generateGridSVG(): string {

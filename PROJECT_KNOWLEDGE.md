@@ -168,9 +168,35 @@ type Result<T, E = Error> =
 
 This project demonstrates modern web development best practices with a complete, production-ready week planning application.
 
-## Recent Bug Fixes (August 2025)
+## Recent Bug Fixes (September 2025)
 
-### Markdown Import Styling Bug Fix
+### Midnight-Crossing Time Block Import Fix
+- **Issue**: When importing markdown files, midnight-crossing time blocks (e.g., 22:00-00:00) were being skipped during import
+- **Root Cause**: Validation logic in `parseMarkdown()` function rejected blocks with negative duration when `endTime < startTime`
+- **Solution**: Fixed validation in `src/week-planner.ts:1873-1886` to detect midnight-crossing blocks and add 24 hours (1440 minutes) to endTime
+- **Code Change**: 
+  ```typescript
+  // Handle midnight-crossing blocks (e.g., 22:00 - 00:00)
+  if (endTime < startTime) {
+      endTime += 24 * 60; // Add 24 hours in minutes (1440)
+  }
+  ```
+- **Impact**: All time blocks including midnight-crossing ones are now correctly imported and displayed
+- **Files Modified**: `src/week-planner.ts`
+
+### SVG Export A4 Dimensions Fix
+- **Issue**: SVG exports were using canvas dimensions instead of proper A4 paper dimensions, requiring scaling for printing
+- **Root Cause**: `exportSVG()` method was using `this.config.canvasWidth/Height` instead of standard A4 dimensions
+- **Solution**: Updated `exportSVG()` method in `src/canvas-renderer.ts:134-173` to use A4 landscape dimensions (842×595 points at 72 DPI)
+- **Code Changes**:
+  - A4_WIDTH = 842 points (11.69 inches × 72 points/inch) 
+  - A4_HEIGHT = 595 points (8.27 inches × 72 points/inch)
+  - Added proper scaling and centering logic for A4 format
+  - Uses `createSVGRootA4()` method for correct viewBox dimensions
+- **Impact**: SVG exports now print at 100% scale without blank space, filling entire A4 page
+- **Files Modified**: `src/canvas-renderer.ts`
+
+### Markdown Import Styling Bug Fix (August 2025)
 - **Issue**: When importing markdown files with YAML front matter, time block styling was not being restored correctly
 - **Root Cause**: Text inconsistency between YAML front matter (`"Untitled"`) and markdown body (`"Untitled event"`) in export functionality
 - **Solution**: Fixed `generateMarkdown()` method in `week-planner.ts:1655` to use consistent text (`"Untitled"` instead of `"Untitled event"`)

@@ -79,14 +79,14 @@ export class CanvasRenderer {
         if (block.height < 40) {
             // Compact time display for small preview blocks
             const timeInfo = this.getBlockTimeInfo(block);
-            this.ctx.font = '500 12px Inter, "Segoe UI", system-ui, sans-serif';
+            this.ctx.font = '600 16px Inter, "Segoe UI", system-ui, sans-serif';
             this.ctx.textAlign = 'center';
             this.ctx.textBaseline = 'middle';
             this.ctx.fillText(timeInfo, block.x + block.width / 2, block.y + block.height / 2);
         } else {
             // Full time info for larger preview blocks
             const timeInfo = this.getBlockTimeInfo(block);
-            this.ctx.font = CanvasRenderer.FONTS.blockTime;
+            this.ctx.font = '600 18px Inter, "Segoe UI", system-ui, sans-serif';
             this.ctx.textAlign = 'center';
             this.ctx.textBaseline = 'middle';
             this.ctx.fillText(timeInfo, block.x + block.width / 2, block.y + block.height / 2);
@@ -507,14 +507,14 @@ export class CanvasRenderer {
         const isSmallBlock = block.height < 40;
         
         if (isSmallBlock) {
-            // Compact format for small blocks: use full time range
+            // Compact format for small blocks: increased font size for better export readability
             const timeInfo = this.getBlockTimeInfo(block);
-            this.ctx.font = '500 12px Inter, "Segoe UI", system-ui, sans-serif';
+            this.ctx.font = '600 16px Inter, "Segoe UI", system-ui, sans-serif';
             this.ctx.fillText(timeInfo, block.x + 3, block.y + 2);
         } else {
-            // Full format for larger blocks
+            // Full format for larger blocks: increased font size for better export readability
             const timeInfo = this.getBlockTimeInfo(block);
-            this.ctx.font = CanvasRenderer.FONTS.blockTime;
+            this.ctx.font = '600 18px Inter, "Segoe UI", system-ui, sans-serif';
             this.ctx.fillText(timeInfo, block.x + 6, block.y + 6);
         }
         
@@ -1193,12 +1193,12 @@ export class CanvasRenderer {
                 stroke-dasharray="${this.getSVGStrokeDashArray(block.borderStyle.style)}"/>`;
         }
         
-        // Time information
-        svg += `<text x="${block.x + 6}" y="${block.y + 16}" 
+        // Time information - increased font size for better export readability
+        svg += `<text x="${block.x + 6}" y="${block.y + 18}" 
             fill="${block.textColor}" 
             font-family="Inter, system-ui, sans-serif" 
-            font-size="13" 
-            font-weight="500">${timeInfo}</text>`;
+            font-size="18" 
+            font-weight="600">${timeInfo}</text>`;
         
         // Block text with styling
         if (block.text.trim()) {

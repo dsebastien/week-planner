@@ -2058,7 +2058,7 @@ export class WeekPlanner {
         const result: any = {};
         const lines = yamlContent.split('\n');
         let currentContext: any = result;
-        let contextStack: any[] = [result];
+        const contextStack: any[] = [result];
         let currentArray: any[] | null = null;
         let currentArrayKey: string | null = null;
         let currentIndent = 0;

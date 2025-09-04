@@ -1,0 +1,6 @@
+dist/
+tests-dist/
+node_modules/
+*.js
+index.html
+Demo/

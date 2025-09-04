@@ -242,6 +242,54 @@ Streamlined header with functional buttons:
 
 ---
 
+## 🛠️ Development
+
+### Prerequisites
+
+- Node.js (v24.7.0 or higher)
+- npm
+
+### Installation
+
+```bash
+# Clone the repository
+git clone https://github.com/dsebastien/week-planner.git
+cd week-planner
+
+# Install dependencies
+npm install
+
+# Start development server
+npm run dev
+```
+
+### Available Scripts
+
+- `npm run build` - Build for production
+- `npm run dev` - Start development server
+- `npm run test` - Run tests
+- `npm run lint` - Check code quality
+- `npm run serve` - Serve the application
+
+### CI/CD
+
+This project uses GitHub Actions for continuous integration and deployment:
+- **Automated testing** on every push and PR
+- **ESLint** for code quality
+- **Automated deployment** to GitHub Pages
+- **Release management** with semantic versioning
+
+See [RELEASE.md](RELEASE.md) for release and deployment procedures.
+
+### Contributing
+
+Contributions are welcome! Please:
+1. Fork the repository
+2. Create a feature branch
+3. Make your changes
+4. Run tests and linting
+5. Submit a pull request
+
 ## 💝 Support the Project
 
 If Week Planner helps you stay organized, consider [buying me a coffee](https://www.buymeacoffee.com/dsebastien)! ☕
